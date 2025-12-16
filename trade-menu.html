@@ -361,16 +361,26 @@
         </div>
     </div>
     
-    <!-- Chart Container - Full Size -->
-    <div id="tv_chart_container" class="flex-grow w-full relative min-h-0">
-        <!-- TradingView Chart Widget will be loaded here -->
-        <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
-            <div class="text-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
-                <p class="mt-4 text-gray-400">Loading TradingView chart...</p>
-            </div>
-        </div>
+    <!-- Normal Chart Page -->
+<div id="chartsPage" class="relative w-full h-full">
+    <h2 id="chartTitle" class="text-sm text-gray-300 px-4 py-2"></h2>
+    <div id="tv_chart_container" class="w-full h-[calc(100vh-48px)]"></div>
+</div>
+
+<!-- Fullscreen Chart Overlay -->
+<div id="fullscreenChart"
+     class="fixed inset-0 bg-black z-50 hidden flex flex-col">
+    
+    <div class="flex items-center justify-between px-4 py-2 bg-gray-900">
+        <span id="fullscreenChartTitle" class="text-sm text-gray-200"></span>
+        <button onclick="toggleChartFullscreen()"
+                class="text-gray-300 hover:text-white">
+            ✕ Exit Fullscreen
+        </button>
     </div>
+
+    <div id="fullscreenChartContainer" class="flex-1"></div>
+</div>
     
     <!-- Chart Footer (Optional) -->
     <div class="bg-gray-900 border-t border-gray-800 p-2 hidden md:block">
