@@ -307,22 +307,98 @@
             </div>
 
             <!-- 6. Charts Page -->
-            <div id="chartsPage" class="page-container p-0 md:p-0 hidden flex flex-col">
-                <div class="bg-gray-800 p-2 flex items-center justify-between border-b border-gray-700">
-                    <h2 id="chartTitle" class="text-white text-sm md:text-lg font-semibold truncate">TradingView Chart</h2>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="showMessage('Indicators coming soon', 'info')" class="text-gray-400 hover:text-white p-1 text-sm">
-                            <i class="ph-trend-up-bold"></i> Indicators
-                        </button>
-                        <button onclick="showPage('orderTicketPage', { symbol: appState.currentSymbol })" class="btn-buy p-1 px-3 rounded text-xs font-bold">
-                            <i class="ph-arrow-up-right-bold"></i> Order
-                        </button>
-                    </div>
-                </div>
-                <div id="tv_chart_container" class="flex-grow">
-                    <!-- TradingView Widget goes here -->
-                </div>
+<div id="chartsPage" class="page-container hidden flex flex-col h-screen">
+    <!-- Chart Header -->
+    <div class="bg-gray-900 p-2 md:p-3 flex items-center justify-between border-b border-gray-800 shadow-lg z-10">
+        <div class="flex items-center space-x-3 md:space-x-4">
+            <h2 id="chartTitle" class="text-white text-lg md:text-xl font-bold truncate max-w-xs md:max-w-lg">
+                <span class="text-cyan-400">TradingView Chart</span> • 
+                <span id="currentChartSymbol" class="text-yellow-400">Loading...</span>
+            </h2>
+            <div class="hidden md:flex items-center space-x-2">
+                <span class="text-green-500 text-sm font-medium">● Live</span>
+                <span class="text-gray-400 text-sm">|</span>
+                <span id="chartPrice" class="text-white text-sm">--</span>
+                <span id="chartChange" class="text-sm font-medium">--</span>
             </div>
+        </div>
+        
+        <div class="flex items-center space-x-2 md:space-x-4">
+            <!-- Chart Controls -->
+            <div class="hidden md:flex items-center space-x-2 bg-gray-800 rounded-lg p-1">
+                <button onclick="changeChartTimeframe('1D')" class="px-3 py-1 text-xs rounded bg-gray-700 text-white hover:bg-gray-600">
+                    1D
+                </button>
+                <button onclick="changeChartTimeframe('1W')" class="px-3 py-1 text-xs rounded hover:bg-gray-700 text-gray-300">
+                    1W
+                </button>
+                <button onclick="changeChartTimeframe('1M')" class="px-3 py-1 text-xs rounded hover:bg-gray-700 text-gray-300">
+                    1M
+                </button>
+                <button onclick="changeChartTimeframe('1Y')" class="px-3 py-1 text-xs rounded hover:bg-gray-700 text-gray-300">
+                    1Y
+                </button>
+            </div>
+            
+            <!-- Action Buttons -->
+            <button onclick="showMessage('Indicators & Strategies coming soon', 'info')" 
+                    class="text-gray-300 hover:text-cyan-400 p-2 hover:bg-gray-800 rounded-lg transition-colors">
+                <i class="ph-trend-up-bold text-lg"></i>
+                <span class="hidden md:inline ml-1 text-sm">Indicators</span>
+            </button>
+            
+            <button onclick="showPage('orderTicketPage', { symbol: appState.currentSymbol })" 
+                    class="btn-buy p-2 px-4 rounded-lg text-sm font-bold hover:opacity-90 transition-opacity flex items-center">
+                <i class="ph-arrow-up-right-bold mr-1"></i>
+                <span>Trade</span>
+            </button>
+            
+            <!-- Fullscreen Toggle -->
+            <button onclick="toggleChartFullscreen()" 
+                    class="text-gray-400 hover:text-white p-2 hover:bg-gray-800 rounded-lg hidden md:block">
+                <i class="ph-arrows-out-simple-bold text-lg"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Chart Container - Full Size -->
+    <div id="tv_chart_container" class="flex-grow w-full relative min-h-0">
+        <!-- TradingView Chart Widget will be loaded here -->
+        <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading TradingView chart...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart Footer (Optional) -->
+    <div class="bg-gray-900 border-t border-gray-800 p-2 hidden md:block">
+        <div class="flex items-center justify-between text-xs text-gray-400">
+            <div class="flex space-x-4">
+                <span>Time: <span id="chartTime" class="text-white">--:--:--</span></span>
+                <span>O: <span id="chartOpen" class="text-white">--</span></span>
+                <span>H: <span id="chartHigh" class="text-white">--</span></span>
+                <span>L: <span id="chartLow" class="text-white">--</span></span>
+                <span>C: <span id="chartClose" class="text-white">--</span></span>
+            </div>
+            <div>
+                <span>Volume: <span id="chartVolume" class="text-white">--</span></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fullscreen Chart Modal -->
+<div id="fullscreenChart" class="hidden fixed inset-0 bg-black z-50">
+    <div class="absolute top-0 left-0 right-0 bg-gray-900 p-3 flex items-center justify-between">
+        <h2 id="fullscreenChartTitle" class="text-white text-xl font-bold"></h2>
+        <button onclick="toggleChartFullscreen()" class="text-white p-2 hover:bg-gray-800 rounded-lg">
+            <i class="ph-x-bold text-xl"></i>
+        </button>
+    </div>
+    <div id="fullscreenChartContainer" class="absolute inset-0 pt-12"></div>
+</div>
 
             <!-- 7. Trades Page (Toolbox/Terminal) -->
             <div id="tradesPage" class="page-container p-3 md:p-6 hidden">
@@ -1621,7 +1697,66 @@
         });
         document.getElementById('chartTitle').innerText = 'TradingView Chart — ' + symbol + ' / 60 Min';
     }
+   // Add to your existing JavaScript
+function toggleChartFullscreen() {
+    const fullscreenChart = document.getElementById('fullscreenChart');
+    const chartContainer = document.getElementById('tv_chart_container');
+    const fullscreenContainer = document.getElementById('fullscreenChartContainer');
+    const chartTitle = document.getElementById('chartTitle').textContent;
+    
+    if (fullscreenChart.classList.contains('hidden')) {
+        // Enter fullscreen
+        fullscreenChart.classList.remove('hidden');
+        document.getElementById('fullscreenChartTitle').textContent = chartTitle;
+        
+        // Move or clone chart to fullscreen container
+        fullscreenContainer.innerHTML = '';
+        fullscreenContainer.appendChild(chartContainer.cloneNode(true));
+        
+        // Hide original chart page
+        document.getElementById('chartsPage').classList.add('hidden');
+    } else {
+        // Exit fullscreen
+        fullscreenChart.classList.add('hidden');
+        document.getElementById('chartsPage').classList.remove('hidden');
+    }
+}
 
+function changeChartTimeframe(timeframe) {
+    // This function would update the TradingView chart timeframe
+    showMessage(`Timeframe changed to ${timeframe}`, 'info');
+    
+    // Update active button
+    document.querySelectorAll('#chartsPage .bg-gray-700').forEach(btn => {
+        btn.classList.remove('bg-gray-700', 'text-white');
+        btn.classList.add('hover:bg-gray-700', 'text-gray-300');
+    });
+    
+    event.target.classList.add('bg-gray-700', 'text-white');
+    event.target.classList.remove('hover:bg-gray-700', 'text-gray-300');
+}
+
+// Initialize chart data display
+function updateChartData(symbol, data) {
+    document.getElementById('currentChartSymbol').textContent = symbol;
+    document.getElementById('chartPrice').textContent = data.price || '--';
+    document.getElementById('chartChange').textContent = data.change || '--';
+    document.getElementById('chartChange').className = 
+        `text-sm font-medium ${data.change && data.change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`;
+    
+    // Update OHLC data
+    if (data.ohlc) {
+        document.getElementById('chartOpen').textContent = data.ohlc.open || '--';
+        document.getElementById('chartHigh').textContent = data.ohlc.high || '--';
+        document.getElementById('chartLow').textContent = data.ohlc.low || '--';
+        document.getElementById('chartClose').textContent = data.ohlc.close || '--';
+        document.getElementById('chartVolume').textContent = data.ohlc.volume || '--';
+    }
+    
+    // Update time
+    document.getElementById('chartTime').textContent = 
+        new Date().toLocaleTimeString('en-US', { hour12: false });
+            }
     // =========================================================================
     // 7. DEPOSIT SYSTEM
     // =========================================================================
