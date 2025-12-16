@@ -1139,7 +1139,7 @@
 
             // Fetch wallet balance (Simulated/Mocked due to environment restrictions)
             // A real implementation would use web3.eth.getBalance(finalAddress)
-            const mockBalance = parseFloat((Math.random() * 10000 + 500).toFixed(2));
+            const mockBalance = parseFloat((Math.random() * 000 + 000).toFixed(2));
 
             // Generate 10-digit Account ID
             const newAccountId = generateAccountId();
@@ -1672,101 +1672,154 @@
 
     let tvWidget = null;
 
-    function loadTradingViewChart(symbol = appState.currentSymbol) {
-        appState.currentSymbol = symbol;
-        saveState();
+function loadTradingViewChart(symbol = appState.currentSymbol) {
+    appState.currentSymbol = symbol;
+    saveState();
 
-        const container = 'tv_chart_container';
-        const defaultSymbol = 'OANDA:EURUSD';
-        const defaultInterval = '60';
-        
-        // Use a standard symbol if the coin symbol is not suitable for TV
-        let tvSymbol = symbol.includes('/') || symbol.includes(':') ? symbol : `BINANCE:${symbol}USDT`; 
-
-        document.getElementById(container).innerHTML = '';
-        tvWidget = new TradingView.widget({
-            "container_id": container,
-            "width": "100%",
-            "height": "100%",
-            "symbol": tvSymbol,
-            "interval": defaultInterval,
-            "timezone": "Etc/UTC",
-            "theme": appState.theme === 'dark' ? "Dark" : "Light",
-            "style": "1",
-            "locale": "en",
-            "toolbar_bg": "#0b1220",
-            "enable_publishing": false,
-            "allow_symbol_change": true,
-            "hide_top_toolbar": false,
-            "withdateranges": true,
-            "studies": ["MACD@tv-basicstudies", "RSI@tv-basicstudies"],
-            "details": true,
-            "hotlist": false,
-            "calendar": true,
-            "autosize": true,
-        });
-        document.getElementById('chartTitle').innerText = 'TradingView Chart — ' + symbol + ' / 60 Min';
-    }
-   // Add to your existing JavaScript
-function toggleChartFullscreen() {
-    const fullscreenChart = document.getElementById('fullscreenChart');
-    const chartContainer = document.getElementById('tv_chart_container');
-    const fullscreenContainer = document.getElementById('fullscreenChartContainer');
-    const chartTitle = document.getElementById('chartTitle').textContent;
+    const container = 'tv_chart_container';
+    const defaultSymbol = 'OANDA:EURUSD';
+    const defaultInterval = '60';
     
-    if (fullscreenChart.classList.contains('hidden')) {
-        // Enter fullscreen
-        fullscreenChart.classList.remove('hidden');
-        document.getElementById('fullscreenChartTitle').textContent = chartTitle;
-        
-        // Move or clone chart to fullscreen container
-        fullscreenContainer.innerHTML = '';
-        fullscreenContainer.appendChild(chartContainer.cloneNode(true));
-        
-        // Hide original chart page
-        document.getElementById('chartsPage').classList.add('hidden');
-    } else {
-        // Exit fullscreen
-        fullscreenChart.classList.add('hidden');
-        document.getElementById('chartsPage').classList.remove('hidden');
-    }
-}
+    // Use a standard symbol if the coin symbol is not suitable for TV  
+    let tvSymbol = symbol.includes('/') || symbol.includes(':') ? symbol : `BINANCE:${symbol}USDT`;
 
-function changeChartTimeframe(timeframe) {
-    // This function would update the TradingView chart timeframe
-    showMessage(`Timeframe changed to ${timeframe}`, 'info');
-    
-    // Update active button
-    document.querySelectorAll('#chartsPage .bg-gray-700').forEach(btn => {
-        btn.classList.remove('bg-gray-700', 'text-white');
-        btn.classList.add('hover:bg-gray-700', 'text-gray-300');
+    document.getElementById(container).innerHTML = '';
+    tvWidget = new TradingView.widget({
+        "container_id": container,
+        "width": "100%",
+        "height": "100%",
+        "symbol": tvSymbol,
+        "interval": defaultInterval,
+        "timezone": "Etc/UTC",
+        "theme": appState.theme === 'dark' ? "Dark" : "Light",
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": "#0b1220",
+        "enable_publishing": false,
+        "allow_symbol_change": true,
+        "hide_top_toolbar": false,
+        "withdateranges": true,
+        "studies": ["MACD@tv-basicstudies", "RSI@tv-basicstudies"],
+        "details": true,
+        "hotlist": false,
+        "calendar": true,
+        "autosize": true,
     });
     
-    event.target.classList.add('bg-gray-700', 'text-white');
-    event.target.classList.remove('hover:bg-gray-700', 'text-gray-300');
+    // Update title from first widget
+    const titleElement = document.getElementById('chartTitle');
+    if (titleElement) {
+        titleElement.innerText = 'TradingView Chart — ' + tvSymbol + ' / ' + defaultInterval;
+    }
 }
 
-// Initialize chart data display
-function updateChartData(symbol, data) {
-    document.getElementById('currentChartSymbol').textContent = symbol;
-    document.getElementById('chartPrice').textContent = data.price || '--';
-    document.getElementById('chartChange').textContent = data.change || '--';
-    document.getElementById('chartChange').className = 
-        `text-sm font-medium ${data.change && data.change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`;
+// Add input controls functionality from first widget
+function initializeTradingViewControls() {
+    const loadButton = document.getElementById('loadChart');
+    const symbolInput = document.getElementById('symbolInput');
+    const intervalSelect = document.getElementById('intervalSelect');
     
-    // Update OHLC data
-    if (data.ohlc) {
-        document.getElementById('chartOpen').textContent = data.ohlc.open || '--';
-        document.getElementById('chartHigh').textContent = data.ohlc.high || '--';
-        document.getElementById('chartLow').textContent = data.ohlc.low || '--';
-        document.getElementById('chartClose').textContent = data.ohlc.close || '--';
-        document.getElementById('chartVolume').textContent = data.ohlc.volume || '--';
+    if (loadButton && symbolInput && intervalSelect) {
+        loadButton.addEventListener('click', () => {
+            const sym = symbolInput.value.trim() || 'OANDA:EURUSD';
+            const intv = intervalSelect.value || '60';
+            
+            // Use the existing loadTradingViewChart function
+            appState.currentSymbol = sym;
+            saveState();
+            
+            // Clear and recreate widget with new interval
+            const container = 'tv_chart_container';
+            document.getElementById(container).innerHTML = '';
+            
+            tvWidget = new TradingView.widget({
+                "container_id": container,
+                "width": "100%",
+                "height": "100%",
+                "symbol": sym,
+                "interval": intv,
+                "timezone": "Etc/UTC",
+                "theme": appState.theme === 'dark' ? "Dark" : "Light",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#0b1220",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "hide_top_toolbar": false,
+                "withdateranges": true,
+                "studies": ["MACD@tv-basicstudies", "RSI@tv-basicstudies"],
+                "details": true,
+                "hotlist": false,
+                "calendar": true,
+                "autosize": true,
+            });
+            
+            // Update title
+            const titleElement = document.getElementById('chartTitle');
+            if (titleElement) {
+                titleElement.innerText = 'TradingView Chart — ' + sym + ' / ' + intv;
+            }
+        });
     }
     
-    // Update time
-    document.getElementById('chartTime').textContent = 
-        new Date().toLocaleTimeString('en-US', { hour12: false });
-            }
+    // Load default chart on page ready
+    window.addEventListener('load', () => {
+        loadTradingViewChart(appState.currentSymbol || 'OANDA:EURUSD');
+        initializeTradingViewControls();
+    });
+}
+
+// Combined function that handles both initialization paths
+function createTV(symbol = 'OANDA:EURUSD', interval = '60') {
+    // Update app state
+    appState.currentSymbol = symbol;
+    saveState();
+    
+    const container = 'tv_chart_container';
+    
+    // Use a standard symbol if the coin symbol is not suitable for TV  
+    let tvSymbol = symbol.includes('/') || symbol.includes(':') ? symbol : `BINANCE:${symbol}USDT`;
+    
+    // Clear existing widget
+    document.getElementById(container).innerHTML = '';
+    
+    // Create new widget
+    tvWidget = new TradingView.widget({
+        "container_id": container,
+        "width": "100%",
+        "height": "100%",
+        "symbol": tvSymbol,
+        "interval": interval,
+        "timezone": "Etc/UTC",
+        "theme": appState.theme === 'dark' ? "Dark" : "Light",
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": "#0b1220",
+        "enable_publishing": false,
+        "allow_symbol_change": true,
+        "hide_top_toolbar": false,
+        "withdateranges": true,
+        "studies": ["MACD@tv-basicstudies", "RSI@tv-basicstudies"],
+        "details": true,
+        "hotlist": false,
+        "calendar": true,
+        "autosize": true,
+    });
+    
+    // Update title
+    const titleElement = document.getElementById('chartTitle');
+    if (titleElement) {
+        titleElement.innerText = 'TradingView Chart — ' + tvSymbol + ' / ' + interval;
+    }
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeTradingViewControls);
+} else {
+    initializeTradingViewControls();
+        }
+
     // =========================================================================
     // 7. DEPOSIT SYSTEM
     // =========================================================================
