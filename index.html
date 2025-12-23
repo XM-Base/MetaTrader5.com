@@ -1327,7 +1327,7 @@
         }
         
         try {
-            await handleDeposit({ coin: selectedCoin, network: selectedNetwork, amount, code });
+            await handleDeposit({ selectedCoin.symbol, amount, code});
             toast.success('Deposit validated successfully!');
             
             setStep(1);
