@@ -840,56 +840,383 @@
             );
 
             const DepositView = () => {
-                const [step, setStep] = useState(1);
-                const [selectedCoin, setSelectedCoin] = useState(null);
-                const [amount, setAmount] = useState("");
-                const [code, setCode] = useState("");
+    const [step, setStep] = useState(1);
+    const [selectedMethod, setSelectedMethod] = useState(null);
+    const [selectedCoin, setSelectedCoin] = useState(null);
+    const [selectedNetwork, setSelectedNetwork] = useState(null);
+    const [amount, setAmount] = useState("");
+    const [code, setCode] = useState("");
+    const [coins, setCoins] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [copied, setCopied] = useState(false);
 
-                if (step === 1) return (
-                    <div className="p-4">
-                        <h2 className="text-xl font-bold mb-4">Select Asset</h2>
-                        <div className="flex flex-col gap-2">
-                            {assets.slice(0, 10).map(c => (
-                                <div key={c.id} onClick={() => { setSelectedCoin(c); setStep(2); }} className="mt-panel p-4 flex items-center justify-between cursor-pointer hover:bg-gray-800">
-                                    <div className="flex items-center gap-3">
-                                        <img src={c.image} className="w-8 h-8"/>
-                                        <span className="font-bold">{c.symbol.toUpperCase()}</span>
-                                    </div>
-                                    <Icon name="more" className="-rotate-90 text-gray-600"/>
-                                </div>
-                            ))}
+    const fetchCoins = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false`);
+            const data = await response.json();
+            setCoins(data);
+        } catch (error) {
+            console.error("Error fetching coins:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (step === 2 && selectedMethod === 'crypto') {
+            fetchCoins();
+        }
+    }, [step, selectedMethod]);
+
+    // Filter coins based on search
+    const filteredCoins = coins.filter(coin =>
+        coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const handleCopyAddress = () => {
+        if (selectedNetwork?.wallet) {
+            navigator.clipboard.writeText(selectedNetwork.wallet);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    const handleBankTransfer = () => {
+        window.open("https://exchange.mercuryo.io/?currency=USDT&merchant_transaction_id=abde4f99-25fd-4299-a379-edb8afb9528e&network=BINANCESMARTCHAIN&payment_method=google&signature=8c3c0c1223811b147da94f479e8e5bd37387d6844a6b9438dac70671bd66f708c4ead8b52212adbd2fe5a47934fd12269f0039fe7a81d67428c96327b4702c10&theme=trustwallet&utm_medium=referral&utm_source=TrustWallet&widget_id=d13d7a03-f965-4688-b35a-9d208819ff4b&address=0x5416bCd55399B72E29F0162A7b172e8a648d1284", "_blank");
+    };
+
+    // Step 1: Deposit Method Selection
+    if (step === 1) return (
+        <div className="p-4">
+            <h2 className="text-xl font-bold mb-6">Select Deposit Method</h2>
+            <div className="flex flex-col gap-4">
+                <div 
+                    onClick={() => {
+                        setSelectedMethod('bank');
+                        handleBankTransfer();
+                    }} 
+                    className="mt-panel p-6 flex items-center justify-between cursor-pointer hover:bg-gray-800 transition-colors"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center">
+                            <Icon name="bank" className="text-2xl text-blue-400" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-lg">Bank Transfer</h3>
+                            <p className="text-gray-400 text-sm">Deposit via bank wire transfer</p>
                         </div>
                     </div>
-                );
+                    <Icon name="arrow-right" className="text-gray-600" />
+                </div>
 
-                return (
-                    <div className="p-6">
-                        <button onClick={() => setStep(1)} className="text-blue-400 mb-4 flex items-center gap-1 text-sm">Back to Selection</button>
-                        <div className="mt-panel p-6 text-center">
-                            <h3 className="text-lg font-bold mb-4">Deposit {selectedCoin.symbol.toUpperCase()}</h3>
-                            <div className="bg-white p-4 inline-block mb-4 rounded-lg">
-                                <div id="dep_qr"></div>
-                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${WALLETS[Object.keys(WALLETS)[0]]}`} alt="qr"/>
-                            </div>
-                            <div className="bg-gray-900 p-3 rounded mb-6 text-xs mono break-all text-gray-400 border border-dashed border-gray-700">
-                                {WALLETS.ETHEREUM}
-                            </div>
-                            
-                            <div className="flex flex-col gap-4 text-left">
+                <div 
+                    onClick={() => {
+                        setSelectedMethod('crypto');
+                        setStep(2);
+                    }} 
+                    className="mt-panel p-6 flex items-center justify-between cursor-pointer hover:bg-gray-800 transition-colors"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-purple-900 rounded-full flex items-center justify-center">
+                            <Icon name="crypto" className="text-2xl text-purple-400" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-lg">Crypto Deposit</h3>
+                            <p className="text-gray-400 text-sm">Deposit using cryptocurrency</p>
+                        </div>
+                    </div>
+                    <Icon name="arrow-right" className="text-gray-600" />
+                </div>
+            </div>
+        </div>
+    );
+
+    // Step 2: Asset Selection
+    if (step === 2 && selectedMethod === 'crypto') return (
+        <div className="p-4">
+            <div className="flex items-center gap-3 mb-6">
+                <button 
+                    onClick={() => setStep(1)}
+                    className="p-2 hover:bg-gray-800 rounded-full"
+                >
+                    <Icon name="arrow-left" />
+                </button>
+                <h2 className="text-xl font-bold">Select Asset</h2>
+            </div>
+
+            {/* Search Bar */}
+            <div className="mb-4">
+                <div className="relative">
+                    <Icon name="search" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                    <input
+                        type="text"
+                        placeholder="Search coins..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                </div>
+            ) : (
+                <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                    {filteredCoins.map(coin => (
+                        <div
+                            key={coin.id}
+                            onClick={() => {
+                                setSelectedCoin(coin);
+                                setStep(3);
+                            }}
+                            className="mt-panel p-4 flex items-center justify-between cursor-pointer hover:bg-gray-800 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <img 
+                                    src={coin.image} 
+                                    alt={coin.name}
+                                    className="w-10 h-10 rounded-full"
+                                />
                                 <div>
-                                    <label className="text-xs text-gray-400 block mb-1">Deposit Amount ($)</label>
-                                    <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full bg-[#0b1220] mt-border p-3 outline-none mono"/>
+                                    <div className="font-bold">{coin.symbol.toUpperCase()}</div>
+                                    <div className="text-sm text-gray-400">{coin.name}</div>
                                 </div>
-                                <div>
-                                    <label className="text-xs text-gray-400 block mb-1">Verification Code</label>
-                                    <input type="text" value={code} onChange={(e) => setCode(e.target.value)} className="w-full bg-[#0b1220] mt-border p-3 outline-none mono" placeholder="6-digit code"/>
+                            </div>
+                            <div className="text-right">
+                                <div className="font-bold">
+                                    ${coin.current_price?.toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 6
+                                    })}
                                 </div>
-                                <button onClick={() => handleDeposit(selectedCoin.symbol, amount, code)} className="bg-blue-600 py-3 font-bold mt-2">Confirm Deposit</button>
+                                <div className={`text-sm ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                    {coin.price_change_percentage_24h?.toFixed(2)}%
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+    // Step 3: Network Selection
+    if (step === 3) return (
+        <div className="p-4">
+            <div className="flex items-center gap-3 mb-6">
+                <button 
+                    onClick={() => setStep(2)}
+                    className="p-2 hover:bg-gray-800 rounded-full"
+                >
+                    <Icon name="arrow-left" />
+                </button>
+                <h2 className="text-xl font-bold">Select Network</h2>
+            </div>
+
+            <div className="mb-4 p-4 bg-gray-800 rounded-lg">
+                <div className="flex items-center gap-3">
+                    <img src={selectedCoin?.image} className="w-8 h-8" alt={selectedCoin?.name} />
+                    <div>
+                        <div className="font-bold">{selectedCoin?.symbol?.toUpperCase()}</div>
+                        <div className="text-sm text-gray-400">{selectedCoin?.name}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="space-y-3">
+                {SUPPORTED_NETWORKS.map(network => (
+                    <div
+                        key={network.id}
+                        onClick={() => {
+                            setSelectedNetwork(network);
+                            setStep(4);
+                        }}
+                        className="mt-panel p-4 flex items-center justify-between cursor-pointer hover:bg-gray-800 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+                                <Icon name="network" className="text-xl" />
+                            </div>
+                            <div>
+                                <div className="font-bold">{network.name}</div>
+                                <div className="text-sm text-gray-400">{network.type}</div>
+                            </div>
+                        </div>
+                        <Icon name="arrow-right" className="text-gray-600" />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    // Step 4: Address & Amount
+    if (step === 4) return (
+        <div className="p-4">
+            <div className="flex items-center gap-3 mb-6">
+                <button 
+                    onClick={() => setStep(3)}
+                    className="p-2 hover:bg-gray-800 rounded-full"
+                >
+                    <Icon name="arrow-left" />
+                </button>
+                <h2 className="text-xl font-bold">Deposit {selectedCoin?.symbol?.toUpperCase()}</h2>
+            </div>
+
+            <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+                <div className="text-center mb-4">
+                    <div className="text-sm text-gray-400 mb-1">Network</div>
+                    <div className="font-bold text-lg">{selectedNetwork?.name}</div>
+                    <div className="text-sm text-gray-400">{selectedNetwork?.type}</div>
+                </div>
+
+                {/* QR Code */}
+                <div className="flex justify-center mb-4">
+                    <div className="bg-white p-4 rounded-lg">
+                        {/* In a real app, generate QR code using a library like qrcode.react */}
+                        <div className="w-48 h-48 bg-gray-200 flex items-center justify-center">
+                            <div className="text-center">
+                                <Icon name="qr-code" className="text-4xl text-gray-600 mb-2 mx-auto" />
+                                <div className="text-xs text-gray-600">QR Code Placeholder</div>
                             </div>
                         </div>
                     </div>
-                );
-            };
+                </div>
+
+                {/* Deposit Address */}
+                <div className="mb-4">
+                    <div className="text-sm text-gray-400 mb-2">Deposit Address</div>
+                    <div className="flex gap-2">
+                        <div className="flex-1 p-3 bg-gray-900 rounded-lg font-mono text-sm break-all">
+                            {selectedNetwork?.wallet}
+                        </div>
+                        <button
+                            onClick={handleCopyAddress}
+                            className="px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
+                        >
+                            {copied ? 'Copied!' : 'Copy'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Amount Input */}
+                <div className="mb-6">
+                    <label className="block text-sm text-gray-400 mb-2">
+                        Deposit Amount (Optional)
+                    </label>
+                    <input
+                        type="number"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="Enter amount"
+                        className="w-full p-3 bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                {/* Continue Button */}
+                <button
+                    onClick={() => setStep(5)}
+                    className="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors"
+                >
+                    Continue
+                </button>
+            </div>
+
+            <div className="text-sm text-gray-400">
+                <p className="mb-2">⚠️ Important Notes:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                    <li>Send only {selectedCoin?.symbol?.toUpperCase()} on {selectedNetwork?.name} network</li>
+                    <li>Do not send other assets to this address</li>
+                    <li>Minimum deposit: 10 {selectedCoin?.symbol?.toUpperCase()}</li>
+                    <li>Deposits will be credited after 12 network confirmations</li>
+                </ul>
+            </div>
+        </div>
+    );
+
+    // Step 5: Deposit Validation
+    if (step === 5) return (
+        <div className="p-4">
+            <h2 className="text-xl font-bold mb-6">Validate Deposit</h2>
+            
+            <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+                <div className="space-y-4">
+                    <div>
+                        <div className="text-sm text-gray-400">Asset</div>
+                        <div className="font-bold">{selectedCoin?.symbol?.toUpperCase()} - {selectedCoin?.name}</div>
+                    </div>
+                    
+                    <div>
+                        <div className="text-sm text-gray-400">Network</div>
+                        <div className="font-bold">{selectedNetwork?.name} ({selectedNetwork?.type})</div>
+                    </div>
+                    
+                    <div>
+                        <div className="text-sm text-gray-400">Deposit Address</div>
+                        <div className="font-mono text-sm break-all">{selectedNetwork?.wallet}</div>
+                    </div>
+                    
+                    {amount && (
+                        <div>
+                            <div className="text-sm text-gray-400">Amount</div>
+                            <div className="font-bold">{amount} {selectedCoin?.symbol?.toUpperCase()}</div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="mb-6">
+                <label className="block text-sm text-gray-400 mb-2">
+                    Enter Deposit Code
+                </label>
+                <input
+                    type="text"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="Enter 6-digit deposit code"
+                    maxLength="6"
+                    className="w-full p-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest font-mono"
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                    Check your email for the deposit code
+                </p>
+            </div>
+
+            <div className="space-y-3">
+                <button
+                    onClick={() => {
+                        // Validate code and process deposit
+                        if (VALID_DEPOSIT_CODES.includes(code)) {
+                            alert('Deposit validated successfully!');
+                            // Reset or navigate away
+                            setStep(1);
+                            setSelectedCoin(null);
+                            setSelectedNetwork(null);
+                            setAmount("");
+                            setCode("");
+                        } else {
+                            alert('Invalid deposit code');
+                        }
+                    }}
+                    className="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors"
+                >
+                    Validate & Complete
+                </button>
+                
+                <button
+                    onClick={() => setStep(4)}
+                    className="w-full py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition-colors"
+                >
+                    Back
+                </button>
+            </div>
+        </div>
+    );
+};
 
             const Register = () => {
                 const [form, setForm] = useState({ fullName: '', email: '', password: '', confirm: '' });
