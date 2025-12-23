@@ -220,15 +220,7 @@
                 setUser({ email: creds.email, accountID: mockID, type: 'Real' });
                 setView('dashboard');
             };
-
-            const handleDeposit = async (coin, amount, code) => {
-                await triggerLoading("Verifying Deposit...");
-                setBalance(prev => prev + parseFloat(amount));
-                setHistory([{ type: 'Deposit', amount, coin, date: new Date().toLocaleString(), status: 'Completed' }, ...history]);
-                setModal({ title: "Success", body: `Deposited ${amount} ${coin}. Balance updated.` });
-                setView('dashboard');
-            };
-
+            
             const startTrade = (symbol, volume, type) => {
                 if (balance < volume * 10) {
                     setModal({ title: "Error", body: "Insufficient margin." });
