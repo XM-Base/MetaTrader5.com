@@ -1319,32 +1319,12 @@
             </div>
 
             <div className="space-y-3">
+                <button onClick={() => handleDeposit(selectedCoin.symbol, amount, code)} className="bg-blue-600 py-3 font-bold mt-2">Confirm Deposit</button>
+                            </div>
+                        </div>
+                    </div>
                 <button
-    onClick={async () => {
-        if (!VALID_DEPOSIT_CODES.includes(code)) {
-            toast.error('Invalid deposit code');
-            return;
-        }
-        
-        try {
-            await handleDeposit({ selectedCoin.symbol, amount, code});
-            toast.success('Deposit validated successfully!');
-            
-            setStep(1);
-            setSelectedCoin(null);
-            setSelectedNetwork(null);
-            setAmount("");
-            setCode("");
-        } catch (error) {
-            toast.error(`Deposit failed: ${error.message}`);
-        }
-    }}
-    className="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors"
->
-    Validate & Complete
-</button>
-                
-                <button
+              
                     onClick={() => setStep(4)}
                     className="w-full py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition-colors"
                 >
