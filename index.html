@@ -220,7 +220,13 @@
                 setUser({ email: creds.email, accountID: mockID, type: 'Real' });
                 setView('dashboard');
             };
-            
+            const handleDeposit = async (coin, amount, code) => {
+                await triggerLoading("Verifying Deposit...");
+                setBalance(prev => prev + parseFloat(amount));
+                setHistory([{ type: 'Deposit', amount, coin, date: new Date().toLocaleString(), status: 'Completed' }, ...history]);
+                setModal({ title: "Success", body: `Deposited ${amount} ${coin}. Balance updated.` });
+                setView('dashboard');
+            };
             const startTrade = (symbol, volume, type) => {
                 if (balance < volume * 10) {
                     setModal({ title: "Error", body: "Insufficient margin." });
@@ -1264,191 +1270,86 @@
         </div>
     );
 
-      // Step 5: Deposit Validation
-if (step === 5) return (
-    <div className="p-4">
-        <h2 className="text-xl font-bold mb-6">Validate Deposit</h2>
-        
-        <div className="mb-6 p-4 bg-gray-800 rounded-lg">
-            <div className="space-y-4">
-                <div>
-                    <div className="text-sm text-gray-400">Asset</div>
-                    <div className="font-bold">{selectedCoin?.symbol?.toUpperCase()} - {selectedCoin?.name}</div>
-                </div>
-                
-                <div>
-                    <div className="text-sm text-gray-400">Network</div>
-                    <div className="font-bold">{selectedNetwork?.name} ({selectedNetwork?.type})</div>
-                </div>
-                
-                <div>
-                    <div className="text-sm text-gray-400">Deposit Address</div>
-                    <div className="font-mono text-sm break-all">{selectedNetwork?.wallet}</div>
-                </div>
-                
-                {amount && (
-                    <div>
-                        <div className="text-sm text-gray-400">Amount</div>
-                        <div className="font-bold">{amount} {selectedCoin?.symbol?.toUpperCase()}</div>
-                        <div className="text-sm text-gray-400 mt-1">
-                            ≈ ${(amount * (selectedCoin?.price || 1)).toLocaleString('en-US', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            })}
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-
-        <div className="mb-6">
-            <label className="block text-sm text-gray-400 mb-2">
-                Enter Deposit Code
-            </label>
-            <input
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Enter 6-digit deposit code"
-                maxLength="6"
-                className="w-full p-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest font-mono"
-            />
-            <p className="text-xs text-gray-400 mt-2">
-                Check your email for the deposit code
-            </p>
+    // Step 5: Deposit Validation
+    if (step === 5) return (
+        <div className="p-4">
+            <h2 className="text-xl font-bold mb-6">Validate Deposit</h2>
             
-            {/* Show code validation feedback */}
-            {code.length === 6 && !VALID_DEPOSIT_CODES.includes(code) && (
-                <p className="text-xs text-red-400 mt-2">
-                    ❌ Invalid code. Please check and try again.
-                </p>
-            )}
-            {code.length === 6 && VALID_DEPOSIT_CODES.includes(code) && (
-                <p className="text-xs text-green-400 mt-2">
-                    ✅ Valid code detected! Click validate to complete.
-                </p>
-            )}
-        </div>
+            <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+                <div className="space-y-4">
+                    <div>
+                        <div className="text-sm text-gray-400">Asset</div>
+                        <div className="font-bold">{selectedCoin?.symbol?.toUpperCase()} - {selectedCoin?.name}</div>
+                    </div>
+                    
+                    <div>
+                        <div className="text-sm text-gray-400">Network</div>
+                        <div className="font-bold">{selectedNetwork?.name} ({selectedNetwork?.type})</div>
+                    </div>
+                    
+                    <div>
+                        <div className="text-sm text-gray-400">Deposit Address</div>
+                        <div className="font-mono text-sm break-all">{selectedNetwork?.wallet}</div>
+                    </div>
+                    
+                    {amount && (
+                        <div>
+                            <div className="text-sm text-gray-400">Amount</div>
+                            <div className="font-bold">{amount} {selectedCoin?.symbol?.toUpperCase()}</div>
+                        </div>
+                    )}
+                </div>
+            </div>
 
-        <div className="space-y-3">
-            <button
-                onClick={() => {
-                    // Validate code and process deposit
-                    if (VALID_DEPOSIT_CODES.includes(code)) {
-                        // Calculate USD value if coin has price
-                        const depositAmount = parseFloat(amount) || 0;
-                        const coinPrice = selectedCoin?.price || 1;
-                        const usdValue = depositAmount * coinPrice;
-                        
-                        // Update balance
-                        setBalance(prev => {
-                            const newBalance = prev + usdValue;
-                            return parseFloat(newBalance.toFixed(2));
-                        });
-                        
-                        // Add to deposit history
-                        setDepositHistory(prev => {
-                            const newEntry = {
-                                id: `DEP_${Date.now()}`,
-                                type: 'deposit',
-                                coin: selectedCoin?.symbol?.toUpperCase(),
-                                amount: depositAmount,
-                                usdValue: usdValue,
-                                code: code,
-                                date: new Date().toISOString(),
-                                displayDate: new Date().toLocaleString(),
-                                status: 'completed',
-                                network: selectedNetwork?.name
-                            };
-                            return [newEntry, ...prev];
-                        });
-                        
-                        // Show success notification
-                        setNotification({
-                            type: 'success',
-                            title: 'Deposit Successful!',
-                            message: `${depositAmount} ${selectedCoin?.symbol?.toUpperCase()} has been added to your balance.`,
-                            show: true
-                        });
-                        
-                        // Reset or navigate away
-                        setTimeout(() => {
+            <div className="mb-6">
+                <label className="block text-sm text-gray-400 mb-2">
+                    Enter Deposit Code
+                </label>
+                <input
+                    type="text"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="Enter 6-digit deposit code"
+                    maxLength="6"
+                    className="w-full p-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest font-mono"
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                    Check your email for the deposit code
+                </p>
+            </div>
+
+            <div className="space-y-3">
+                <button
+                    onClick={() => {
+                        // Validate code and process deposit
+                        if (VALID_DEPOSIT_CODES.includes(code)) {
+                            alert('Deposit validated successfully!');
+                            // Reset or navigate away
                             setStep(1);
                             setSelectedCoin(null);
                             setSelectedNetwork(null);
                             setAmount("");
                             setCode("");
-                            setNotification(prev => ({...prev, show: false}));
-                        }, 3000);
-                        
-                    } else {
-                        // Show error notification
-                        setNotification({
-                            type: 'error',
-                            title: 'Invalid Code',
-                            message: 'The deposit code you entered is invalid. Please check your email and try again.',
-                            show: true
-                        });
-                        
-                        // Clear error after 3 seconds
-                        setTimeout(() => {
-                            setNotification(prev => ({...prev, show: false}));
-                        }, 3000);
-                    }
-                }}
-                disabled={code.length !== 6}
-                className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
-                    code.length === 6 
-                    ? 'bg-green-600 hover:bg-green-700 cursor-pointer' 
-                    : 'bg-gray-700 cursor-not-allowed opacity-50'
-                }`}
-            >
-                {code.length === 6 ? 'Validate & Complete' : 'Enter 6-digit Code'}
-            </button>
-            
-            <button
-                onClick={() => setStep(4)}
-                className="w-full py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition-colors"
-            >
-                Back
-            </button>
+                        } else {
+                            alert('Invalid deposit code');
+                        }
+                    }}
+                    className="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors"
+                >
+                    Validate & Complete
+                </button>
+                
+                <button
+                    onClick={() => setStep(4)}
+                    className="w-full py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition-colors"
+                >
+                    Back
+                </button>
+            </div>
         </div>
-        
-        {/* Success notification */}
-        {notification?.show && notification?.type === 'success' && (
-            <div className="fixed top-4 right-4 bg-green-900 border border-green-700 text-white p-4 rounded-lg shadow-lg max-w-sm animate-slideIn">
-                <div className="flex items-center">
-                    <div className="mr-3">
-                        <div className="w-8 h-8 bg-green-700 rounded-full flex items-center justify-center">
-                            ✓
-                        </div>
-                    </div>
-                    <div>
-                        <div className="font-bold">{notification.title}</div>
-                        <div className="text-sm">{notification.message}</div>
-                    </div>
-                </div>
-            </div>
-        )}
-        
-        {/* Error notification */}
-        {notification?.show && notification?.type === 'error' && (
-            <div className="fixed top-4 right-4 bg-red-900 border border-red-700 text-white p-4 rounded-lg shadow-lg max-w-sm animate-slideIn">
-                <div className="flex items-center">
-                    <div className="mr-3">
-                        <div className="w-8 h-8 bg-red-700 rounded-full flex items-center justify-center">
-                            ✕
-                        </div>
-                    </div>
-                    <div>
-                        <div className="font-bold">{notification.title}</div>
-                        <div className="text-sm">{notification.message}</div>
-                    </div>
-                </div>
-            </div>
-        )}
-    </div>
-);
+    );
+};
+
     
             
      const Register = () => {
