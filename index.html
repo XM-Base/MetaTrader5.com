@@ -422,37 +422,6 @@
         return () => clearInterval(interval);
     }, []);
 
-    // Helper function for TradingView widget
-    const loadTradingViewWidget = () => {
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-        script.async = true;
-        script.innerHTML = JSON.stringify({
-            "autosize": true,
-            "symbol": "BTCUSD",
-            "interval": "D",
-            "timezone": "Etc/UTC",
-            "theme": "dark",
-            "style": "1",
-            "locale": "en",
-            "enable_publishing": false,
-            "allow_symbol_change": true,
-            "calendar": false,
-            "support_host": "https://www.tradingview.com"
-        });
-        
-        const container = document.querySelector('.tradingview-widget-container__widget');
-        if (container) {
-            container.appendChild(script);
-        }
-    };
-
-    useEffect(() => {
-        // Load TradingView widget after component mounts
-        setTimeout(loadTradingViewWidget, 1000);
-    }, []);
-
     return (
         <div className="gradient-bg min-h-screen">
             {/* Navigation */}
@@ -476,10 +445,10 @@
                     </div>
                     
                     <div className="flex items-center space-x-4">
-                        <button onClick={() => setView('login')} className="px-4 py-2 btn-secondary rounded-lg font-medium">
+                        <button onClick={() => setView('Login')} className="px-4 py-2 btn-secondary rounded-lg font-medium">
                             Log In
                         </button>
-                        <button onClick={() => setView('register')} className="px-4 py-2 btn-primary rounded-lg font-medium">
+                        <button onClick={() => setView('Rgister')} className="px-4 py-2 btn-primary rounded-lg font-medium">
                             Sign Up Free
                         </button>
                     </div>
@@ -493,7 +462,6 @@
                         <span className="text-blue-400 text-sm font-medium">POWERED BY METATRADER5.COM</span>
                     </div>
                     
-                    <img src="https://www.metatrader5.com/i/logo_mt5.png" className="w-32 mx-auto mb-6" alt="MetaTrader5 Logo"/>
                     
                     <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">MT Base Bot</span>
