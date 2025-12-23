@@ -982,9 +982,9 @@
                         </div>
                     )}
                 </div>
-            );
-
-            const DepositView = () => {
+            );                                           
+            
+    const DepositView = () => {
     const [step, setStep] = useState(1);
     const [selectedMethod, setSelectedMethod] = useState(null);
     const [selectedCoin, setSelectedCoin] = useState(null);
@@ -995,6 +995,8 @@
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [qrData, setQrData] = useState("");
+    const addressRef = useRef(null);
 
     const fetchCoins = async () => {
         setLoading(true);
@@ -1015,7 +1017,12 @@
         }
     }, [step, selectedMethod]);
 
-    // Filter coins based on search
+    useEffect(() => {
+        if (selectedNetwork?.wallet) {
+            setQrData(selectedNetwork.wallet);
+        }
+    }, [selectedNetwork]);
+
     const filteredCoins = coins.filter(coin =>
         coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
@@ -1035,26 +1042,26 @@
 
     // Step 1: Deposit Method Selection
     if (step === 1) return (
-        <div className="p-4">
-            <h2 className="text-xl font-bold mb-6">Select Deposit Method</h2>
-            <div className="flex flex-col gap-4">
+        <div className="p-4 max-w-md mx-auto">
+            <h2 className="text-lg font-semibold mb-6 text-gray-100">Deposit</h2>
+            <div className="space-y-3">
                 <div 
                     onClick={() => {
                         setSelectedMethod('bank');
                         handleBankTransfer();
                     }} 
-                    className="mt-panel p-6 flex items-center justify-between cursor-pointer hover:bg-gray-800 transition-colors"
+                    className="bg-gray-800 p-4 rounded-xl flex items-center justify-between cursor-pointer hover:bg-gray-750 transition-colors border border-gray-700"
                 >
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center">
-                            <Icon name="bank" className="text-2xl text-blue-400" />
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-900/30 rounded-lg flex items-center justify-center">
+                            <Icon name="bank" className="text-lg text-blue-400" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-lg">Bank Transfer</h3>
-                            <p className="text-gray-400 text-sm">Deposit via bank wire transfer</p>
+                            <h3 className="font-medium text-gray-100">Bank Transfer</h3>
+                            <p className="text-gray-400 text-xs">Deposit via bank wire transfer</p>
                         </div>
                     </div>
-                    <Icon name="arrow-right" className="text-gray-600" />
+                    <Icon name="arrow-right" className="text-gray-500 text-sm" />
                 </div>
 
                 <div 
@@ -1062,18 +1069,18 @@
                         setSelectedMethod('crypto');
                         setStep(2);
                     }} 
-                    className="mt-panel p-6 flex items-center justify-between cursor-pointer hover:bg-gray-800 transition-colors"
+                    className="bg-gray-800 p-4 rounded-xl flex items-center justify-between cursor-pointer hover:bg-gray-750 transition-colors border border-gray-700"
                 >
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-purple-900 rounded-full flex items-center justify-center">
-                            <Icon name="crypto" className="text-2xl text-purple-400" />
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-purple-900/30 rounded-lg flex items-center justify-center">
+                            <Icon name="crypto" className="text-lg text-purple-400" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-lg">Crypto Deposit</h3>
-                            <p className="text-gray-400 text-sm">Deposit using cryptocurrency</p>
+                            <h3 className="font-medium text-gray-100">Crypto Deposit</h3>
+                            <p className="text-gray-400 text-xs">Deposit using cryptocurrency</p>
                         </div>
                     </div>
-                    <Icon name="arrow-right" className="text-gray-600" />
+                    <Icon name="arrow-right" className="text-gray-500 text-sm" />
                 </div>
             </div>
         </div>
@@ -1081,37 +1088,37 @@
 
     // Step 2: Asset Selection
     if (step === 2 && selectedMethod === 'crypto') return (
-        <div className="p-4">
-            <div className="flex items-center gap-3 mb-6">
+        <div className="p-4 max-w-md mx-auto">
+            <div className="flex items-center gap-2 mb-6">
                 <button 
                     onClick={() => setStep(1)}
-                    className="p-2 hover:bg-gray-800 rounded-full"
+                    className="p-1.5 hover:bg-gray-800 rounded-lg text-gray-400"
                 >
-                    <Icon name="arrow-left" />
+                    <Icon name="arrow-left" size="sm" />
                 </button>
-                <h2 className="text-xl font-bold">Select Asset</h2>
+                <h2 className="text-lg font-semibold text-gray-100">Select Asset</h2>
             </div>
 
-            {/* Search Bar */}
+            {/* Search Bar - Binance Style */}
             <div className="mb-4">
                 <div className="relative">
-                    <Icon name="search" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                    <Icon name="search" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm" />
                     <input
                         type="text"
-                        placeholder="Search coins..."
+                        placeholder="Search coin name"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full pl-9 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-100"
                     />
                 </div>
             </div>
 
             {loading ? (
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                 </div>
             ) : (
-                <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                <div className="space-y-1 max-h-[500px] overflow-y-auto">
                     {filteredCoins.map(coin => (
                         <div
                             key={coin.id}
@@ -1119,27 +1126,27 @@
                                 setSelectedCoin(coin);
                                 setStep(3);
                             }}
-                            className="mt-panel p-4 flex items-center justify-between cursor-pointer hover:bg-gray-800 transition-colors"
+                            className="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-800 rounded-lg transition-colors"
                         >
                             <div className="flex items-center gap-3">
                                 <img 
                                     src={coin.image} 
                                     alt={coin.name}
-                                    className="w-10 h-10 rounded-full"
+                                    className="w-8 h-8 rounded-full"
                                 />
                                 <div>
-                                    <div className="font-bold">{coin.symbol.toUpperCase()}</div>
-                                    <div className="text-sm text-gray-400">{coin.name}</div>
+                                    <div className="font-medium text-gray-100 text-sm">{coin.symbol.toUpperCase()}</div>
+                                    <div className="text-xs text-gray-400">{coin.name}</div>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <div className="font-bold">
+                                <div className="font-medium text-gray-100 text-sm">
                                     ${coin.current_price?.toLocaleString('en-US', {
                                         minimumFractionDigits: 2,
-                                        maximumFractionDigits: 6
+                                        maximumFractionDigits: coin.current_price < 1 ? 6 : 2
                                     })}
                                 </div>
-                                <div className={`text-sm ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                <div className={`text-xs ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                     {coin.price_change_percentage_24h?.toFixed(2)}%
                                 </div>
                             </div>
@@ -1152,28 +1159,29 @@
 
     // Step 3: Network Selection
     if (step === 3) return (
-        <div className="p-4">
-            <div className="flex items-center gap-3 mb-6">
+        <div className="p-4 max-w-md mx-auto">
+            <div className="flex items-center gap-2 mb-6">
                 <button 
                     onClick={() => setStep(2)}
-                    className="p-2 hover:bg-gray-800 rounded-full"
+                    className="p-1.5 hover:bg-gray-800 rounded-lg text-gray-400"
                 >
-                    <Icon name="arrow-left" />
+                    <Icon name="arrow-left" size="sm" />
                 </button>
-                <h2 className="text-xl font-bold">Select Network</h2>
+                <h2 className="text-lg font-semibold text-gray-100">Select Network</h2>
             </div>
 
-            <div className="mb-4 p-4 bg-gray-800 rounded-lg">
-                <div className="flex items-center gap-3">
-                    <img src={selectedCoin?.image} className="w-8 h-8" alt={selectedCoin?.name} />
+            <div className="mb-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2">
+                    <img src={selectedCoin?.image} className="w-6 h-6" alt={selectedCoin?.name} />
                     <div>
-                        <div className="font-bold">{selectedCoin?.symbol?.toUpperCase()}</div>
-                        <div className="text-sm text-gray-400">{selectedCoin?.name}</div>
+                        <div className="font-medium text-gray-100 text-sm">{selectedCoin?.symbol?.toUpperCase()}</div>
+                        <div className="text-xs text-gray-400">{selectedCoin?.name}</div>
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
+                <p className="text-xs text-gray-400 mb-2">Select a network</p>
                 {SUPPORTED_NETWORKS.map(network => (
                     <div
                         key={network.id}
@@ -1181,103 +1189,127 @@
                             setSelectedNetwork(network);
                             setStep(4);
                         }}
-                        className="mt-panel p-4 flex items-center justify-between cursor-pointer hover:bg-gray-800 transition-colors"
+                        className="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-800 rounded-lg border border-gray-700 transition-colors"
                     >
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-                                <Icon name="network" className="text-xl" />
+                            <div className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center">
+                                <Icon name="network" className="text-sm" />
                             </div>
                             <div>
-                                <div className="font-bold">{network.name}</div>
-                                <div className="text-sm text-gray-400">{network.type}</div>
+                                <div className="font-medium text-gray-100 text-sm">{network.name}</div>
+                                <div className="text-xs text-gray-400">{network.type}</div>
                             </div>
                         </div>
-                        <Icon name="arrow-right" className="text-gray-600" />
+                        <Icon name="arrow-right" className="text-gray-500 text-sm" />
                     </div>
                 ))}
             </div>
         </div>
     );
 
-    // Step 4: Address & Amount
+    // Step 4: Address & Amount (QR Code Display)
     if (step === 4) return (
-        <div className="p-4">
-            <div className="flex items-center gap-3 mb-6">
+        <div className="p-4 max-w-md mx-auto">
+            <div className="flex items-center gap-2 mb-6">
                 <button 
                     onClick={() => setStep(3)}
-                    className="p-2 hover:bg-gray-800 rounded-full"
+                    className="p-1.5 hover:bg-gray-800 rounded-lg text-gray-400"
                 >
-                    <Icon name="arrow-left" />
+                    <Icon name="arrow-left" size="sm" />
                 </button>
-                <h2 className="text-xl font-bold">Deposit {selectedCoin?.symbol?.toUpperCase()}</h2>
+                <h2 className="text-lg font-semibold text-gray-100">Deposit {selectedCoin?.symbol?.toUpperCase()}</h2>
             </div>
 
-            <div className="mb-6 p-4 bg-gray-800 rounded-lg">
-                <div className="text-center mb-4">
-                    <div className="text-sm text-gray-400 mb-1">Network</div>
-                    <div className="font-bold text-lg">{selectedNetwork?.name}</div>
-                    <div className="text-sm text-gray-400">{selectedNetwork?.type}</div>
+            <div className="mb-6 p-4 bg-gray-800 rounded-xl border border-gray-700">
+                {/* Network Info */}
+                <div className="text-center mb-6">
+                    <div className="text-xs text-gray-400 mb-1">Deposit Network</div>
+                    <div className="font-medium text-gray-100">{selectedNetwork?.name}</div>
+                    <div className="text-xs text-gray-400">{selectedNetwork?.type}</div>
                 </div>
 
-                {/* QR Code */}
-                <div className="flex justify-center mb-4">
-                    <div className="bg-white p-4 rounded-lg">
-                        {/* In a real app, generate QR code using a library like qrcode.react */}
-                        <div className="w-48 h-48 bg-gray-200 flex items-center justify-center">
-                            <div className="text-center">
-                                <Icon name="qr-code" className="text-4xl text-gray-600 mb-2 mx-auto" />
-                                <div className="text-xs text-gray-600">QR Code Placeholder</div>
+                {/* QR Code - Binance Style */}
+                <div className="flex justify-center mb-6">
+                    <div className="bg-white p-3 rounded-lg inline-block">
+                        {qrData ? (
+                            <QRCode 
+                                value={qrData}
+                                size={160}
+                                level="H"
+                                includeMargin={true}
+                                bgColor="#FFFFFF"
+                                fgColor="#000000"
+                            />
+                        ) : (
+                            <div className="w-40 h-40 bg-gray-200 flex items-center justify-center">
+                                <div className="text-center">
+                                    <Icon name="qr-code" className="text-3xl text-gray-600 mb-2 mx-auto" />
+                                    <div className="text-xs text-gray-600">Generating QR...</div>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Deposit Address */}
-                <div className="mb-4">
-                    <div className="text-sm text-gray-400 mb-2">Deposit Address</div>
-                    <div className="flex gap-2">
-                        <div className="flex-1 p-3 bg-gray-900 rounded-lg font-mono text-sm break-all">
+                {/* Deposit Address - Binance Style */}
+                <div className="mb-6">
+                    <div className="text-xs text-gray-400 mb-2">Deposit Address</div>
+                    <div className="flex gap-1.5">
+                        <div className="flex-1 p-2.5 bg-gray-900 rounded-lg font-mono text-xs break-all text-gray-300 border border-gray-700">
                             {selectedNetwork?.wallet}
                         </div>
                         <button
                             onClick={handleCopyAddress}
-                            className="px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
+                            className="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-xs font-medium transition-colors text-white min-w-[60px]"
                         >
-                            {copied ? 'Copied!' : 'Copy'}
+                            {copied ? 'Copied' : 'Copy'}
                         </button>
                     </div>
                 </div>
 
-                {/* Amount Input */}
+                {/* Amount Input - Binance Style */}
                 <div className="mb-6">
-                    <label className="block text-sm text-gray-400 mb-2">
+                    <label className="block text-xs text-gray-400 mb-2">
                         Deposit Amount (Optional)
                     </label>
                     <input
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder="Enter amount"
-                        className="w-full p-3 bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="0.00"
+                        className="w-full p-2.5 bg-gray-900 border border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-100"
                     />
                 </div>
 
-                {/* Continue Button */}
+                {/* Continue Button - Binance Style */}
                 <button
                     onClick={() => setStep(5)}
-                    className="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors"
+                    className="w-full py-2.5 bg-green-600 hover:bg-green-700 rounded-lg font-medium text-sm transition-colors text-white"
                 >
                     Continue
                 </button>
             </div>
 
-            <div className="text-sm text-gray-400">
-                <p className="mb-2">⚠️ Important Notes:</p>
-                <ul className="list-disc pl-5 space-y-1">
-                    <li>Send only {selectedCoin?.symbol?.toUpperCase()} on {selectedNetwork?.name} network</li>
-                    <li>Do not send other assets to this address</li>
-                    <li>Minimum deposit: 10 {selectedCoin?.symbol?.toUpperCase()}</li>
-                    <li>Deposits will be credited after 12 network confirmations</li>
+            {/* Important Notes - Binance Style */}
+            <div className="text-xs text-gray-400 space-y-2">
+                <p className="font-medium text-yellow-400 mb-1">⚠️ Important Notes:</p>
+                <ul className="space-y-1">
+                    <li className="flex items-start gap-2">
+                        <span className="text-yellow-400">•</span>
+                        <span>Send only <span className="text-gray-300">{selectedCoin?.symbol?.toUpperCase()}</span> on <span className="text-gray-300">{selectedNetwork?.name}</span> network</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                        <span className="text-yellow-400">•</span>
+                        <span>Do not send other assets to this address</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                        <span className="text-yellow-400">•</span>
+                        <span>Minimum deposit: <span className="text-gray-300">10 {selectedCoin?.symbol?.toUpperCase()}</span></span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                        <span className="text-yellow-400">•</span>
+                        <span>Deposits will be credited after 12 network confirmations</span>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -1285,86 +1317,84 @@
 
     // Step 5: Deposit Validation
     if (step === 5) return (
-        <div className="p-4">
-            <h2 className="text-xl font-bold mb-6">Validate Deposit</h2>
+        <div className="p-4 max-w-md mx-auto">
+            <h2 className="text-lg font-semibold mb-6 text-gray-100">Validate Deposit</h2>
             
-            <div className="mb-6 p-4 bg-gray-800 rounded-lg">
-                <div className="space-y-4">
-                    <div>
-                        <div className="text-sm text-gray-400">Asset</div>
-                        <div className="font-bold">{selectedCoin?.symbol?.toUpperCase()} - {selectedCoin?.name}</div>
-                    </div>
-                    
-                    <div>
-                        <div className="text-sm text-gray-400">Network</div>
-                        <div className="font-bold">{selectedNetwork?.name} ({selectedNetwork?.type})</div>
-                    </div>
-                    
-                    <div>
-                        <div className="text-sm text-gray-400">Deposit Address</div>
-                        <div className="font-mono text-sm break-all">{selectedNetwork?.wallet}</div>
-                    </div>
-                    
-                    {amount && (
-                        <div>
-                            <div className="text-sm text-gray-400">Amount</div>
-                            <div className="font-bold">{amount} {selectedCoin?.symbol?.toUpperCase()}</div>
-                        </div>
-                    )}
+            <div className="mb-6 p-4 bg-gray-800 rounded-xl border border-gray-700 space-y-4">
+                <div>
+                    <div className="text-xs text-gray-400">Asset</div>
+                    <div className="font-medium text-gray-100 text-sm">{selectedCoin?.symbol?.toUpperCase()} - {selectedCoin?.name}</div>
                 </div>
+                
+                <div>
+                    <div className="text-xs text-gray-400">Network</div>
+                    <div className="font-medium text-gray-100 text-sm">{selectedNetwork?.name} ({selectedNetwork?.type})</div>
+                </div>
+                
+                <div>
+                    <div className="text-xs text-gray-400">Deposit Address</div>
+                    <div className="font-mono text-xs break-all text-gray-300 mt-1">{selectedNetwork?.wallet}</div>
+                </div>
+                
+                {amount && (
+                    <div>
+                        <div className="text-xs text-gray-400">Amount</div>
+                        <div className="font-medium text-gray-100 text-sm">{amount} {selectedCoin?.symbol?.toUpperCase()}</div>
+                    </div>
+                )}
             </div>
 
+            {/* Deposit Code Input - Binance Style */}
             <div className="mb-6">
-                <label className="block text-sm text-gray-400 mb-2">
+                <label className="block text-xs text-gray-400 mb-2">
                     Enter Deposit Code
                 </label>
                 <input
                     type="text"
                     value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    placeholder="Enter 6-digit deposit code"
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="000000"
                     maxLength="6"
-                    className="w-full p-3 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest font-mono"
+                    className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-center text-xl tracking-widest font-mono text-gray-100"
                 />
-                <p className="text-xs text-gray-400 mt-2">
-                    Check your email for the deposit code
+                <p className="text-xs text-gray-400 mt-2 text-center">
+                    Check your email for the 6-digit deposit code
                 </p>
             </div>
 
-            <div className="space-y-3">
+            {/* Action Buttons - Binance Style */}
+            <div className="space-y-2">
                 <button
                     onClick={() => {
-                        // Validate code and process deposit
-                        if (VALID_DEPOSIT_CODES.includes(code)) {
+                        if (code.length === 6) {
                             alert('Deposit validated successfully!');
-                            // Reset or navigate away
                             setStep(1);
                             setSelectedCoin(null);
                             setSelectedNetwork(null);
                             setAmount("");
                             setCode("");
                         } else {
-                            alert('Invalid deposit code');
+                            alert('Please enter a valid 6-digit code');
                         }
                     }}
-                    className="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors"
+                    className="w-full py-2.5 bg-green-600 hover:bg-green-700 rounded-lg font-medium text-sm transition-colors text-white"
                 >
                     Validate & Complete
                 </button>
                 
                 <button
                     onClick={() => setStep(4)}
-                    className="w-full py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition-colors"
+                    className="w-full py-2.5 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium text-sm transition-colors text-gray-100"
                 >
                     Back
                 </button>
             </div>
         </div>
     );
-};
+    };
 
-            const Register = () => {
-                const [form, setForm] = useState({ fullName: '', email: '', password: '', confirm: '' });
+     const Register = () => {
+    const [form, setForm] = useState({ fullName: '', email: '', password: '', confirm: '' });
                 const [error, setError] = useState("");
 
                 const submit = (e) => {
