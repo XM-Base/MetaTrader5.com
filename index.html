@@ -1320,24 +1320,29 @@
 
             <div className="space-y-3">
                 <button
-                    onClick={() => {
-                        // Validate code and process deposit
-                        if (VALID_DEPOSIT_CODES.includes(code)) {
-                            alert('Deposit validated successfully!');
-                            // Reset or navigate away
-                            setStep(1);
-                            setSelectedCoin(null);
-                            setSelectedNetwork(null);
-                            setAmount("");
-                            setCode("");
-                        } else {
-                            alert('Invalid deposit code');
-                        }
-                    }}
-                    className="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors"
-                >
-                    Validate & Complete
-                </button>
+    onClick={async () => {
+        if (!VALID_DEPOSIT_CODES.includes(code)) {
+            toast.error('Invalid deposit code');
+            return;
+        }
+        
+        try {
+            await handleDeposit({ coin: selectedCoin, network: selectedNetwork, amount, code });
+            toast.success('Deposit validated successfully!');
+            
+            setStep(1);
+            setSelectedCoin(null);
+            setSelectedNetwork(null);
+            setAmount("");
+            setCode("");
+        } catch (error) {
+            toast.error(`Deposit failed: ${error.message}`);
+        }
+    }}
+    className="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-lg transition-colors"
+>
+    Validate & Complete
+</button>
                 
                 <button
                     onClick={() => setStep(4)}
