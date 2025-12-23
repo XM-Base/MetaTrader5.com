@@ -1155,7 +1155,9 @@
             )}
         </div>
     );
-// Step 3: Network Selection - Binance Mobile Style
+
+
+      // Step 3: Network Selection - Binance Mobile Style
 if (step === 3) return (
     <div className="p-4">
         {/* Header */}
@@ -1235,8 +1237,27 @@ if (step === 3) return (
         </div>
     </div>
 );
-      
-{/* QR Code */}
+    // Step 4: Address & Amount
+    if (step === 4) return (
+        <div className="p-4">
+            <div className="flex items-center gap-3 mb-6">
+                <button 
+                    onClick={() => setStep(3)}
+                    className="p-2 hover:bg-gray-800 rounded-full"
+                >
+                    <Icon name="arrow-left" />
+                </button>
+                <h2 className="text-xl font-bold">Deposit {selectedCoin?.symbol?.toUpperCase()}</h2>
+            </div>
+
+            <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+                <div className="text-center mb-4">
+                    <div className="text-sm text-gray-400 mb-1">Network</div>
+                    <div className="font-bold text-lg">{selectedNetwork?.name}</div>
+                    <div className="text-sm text-gray-400">{selectedNetwork?.type}</div>
+                </div>
+
+                {/* QR Code */}
     <div className="flex justify-center mb-4">
       <div className="bg-white p-4 rounded-lg">
         {address ? (
@@ -1258,29 +1279,8 @@ if (step === 3) return (
         )}
       </div>
     </div>
-  );
+         );
 
-    // Step 4: Address & Amount
-    if (step === 4) return (
-        <div className="p-4">
-            <div className="flex items-center gap-3 mb-6">
-                <button 
-                    onClick={() => setStep(3)}
-                    className="p-2 hover:bg-gray-800 rounded-full"
-                >
-                    <Icon name="arrow-left" />
-                </button>
-                <h2 className="text-xl font-bold">Deposit {selectedCoin?.symbol?.toUpperCase()}</h2>
-            </div>
-
-            <div className="mb-6 p-4 bg-gray-800 rounded-lg">
-                <div className="text-center mb-4">
-                    <div className="text-sm text-gray-400 mb-1">Network</div>
-                    <div className="font-bold text-lg">{selectedNetwork?.name}</div>
-                    <div className="text-sm text-gray-400">{selectedNetwork?.type}</div>
-                </div>
-
-                
 
                 {/* Deposit Address */}
                 <div className="mb-4">
