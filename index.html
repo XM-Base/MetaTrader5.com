@@ -1241,155 +1241,300 @@
                 );
             };
             
+
             // Dashboard Page
-            const Dashboard = () => {
-                const [quickActions, setQuickActions] = useState([
-                    { icon: 'deposit', label: 'Deposit', action: () => setView('deposit') },
-                    { icon: 'withdraw', label: 'Withdraw', action: () => setModal({ title: "Withdrawal", body: "Withdrawal feature coming soon" }) },
-                    { icon: 'trade', label: 'New Order', action: () => setView('trade') },
-                    { icon: 'charts', label: 'Analysis', action: () => setView('charts') }
-                ]);
-                
-                return (
-                    <div className="min-h-screen pb-20">
-                        {/* Account Summary */}
-                        <div className="p-4">
-                            <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                                    <div>
-                                        <div className="text-sm text-gray-400 mb-1">Account Balance</div>
-                                        <div className="text-4xl font-bold mono text-green-400">{formatCurrency(balance)}</div>
-                                        <div className="flex items-center gap-4 mt-2">
-                                            <div>
-                                                <div className="text-xs text-gray-400">Equity</div>
-                                                <div className="text-sm font-medium mono">{formatCurrency(equity)}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-xs text-gray-400">Free Margin</div>
-                                                <div className="text-sm font-medium mono">{formatCurrency(freeMargin)}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-xs text-gray-400">Active Trades</div>
-                                                <div className="text-sm font-medium mono">{activeTrades.length}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="mt-4 md:mt-0">
-                                        <div className="text-sm text-gray-400 mb-1">Account Status</div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                            <span className="font-medium">Connected to MT5 Server</span>
-                                        </div>
-                                        <div className="text-xs text-gray-400 mt-1">Account ID: {user?.accountID}</div>
-                                    </div>
-                                </div>
-                                
-                                {/* Quick Actions */}
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    {quickActions.map((action, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={action.action}
-                                            className="flex flex-col items-center justify-center p-4 bg-gray-800/50 hover:bg-gray-800 rounded-lg border border-gray-700 transition-colors"
-                                        >
-                                            <Icon name={action.icon} className="w-6 h-6 mb-2 text-blue-400" />
-                                            <span className="text-sm font-medium">{action.label}</span>
-                                        </button>
-                                    ))}
+const Dashboard = () => {
+    const [quickActions, setQuickActions] = useState([
+        { icon: 'deposit', label: 'Deposit', action: () => setView('deposit') },
+        { icon: 'withdraw', label: 'Withdraw', action: () => setModal({ title: "Withdrawal", body: "Withdrawal feature coming soon" }) },
+        { icon: 'trade', label: 'New Order', action: () => setView('trade') },
+        { icon: 'charts', label: 'Analysis', action: () => setView('charts') },
+        { icon: 'history', label: 'History', action: () => setView('history') },
+        { icon: 'transfer', label: 'Internal Transfer', action: () => setModal({ title: "Transfer", body: "Transfer feature coming soon" }) },
+        { icon: 'settings', label: 'Settings', action: () => setView('settings') },
+        { icon: 'help', label: 'Support', action: () => window.open('https://www.metatrader5.com/en/support') }
+    ]);
+    
+    return (
+        <div className="min-h-screen bg-gray-950 pb-20">
+            {/* Account Summary Section */}
+            <div className="p-4">
+                {/* Main Account Card */}
+                <div className="bg-gray-900 rounded-xl border border-gray-800 mb-6 overflow-hidden">
+                    {/* Account Header */}
+                    <div className="p-6 border-b border-gray-800">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <div className="mb-4 md:mb-0">
+                                <h1 className="text-2xl font-bold text-white">Trading Account</h1>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-sm text-gray-400">Account #:</span>
+                                    <span className="text-sm font-mono text-gray-300">{user?.accountID}</span>
+                                    <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">Live</span>
                                 </div>
                             </div>
                             
-                            {/* Active Trades */}
-                            {activeTrades.length > 0 && (
-                                <div className="mb-6">
-                                    <div className="flex justify-between items-center mb-3">
-                                        <h3 className="text-lg font-bold">Active Positions</h3>
-                                        <span className="text-sm text-gray-400">{activeTrades.length} open trades</span>
-                                    </div>
-                                    
-                                    <div className="bg-gray-900 rounded-lg border border-gray-700 overflow-hidden">
-                                        <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-800 text-sm font-medium text-gray-400">
-                                            <div className="col-span-3">Symbol</div>
-                                            <div className="col-span-2">Type</div>
-                                            <div className="col-span-2">Volume</div>
-                                            <div className="col-span-2">Price</div>
-                                            <div className="col-span-2">Profit</div>
-                                            <div className="col-span-1">Actions</div>
-                                        </div>
-                                        
-                                        {activeTrades.map(trade => (
-                                            <div key={trade.id} className="grid grid-cols-12 gap-4 p-4 border-b border-gray-800 items-center hover:bg-gray-800/50">
-                                                <div className="col-span-3 font-medium mono">{trade.symbol}</div>
-                                                <div className="col-span-2">
-                                                    <span className={`px-2 py-1 rounded text-xs font-bold ${trade.type === 'buy' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                                                        {trade.type.toUpperCase()}
-                                                    </span>
-                                                </div>
-                                                <div className="col-span-2 mono">{trade.volume}</div>
-                                                <div className="col-span-2 mono">{formatNumber(trade.currentPrice || trade.openPrice, 4)}</div>
-                                                <div className={`col-span-2 mono font-bold ${(trade.currentProfit || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                    {formatCurrency(trade.currentProfit || 0)}
-                                                </div>
-                                                <div className="col-span-1">
-                                                    <button
-                                                        onClick={() => closeTrade(trade.id)}
-                                                        className="text-red-400 hover:text-red-300 text-sm font-medium"
-                                                    >
-                                                        Close
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                            <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                <span className="text-sm text-green-400">Connected to MT5 Server</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Balance Overview */}
+                    <div className="p-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Main Balance */}
+                            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                                <div className="text-sm text-gray-400 mb-1">Balance</div>
+                                <div className="text-3xl font-bold font-mono text-green-400">{formatCurrency(balance)}</div>
+                                <div className="text-xs text-gray-500 mt-1">Available for trading</div>
+                            </div>
                             
-                            {/* Market Watch */}
-                            <div>
-                                <div className="flex justify-between items-center mb-3">
-                                    <h3 className="text-lg font-bold">Market Watch</h3>
+                            {/* Equity */}
+                            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                                <div className="text-sm text-gray-400 mb-1">Equity</div>
+                                <div className="text-2xl font-bold font-mono text-white">{formatCurrency(equity)}</div>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <span className={`text-sm ${equity >= balance ? 'text-green-400' : 'text-red-400'}`}>
+                                        {equity >= balance ? '+' : ''}{formatCurrency(equity - balance)}
+                                    </span>
+                                    <span className="text-xs text-gray-500">P/L</span>
+                                </div>
+                            </div>
+                            
+                            {/* Free Margin */}
+                            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                                <div className="text-sm text-gray-400 mb-1">Free Margin</div>
+                                <div className="text-2xl font-bold font-mono text-blue-400">{formatCurrency(freeMargin)}</div>
+                                <div className="text-xs text-gray-500 mt-1">Margin Level: {marginLevel}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Quick Actions - Horizontal Scrollable */}
+                    <div className="p-4 border-t border-gray-800 bg-gray-900/50">
+                        <div className="text-sm font-medium text-gray-400 mb-3">Quick Actions</div>
+                        <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
+                            {quickActions.map((action, index) => (
+                                <button
+                                    key={index}
+                                    onClick={action.action}
+                                    className="flex-shrink-0 flex flex-col items-center justify-center p-3 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-all duration-200 min-w-[80px] hover:border-blue-500/30 active:scale-95"
+                                >
+                                    <Icon name={action.icon} className="w-5 h-5 mb-1.5 text-blue-400" />
+                                    <span className="text-xs font-medium whitespace-nowrap">{action.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Two Column Layout for Trades and Market Data */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Active Positions */}
+                    <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+                        <div className="p-4 border-b border-gray-800 bg-gray-900">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-bold text-white">Active Positions</h3>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-400">{activeTrades.length} positions</span>
                                     <button 
-                                        onClick={() => setView('quotes')}
-                                        className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+                                        onClick={() => setView('positions')}
+                                        className="text-blue-400 hover:text-blue-300 text-xs font-medium flex items-center gap-1"
                                     >
                                         View All
-                                        <Icon name="arrowUp" className="w-3 h-3 rotate-90" />
+                                        <Icon name="arrowRight" className="w-3 h-3" />
                                     </button>
                                 </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            </div>
+                        </div>
+                        
+                        {activeTrades.length > 0 ? (
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead className="bg-gray-800/50">
+                                        <tr className="text-xs text-gray-400 font-medium">
+                                            <th className="p-3 text-left">Symbol</th>
+                                            <th className="p-3 text-left">Type</th>
+                                            <th className="p-3 text-left">Volume</th>
+                                            <th className="p-3 text-left">Price</th>
+                                            <th className="p-3 text-left">Profit</th>
+                                            <th className="p-3 text-left"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-800">
+                                        {activeTrades.slice(0, 5).map(trade => (
+                                            <tr key={trade.id} className="hover:bg-gray-800/30 transition-colors">
+                                                <td className="p-3">
+                                                    <div className="font-medium font-mono text-sm">{trade.symbol}</div>
+                                                </td>
+                                                <td className="p-3">
+                                                    <span className={`px-2 py-1 rounded text-xs font-bold ${trade.type === 'buy' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                                                        {trade.type.toUpperCase()}
+                                                    </span>
+                                                </td>
+                                                <td className="p-3 font-mono text-sm">{trade.volume}</td>
+                                                <td className="p-3 font-mono text-sm">{formatNumber(trade.currentPrice || trade.openPrice, 4)}</td>
+                                                <td className={`p-3 font-mono text-sm font-bold ${(trade.currentProfit || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {formatCurrency(trade.currentProfit || 0)}
+                                                </td>
+                                                <td className="p-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedSymbol(trade.symbol);
+                                                                setView('trade');
+                                                            }}
+                                                            className="text-xs text-gray-400 hover:text-blue-400 p-1"
+                                                            title="Modify"
+                                                        >
+                                                            <Icon name="edit" className="w-3 h-3" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => closeTrade(trade.id)}
+                                                            className="text-xs text-gray-400 hover:text-red-400 p-1"
+                                                            title="Close"
+                                                        >
+                                                            <Icon name="close" className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="p-8 text-center">
+                                <div className="text-gray-500 mb-2">No active positions</div>
+                                <button
+                                    onClick={() => setView('trade')}
+                                    className="text-blue-400 hover:text-blue-300 text-sm font-medium inline-flex items-center gap-1"
+                                >
+                                    Open New Trade
+                                    <Icon name="arrowRight" className="w-3 h-3" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    
+                    {/* Market Watch */}
+                    <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+                        <div className="p-4 border-b border-gray-800 bg-gray-900">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-bold text-white">Market Watch</h3>
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        onClick={() => setView('quotes')}
+                                        className="text-blue-400 hover:text-blue-300 text-xs font-medium flex items-center gap-1"
+                                    >
+                                        View All
+                                        <Icon name="arrowRight" className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-800/50">
+                                    <tr className="text-xs text-gray-400 font-medium">
+                                        <th className="p-3 text-left">Symbol</th>
+                                        <th className="p-3 text-left">Bid</th>
+                                        <th className="p-3 text-left">Ask</th>
+                                        <th className="p-3 text-left">Change</th>
+                                        <th className="p-3 text-left"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-800">
                                     {quotes.slice(0, 6).map((quote, index) => (
-                                        <div 
+                                        <tr 
                                             key={index} 
-                                            className="bg-gray-900 rounded-lg border border-gray-700 p-4 hover:border-blue-500/50 transition-colors cursor-pointer"
+                                            className="hover:bg-gray-800/30 transition-colors cursor-pointer"
                                             onClick={() => {
                                                 setSelectedSymbol(quote.symbol);
                                                 setView('charts');
                                             }}
                                         >
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
-                                                    <div className="font-bold text-lg">{quote.symbol}</div>
-                                                    <div className="text-sm text-gray-400">{quote.name}</div>
+                                            <td className="p-3">
+                                                <div className="font-bold">{quote.symbol}</div>
+                                                <div className="text-xs text-gray-500">{quote.name}</div>
+                                            </td>
+                                            <td className="p-3 font-mono text-sm">{formatCurrency(quote.bid || quote.price)}</td>
+                                            <td className="p-3 font-mono text-sm">{formatCurrency(quote.ask || quote.price * 1.0002)}</td>
+                                            <td className="p-3">
+                                                <div className={`flex items-center gap-1 ${quote.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {quote.change >= 0 ? (
+                                                        <Icon name="arrowUp" className="w-3 h-3" />
+                                                    ) : (
+                                                        <Icon name="arrowDown" className="w-3 h-3" />
+                                                    )}
+                                                    <span className="font-medium">{Math.abs(quote.change).toFixed(2)}%</span>
                                                 </div>
-                                                <span className={`text-sm font-bold px-2 py-1 rounded ${quote.change >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                                                    {quote.change?.toFixed(2)}%
-                                                </span>
-                                            </div>
-                                            <div className="text-2xl font-bold mono mb-1">{formatCurrency(quote.price)}</div>
-                                            <div className="flex justify-between text-sm text-gray-400">
-                                                <span>High: {formatCurrency(quote.high)}</span>
-                                                <span>Low: {formatCurrency(quote.low)}</span>
-                                            </div>
-                                        </div>
+                                            </td>
+                                            <td className="p-3">
+                                                <button className="text-gray-500 hover:text-blue-400 p-1">
+                                                    <Icon name="chart" className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
                                     ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {/* Quick Stats Footer */}
+                        <div className="p-4 border-t border-gray-800 bg-gray-900/50">
+                            <div className="grid grid-cols-3 gap-4 text-center">
+                                <div>
+                                    <div className="text-xs text-gray-500">Total Pairs</div>
+                                    <div className="text-sm font-bold">{quotes.length}</div>
+                                </div>
+                                <div>
+                                    <div className="text-xs text-gray-500">Most Active</div>
+                                    <div className="text-sm font-bold">
+                                        {quotes.reduce((max, quote) => Math.abs(quote.change) > Math.abs(max.change) ? quote : max, quotes[0])?.symbol}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="text-xs text-gray-500">Last Updated</div>
+                                    <div className="text-sm font-mono">{(new Date()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                );
-            };
+                </div>
+                
+                {/* Additional Stats Row */}
+                <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+                        <div className="text-sm text-gray-400 mb-1">Margin Used</div>
+                        <div className="text-xl font-bold font-mono">{formatCurrency(balance - freeMargin)}</div>
+                    </div>
+                    <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+                        <div className="text-sm text-gray-400 mb-1">Today's P/L</div>
+                        <div className={`text-xl font-bold font-mono ${todayProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {formatCurrency(todayProfit)}
+                        </div>
+                    </div>
+                    <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+                        <div className="text-sm text-gray-400 mb-1">Weekly P/L</div>
+                        <div className={`text-xl font-bold font-mono ${weeklyProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {formatCurrency(weeklyProfit)}
+                        </div>
+                    </div>
+                    <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+                        <div className="text-sm text-gray-400 mb-1">Server Time</div>
+                        <div className="text-xl font-bold font-mono">
+                            {new Date().toLocaleTimeString('en-US', { hour12: false })}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+                                                
             
             // Quotes Page with Symbol Selection
             const Quotes = () => {
