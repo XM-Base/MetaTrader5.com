@@ -885,45 +885,49 @@
             };
             
             // Bottom Navigation (Mobile)
-            const BottomNav = () => (
-                <div className="h-16 bg-[#111827] border-t border-[#1f2937] flex items-center justify-around fixed bottom-0 left-0 right-0 z-50 md:hidden">
-                    <button 
-                        onClick={() => setView('dashboard')}
-                        className={`flex flex-col items-center gap-1 ${view === 'dashboard' ? 'text-blue-400' : 'text-gray-400'}`}
-                    >
-                        <Icon name="home" className="w-6 h-6" />
-                        <span className="text-[10px]">Home</span>
-                    </button>
-                    <button 
-                        onClick={() => setView('quotes')}
-                        className={`flex flex-col items-center gap-1 ${view === 'quotes' ? 'text-blue-400' : 'text-gray-400'}`}
-                    >
-                        <Icon name="quotes" className="w-6 h-6" />
-                        <span className="text-[10px]">Quotes</span>
-                    </button>
-                    <button 
-                        onClick={() => setView('charts')}
-                        className={`flex flex-col items-center gap-1 ${view === 'charts' ? 'text-blue-400' : 'text-gray-400'}`}
-                    >
-                        <Icon name="charts" className="w-6 h-6" />
-                        <span className="text-[10px]">Charts</span>
-                    </button>
-                    <button 
-                        onClick={() => setView('trade')}
-                        className={`flex flex-col items-center gap-1 ${view === 'trade' ? 'text-blue-400' : 'text-gray-400'}`}
-                    >
-                        <Icon name="trade" className="w-6 h-6" />
-                        <span className="text-[10px]">Trade</span>
-                    </button>
-                    <button 
-                        onClick={() => setView(user ? 'history' : 'register')}
-                        className={`flex flex-col items-center gap-1 ${view === 'history' ? 'text-blue-400' : 'text-gray-400'}`}
-                    >
-                        <Icon name="history" className="w-6 h-6" />
-                        <span className="text-[10px]">{user ? 'History' : 'Login'}</span>
-                    </button>
-                </div>
-            );
+const BottomNav = () => (
+    <div className="h-16 bg-[#111827] border-t border-[#1f2937] flex items-center justify-around fixed bottom-0 left-0 right-0 z-50 md:hidden">
+        <button 
+            onClick={() => view === 'landing' ? null : setView('dashboard')}
+            className={`flex flex-col items-center gap-1 ${view === 'dashboard' ? 'text-blue-400' : 'text-gray-400'} ${view === 'landing' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={view === 'landing'}
+        >
+            <Icon name="home" className="w-6 h-6" />
+            <span className="text-[10px]">Home</span>
+        </button>
+        <button 
+            onClick={() => view === 'landing' ? null : setView('quotes')}
+            className={`flex flex-col items-center gap-1 ${view === 'quotes' ? 'text-blue-400' : 'text-gray-400'} ${view === 'landing' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={view === 'landing'}
+        >
+            <Icon name="quotes" className="w-6 h-6" />
+            <span className="text-[10px]">Quotes</span>
+        </button>
+        <button 
+            onClick={() => view === 'landing' ? null : setView('charts')}
+            className={`flex flex-col items-center gap-1 ${view === 'charts' ? 'text-blue-400' : 'text-gray-400'} ${view === 'landing' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={view === 'landing'}
+        >
+            <Icon name="charts" className="w-6 h-6" />
+            <span className="text-[10px]">Charts</span>
+        </button>
+        <button 
+            onClick={() => view === 'landing' ? null : setView('trade')}
+            className={`flex flex-col items-center gap-1 ${view === 'trade' ? 'text-blue-400' : 'text-gray-400'} ${view === 'landing' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={view === 'landing'}
+        >
+            <Icon name="trade" className="w-6 h-6" />
+            <span className="text-[10px]">Trade</span>
+        </button>
+        <button 
+            onClick={() => view === 'landing' ? setView('register') : setView(user ? 'history' : 'register')}
+            className={`flex flex-col items-center gap-1 ${view === 'history' || view === 'register' ? 'text-blue-400' : 'text-gray-400'}`}
+        >
+            <Icon name="history" className="w-6 h-6" />
+            <span className="text-[10px]">{user ? 'History' : 'Login'}</span>
+        </button>
+    </div>
+);
             
             // ==================== PAGE COMPONENTS ====================
             
