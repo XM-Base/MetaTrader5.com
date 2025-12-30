@@ -1,0 +1,3090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundrise Capital - Real Estate & Private Market Investing</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- TradingView Charting Library -->
+    <script src="https://s3.tradingview.com/tv.js"></script>
+    
+    <!-- EmailJS for Registration -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <!-- QR Code Generator -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
+    <!-- ZXing for QR Scanning -->
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #000000;
+            --bg-panel: #0b0f14;
+            --bg-card: #111827;
+            --border-color: #1f2937;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --accent-green: #22c55e;
+            --accent-blue: #3b82f6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Hide all pages by default */
+        .page {
+            display: none;
+        }
+        
+        /* Active page */
+        .page.active {
+            display: block;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-panel);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-blue);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border-left: 4px solid var(--accent-green);
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        
+        /* TradingView chart container */
+        .tradingview-widget-container {
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        /* Investment plan cards */
+        .plan-card {
+            transition: all 0.2s ease;
+            border: 1px solid var(--border-color);
+        }
+        
+        .plan-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+        
+        /* Portfolio allocation chart */
+        .allocation-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: var(--border-color);
+            overflow: hidden;
+        }
+        
+        .allocation-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        /* Withdrawal countdown */
+        .countdown-timer {
+            font-family: monospace;
+            font-size: 1.5rem;
+            color: var(--accent-green);
+        }
+        
+        /* Mobile bottom nav */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .desktop-only {
+                display: none !important;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-only {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Persistent Header -->
+    <header class="bg-black border-b border-gray-800 sticky top-0 z-1000">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="showPage('landing')">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-green-500 rounded"></div>
+                    <span class="text-xl font-bold">Fundrise Capital</span>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="javascript:void(0)" onclick="showPage('invest')" class="text-gray-300 hover:text-white font-medium">Invest</a>
+                    <a href="javascript:void(0)" onclick="showPage('plans')" class="text-gray-300 hover:text-white font-medium">Plans</a>
+                    <a href="javascript:void(0)" onclick="showPage('performance')" class="text-gray-300 hover:text-white font-medium">Performance</a>
+                    <a href="javascript:void(0)" onclick="showPage('resources')" class="text-gray-300 hover:text-white font-medium">Resources</a>
+                    <a href="javascript:void(0)" onclick="showPage('account')" class="text-gray-300 hover:text-white font-medium">Account</a>
+                </nav>
+                
+                <!-- Right side actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button id="notificationBtn" class="p-2 rounded-full hover:bg-gray-800">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            <span id="notificationCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Settings -->
+                    <button onclick="showPage('settings')" class="p-2 rounded-full hover:bg-gray-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </button>
+                    
+                    <!-- Account menu -->
+                    <div class="relative">
+                        <button id="accountMenuBtn" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-800">
+                            <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                                <span id="userInitial">U</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="min-h-screen pb-20 md:pb-0">
+        <!-- Landing Page -->
+        <div id="landing" class="page active">
+            <!-- Hero Section -->
+            <section class="bg-gradient-to-b from-black to-gray-900 py-16 md:py-24">
+                <div class="container mx-auto px-4">
+                    <div class="max-w-4xl mx-auto text-center">
+                        <h1 class="text-4xl md:text-6xl font-bold mb-6">Long-term investing, simplified</h1>
+                        <p class="text-xl md:text-2xl text-gray-300 mb-8">Real estate and private markets made accessible to everyone.</p>
+                        
+                        <div class="flex flex-col md:flex-row gap-4 justify-center mb-12">
+                            <button onclick="showPage('signup')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200">Create Account</button>
+                            <button onclick="showPage('login')" class="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-8 rounded-lg border border-gray-700 transition duration-200">Log In</button>
+                            <button onclick="showPage('plans')" class="bg-transparent hover:bg-gray-800 text-white font-semibold py-3 px-8 rounded-lg border border-gray-700 transition duration-200">View Plans</button>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-500">$7B+</div>
+                                <div class="text-gray-400">Assets Under Management</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-500">500K+</div>
+                                <div class="text-gray-400">Investors</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-500">10+</div>
+                                <div class="text-gray-400">Years of History</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-500">8.7%</div>
+                                <div class="text-gray-400">Average Annual Returns</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Features Section -->
+            <section class="py-16 bg-gray-900">
+                <div class="container mx-auto px-4">
+                    <h2 class="text-3xl font-bold text-center mb-12">Build wealth with real assets</h2>
+                    
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="bg-gray-800 p-6 rounded-lg">
+                            <div class="w-12 h-12 bg-blue-900 rounded-lg flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Diversified Real Estate</h3>
+                            <p class="text-gray-400">Access institutional-quality real estate portfolios across property types and markets.</p>
+                        </div>
+                        
+                        <div class="bg-gray-800 p-6 rounded-lg">
+                            <div class="w-12 h-12 bg-green-900 rounded-lg flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Daily Returns</h3>
+                            <p class="text-gray-400">Watch your investments grow with daily accrued returns that compound over time.</p>
+                        </div>
+                        
+                        <div class="bg-gray-800 p-6 rounded-lg">
+                            <div class="w-12 h-12 bg-purple-900 rounded-lg flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Built for Security</h3>
+                            <p class="text-gray-400">Enterprise-grade security with 2FA, encryption, and institutional custodians.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- CTA Section -->
+            <section class="py-16 bg-black">
+                <div class="container mx-auto px-4 text-center">
+                    <h2 class="text-3xl font-bold mb-6">Start investing with as little as $100</h2>
+                    <p class="text-xl text-gray-300 mb-8">Join over 500,000 investors building long-term wealth with Fundrise Capital.</p>
+                    <button onclick="showPage('signup')" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg text-lg transition duration-200">Get Started</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Signup Page -->
+        <div id="signup" class="page">
+            <div class="container mx-auto px-4 py-12 max-w-md">
+                <button onclick="showPage('landing')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Create Account</h1>
+                <p class="text-gray-400 mb-8">Join Fundrise Capital to start investing in real estate and private markets.</p>
+                
+                <form id="signupForm" class="space-y-6">
+                    <div>
+                        <label class="block text-gray-300 mb-2">Full Name</label>
+                        <input type="text" id="signupName" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-300 mb-2">Email Address</label>
+                        <input type="email" id="signupEmail" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-300 mb-2">Phone Number</label>
+                        <input type="tel" id="signupPhone" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-300 mb-2">Password</label>
+                        <input type="password" id="signupPassword" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" required minlength="8">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-300 mb-2">Confirm Password</label>
+                        <input type="password" id="signupConfirmPassword" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" required minlength="8">
+                    </div>
+                    
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                        <div class="flex items-center mb-2">
+                            <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span>Investor ID: <span id="generatedInvestorId" class="font-mono font-bold">FR-</span></span>
+                        </div>
+                        <p class="text-sm text-gray-400 ml-9">Your unique investor ID will be generated upon account creation.</p>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200">Create Real Account</button>
+                    
+                    <p class="text-center text-gray-400">
+                        Already have an account? 
+                        <a href="javascript:void(0)" onclick="showPage('login')" class="text-blue-400 hover:text-blue-300">Log In</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="login" class="page">
+            <div class="container mx-auto px-4 py-12 max-w-md">
+                <button onclick="showPage('landing')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Log In</h1>
+                <p class="text-gray-400 mb-8">Access your Fundrise Capital investment account.</p>
+                
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label class="block text-gray-300 mb-2">Email Address</label>
+                        <input type="email" id="loginEmail" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-300 mb-2">Password</label>
+                        <input type="password" id="loginPassword" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" required>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200">Log In</button>
+                    
+                    <p class="text-center text-gray-400">
+                        Don't have an account? 
+                        <a href="javascript:void(0)" onclick="showPage('signup')" class="text-blue-400 hover:text-blue-300">Sign Up</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page">
+            <div class="container mx-auto px-4 py-8">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 class="text-3xl font-bold">Dashboard</h1>
+                        <p class="text-gray-400">Welcome back, <span id="userNameDisplay">Investor</span></p>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button onclick="showPage('invest')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg">Invest</button>
+                        <button onclick="showPage('withdraw')" class="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg border border-gray-700">Withdraw</button>
+                    </div>
+                </div>
+                
+                <!-- Account Summary -->
+                <div class="grid md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <p class="text-gray-400 mb-2">Investor ID</p>
+                        <p id="investorIdDisplay" class="text-2xl font-bold font-mono">FR-0000000000</p>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <p class="text-gray-400 mb-2">Total Portfolio Value</p>
+                        <p id="portfolioValue" class="text-2xl font-bold">$0.00</p>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <p class="text-gray-400 mb-2">Total Invested</p>
+                        <p id="totalInvested" class="text-2xl font-bold">$0.00</p>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <p class="text-gray-400 mb-2">Daily Accrued Returns</p>
+                        <p id="dailyReturns" class="text-2xl font-bold text-green-500">+$0.00</p>
+                    </div>
+                </div>
+                
+                <!-- Account Type and Action Cards -->
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-4">Account Type</h3>
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-blue-900 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold" id="accountTypeDisplay">Individual</p>
+                                <p class="text-sm text-gray-400">Taxable Account</p>
+                            </div>
+                        </div>
+                        <button onclick="showPage('plans')" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg">View Plans</button>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-6 rounded-lg md:col-span-2">
+                        <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <button onclick="showPage('invest')" class="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg flex flex-col items-center justify-center">
+                                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium">Invest</span>
+                            </button>
+                            
+                            <button onclick="showPage('withdraw')" class="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg flex flex-col items-center justify-center">
+                                <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium">Withdraw</span>
+                            </button>
+                            
+                            <button onclick="showPage('deposit')" class="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg flex flex-col items-center justify-center">
+                                <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium">Deposit</span>
+                            </button>
+                            
+                            <button onclick="showPage('portfolio')" class="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg flex flex-col items-center justify-center">
+                                <div class="w-10 h-10 bg-yellow-600 rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium">Portfolio</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold">Recent Activity</h3>
+                        <button onclick="showPage('activity')" class="text-blue-400 hover:text-blue-300 text-sm font-medium">View All</button>
+                    </div>
+                    
+                    <div id="recentActivity" class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-gray-900 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-green-900 rounded-full flex items-center justify-center mr-3">
+                                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium">Account Created</p>
+                                    <p class="text-sm text-gray-400">Welcome to Fundrise Capital</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium">Today</p>
+                                <p class="text-sm text-green-500">+$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invest Page -->
+        <div id="invest" class="page">
+            <div class="container mx-auto px-4 py-8">
+                <button onclick="showPage('dashboard')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Dashboard
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Invest</h1>
+                <p class="text-gray-400 mb-8">Select an investment plan to get started.</p>
+                
+                <div id="investmentPlans" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Plans will be dynamically loaded -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Investment Plans Page -->
+        <div id="plans" class="page">
+            <div class="container mx-auto px-4 py-8">
+                <button onclick="showPreviousPage()" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Investment Plans</h1>
+                <p class="text-gray-400 mb-8">Choose from our carefully curated investment portfolios.</p>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Plan cards will be dynamically generated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Page -->
+        <div id="portfolio" class="page">
+            <div class="container mx-auto px-4 py-8">
+                <button onclick="showPage('dashboard')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Dashboard
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Portfolio</h1>
+                <p class="text-gray-400 mb-8">Your investment allocations and performance.</p>
+                
+                <div id="portfolioContent">
+                    <!-- Portfolio content will be dynamically generated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Deposit Page -->
+        <div id="deposit" class="page">
+            <div class="container mx-auto px-4 py-8 max-w-4xl">
+                <button onclick="showPage('dashboard')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Dashboard
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Deposit Funds</h1>
+                <p class="text-gray-400 mb-8">Add funds to your investment account.</p>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Bank Transfer Option -->
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <div class="w-12 h-12 bg-blue-900 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Bank Transfer</h3>
+                        <p class="text-gray-400 mb-6">Transfer funds directly from your bank account.</p>
+                        <button onclick="openBankTransfer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">Bank Transfer</button>
+                    </div>
+                    
+                    <!-- Crypto Deposit Option -->
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <div class="w-12 h-12 bg-green-900 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Crypto Deposit</h3>
+                        <p class="text-gray-400 mb-6">Deposit using cryptocurrency (USDT, BTC, ETH, etc.)</p>
+                        <button onclick="showPage('cryptoDeposit')" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg">Crypto Deposit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crypto Deposit Page -->
+        <div id="cryptoDeposit" class="page">
+            <div class="container mx-auto px-4 py-8 max-w-4xl">
+                <button onclick="showPage('deposit')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Crypto Deposit</h1>
+                <p class="text-gray-400 mb-8">Select a cryptocurrency to deposit.</p>
+                
+                <!-- Search Bar -->
+                <div class="mb-6">
+                    <input type="text" id="depositSearch" placeholder="Search for a cryptocurrency (BTC, ETH, USDT...)" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500">
+                </div>
+                
+                <!-- Coin List -->
+                <div id="depositCoinList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                    <!-- Coins will be dynamically loaded -->
+                </div>
+                
+                <!-- Selected Coin Details -->
+                <div id="selectedCoinDetails" class="hidden bg-gray-800 rounded-lg p-6">
+                    <!-- Will be populated when a coin is selected -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Selection Page -->
+        <div id="networkSelection" class="page">
+            <div class="container mx-auto px-4 py-8 max-w-md">
+                <button onclick="showPage('cryptoDeposit')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Select Network</h1>
+                <p class="text-gray-400 mb-8">Choose a network for your deposit.</p>
+                
+                <div id="networkOptions" class="space-y-4">
+                    <!-- Networks will be dynamically loaded -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Deposit Address Page -->
+        <div id="depositAddress" class="page">
+            <div class="container mx-auto px-4 py-8 max-w-md">
+                <button onclick="showPage('networkSelection')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Deposit Address</h1>
+                <p class="text-gray-400 mb-8">Send your cryptocurrency to the address below.</p>
+                
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <!-- QR Code -->
+                    <div class="flex justify-center mb-6">
+                        <div id="qrCode" class="bg-white p-4 rounded-lg"></div>
+                    </div>
+                    
+                    <!-- Address -->
+                    <div class="mb-6">
+                        <p class="text-gray-400 mb-2">Deposit Address:</p>
+                        <div class="flex items-center bg-gray-900 rounded-lg p-3">
+                            <code id="depositAddressText" class="font-mono text-sm flex-grow truncate"></code>
+                            <button onclick="copyDepositAddress()" class="ml-2 text-blue-400 hover:text-blue-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Amount Input -->
+                    <div class="mb-6">
+                        <label class="block text-gray-300 mb-2">Deposit Amount (USD)</label>
+                        <input type="number" id="depositAmount" min="10" step="0.01" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="100.00">
+                    </div>
+                    
+                    <!-- Continue Button -->
+                    <button onclick="proceedToDepositValidation()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">Confirm Deposit and Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deposit Validation Page -->
+        <div id="depositValidation" class="page">
+            <div class="container mx-auto px-4 py-8 max-w-md">
+                <button onclick="showPage('depositAddress')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Deposit Validation</h1>
+                <p class="text-gray-400 mb-8">Enter the validation code to complete your deposit.</p>
+                
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <div class="mb-6">
+                        <label class="block text-gray-300 mb-2">Validation Code</label>
+                        <input type="text" id="validationCode" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="Enter 6-digit code">
+                        <p class="text-sm text-gray-400 mt-2">Check your email for the validation code.</p>
+                    </div>
+                    
+                    <button onclick="validateDeposit()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">Confirm Deposit</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Withdraw Page -->
+        <div id="withdraw" class="page">
+            <div class="container mx-auto px-4 py-8 max-w-4xl">
+                <button onclick="showPage('dashboard')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Dashboard
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Withdraw Funds</h1>
+                <p class="text-gray-400 mb-8">Withdraw funds from your investment account.</p>
+                
+                <!-- Withdrawal Steps -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-white font-semibold">1</span>
+                            </div>
+                            <span class="font-medium">Select Network</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-gray-400 font-semibold">2</span>
+                            </div>
+                            <span class="text-gray-400">Enter Amount</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-gray-400 font-semibold">3</span>
+                            </div>
+                            <span class="text-gray-400">Confirm</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Network Selection -->
+                <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Select Withdrawal Network</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <button onclick="selectWithdrawalNetwork('ETH')" class="network-option bg-gray-700 hover:bg-gray-600 p-4 rounded-lg flex flex-col items-center justify-center">
+                            <div class="w-10 h-10 bg-purple-900 rounded-full flex items-center justify-center mb-2">
+                                <span class="text-purple-400 font-bold">ETH</span>
+                            </div>
+                            <span class="text-sm font-medium">Ethereum</span>
+                        </button>
+                        
+                        <button onclick="selectWithdrawalNetwork('BTC')" class="network-option bg-gray-700 hover:bg-gray-600 p-4 rounded-lg flex flex-col items-center justify-center">
+                            <div class="w-10 h-10 bg-yellow-900 rounded-full flex items-center justify-center mb-2">
+                                <span class="text-yellow-400 font-bold">BTC</span>
+                            </div>
+                            <span class="text-sm font-medium">Bitcoin</span>
+                        </button>
+                        
+                        <button onclick="selectWithdrawalNetwork('BSC')" class="network-option bg-gray-700 hover:bg-gray-600 p-4 rounded-lg flex flex-col items-center justify-center">
+                            <div class="w-10 h-10 bg-yellow-900 rounded-full flex items-center justify-center mb-2">
+                                <span class="text-yellow-400 font-bold">BSC</span>
+                            </div>
+                            <span class="text-sm font-medium">BSC</span>
+                        </button>
+                        
+                        <button onclick="selectWithdrawalNetwork('TRON')" class="network-option bg-gray-700 hover:bg-gray-600 p-4 rounded-lg flex flex-col items-center justify-center">
+                            <div class="w-10 h-10 bg-red-900 rounded-full flex items-center justify-center mb-2">
+                                <span class="text-red-400 font-bold">TRX</span>
+                            </div>
+                            <span class="text-sm font-medium">Tron</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Withdrawal Form -->
+                <div id="withdrawalForm" class="hidden bg-gray-800 rounded-lg p-6">
+                    <!-- Will be shown when network is selected -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Page -->
+        <div id="activity" class="page">
+            <div class="container mx-auto px-4 py-8">
+                <button onclick="showPage('dashboard')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Dashboard
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Activity & History</h1>
+                <p class="text-gray-400 mb-8">Your complete transaction history.</p>
+                
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex space-x-4">
+                            <button id="allActivities" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">All</button>
+                            <button id="depositsTab" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium">Deposits</button>
+                            <button id="withdrawalsTab" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium">Withdrawals</button>
+                            <button id="investmentsTab" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium">Investments</button>
+                        </div>
+                    </div>
+                    
+                    <div id="activitiesList" class="space-y-4">
+                        <!-- Activities will be dynamically loaded -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settings" class="page">
+            <div class="container mx-auto px-4 py-8 max-w-4xl">
+                <button onclick="showPage('dashboard')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Dashboard
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Settings</h1>
+                <p class="text-gray-400 mb-8">Manage your account settings and preferences.</p>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Profile Settings -->
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <div class="w-12 h-12 bg-blue-900 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Profile</h3>
+                        <p class="text-gray-400 mb-6">Update your personal information and account details.</p>
+                        <button onclick="showPage('profileSettings')" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg">Manage Profile</button>
+                    </div>
+                    
+                    <!-- Security Settings -->
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <div class="w-12 h-12 bg-green-900 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Security</h3>
+                        <p class="text-gray-400 mb-6">Manage 2FA, password, and security settings.</p>
+                        <button onclick="showPage('securitySettings')" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg">Security Settings</button>
+                    </div>
+                    
+                    <!-- Notifications Settings -->
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <div class="w-12 h-12 bg-purple-900 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Notifications</h3>
+                        <p class="text-gray-400 mb-6">Control your notification preferences.</p>
+                        <button onclick="showPage('notificationSettings')" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg">Notification Settings</button>
+                    </div>
+                </div>
+                
+                <!-- Logout Button -->
+                <div class="mt-8">
+                    <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg">Log Out</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Settings Page -->
+        <div id="securitySettings" class="page">
+            <div class="container mx-auto px-4 py-8 max-w-2xl">
+                <button onclick="showPage('settings')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Settings
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Security Settings</h1>
+                <p class="text-gray-400 mb-8">Manage your account security and 2FA settings.</p>
+                
+                <div class="bg-gray-800 rounded-lg p-6 space-y-6">
+                    <!-- 2FA Section -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Two-Factor Authentication (2FA)</h3>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium">Google Authenticator</p>
+                                <p class="text-sm text-gray-400">Add an extra layer of security to your account</p>
+                            </div>
+                            <button onclick="setup2FA()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg">Enable 2FA</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 2FA QR Code (Hidden by default) -->
+                    <div id="twoFASetup" class="hidden bg-gray-900 p-6 rounded-lg">
+                        <h4 class="font-semibold mb-4">Scan QR Code with Google Authenticator</h4>
+                        <div class="flex justify-center mb-4">
+                            <div id="twoFAQRCode" class="bg-white p-4 rounded-lg"></div>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-gray-400 mb-2">Manual Entry Code:</p>
+                            <div class="flex items-center bg-gray-800 rounded-lg p-3">
+                                <code id="twoFASecret" class="font-mono text-sm flex-grow"></code>
+                                <button onclick="copy2FASecret()" class="ml-2 text-blue-400 hover:text-blue-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-300 mb-2">Enter 6-digit code from Authenticator</label>
+                            <input type="text" id="twoFACode" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="123456" maxlength="6">
+                        </div>
+                        <button onclick="verify2FA()" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg">Verify and Enable 2FA</button>
+                    </div>
+                    
+                    <!-- Password Change -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Change Password</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Current Password</label>
+                                <input type="password" id="currentPassword" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">New Password</label>
+                                <input type="password" id="newPassword" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Confirm New Password</label>
+                                <input type="password" id="confirmNewPassword" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500">
+                            </div>
+                            <button onclick="changePassword()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg">Change Password</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Settings Page -->
+        <div id="notificationSettings" class="page">
+            <div class="container mx-auto px-4 py-8 max-w-2xl">
+                <button onclick="showPage('settings')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Settings
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Notification Settings</h1>
+                <p class="text-gray-400 mb-8">Control your notification preferences.</p>
+                
+                <div class="bg-gray-800 rounded-lg p-6 space-y-6">
+                    <!-- Daily Market Updates -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium">Daily Market Updates</p>
+                            <p class="text-sm text-gray-400">Receive daily cryptocurrency market updates</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="dailyUpdates" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    
+                    <!-- Investment Alerts -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium">Investment Alerts</p>
+                            <p class="text-sm text-gray-400">Get notified about your investment performance</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="investmentAlerts" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    
+                    <!-- Security Alerts -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium">Security Alerts</p>
+                            <p class="text-sm text-gray-400">Receive security and login notifications</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="securityAlerts" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    
+                    <!-- Save Button -->
+                    <button onclick="saveNotificationSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg">Save Preferences</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Page -->
+        <div id="performance" class="page">
+            <div class="container mx-auto px-4 py-8">
+                <button onclick="showPage('dashboard')" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Dashboard
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Performance</h1>
+                <p class="text-gray-400 mb-8">Track your investment performance over time.</p>
+                
+                <!-- TradingView Chart -->
+                <div class="bg-gray-800 rounded-lg p-4 mb-8">
+                    <div id="tvchart" class="h-96"></div>
+                </div>
+                
+                <!-- Performance Stats -->
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <p class="text-gray-400 mb-2">Today's Gain</p>
+                        <p id="todayGain" class="text-2xl font-bold text-green-500">+$0.00</p>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <p class="text-gray-400 mb-2">Total Gain</p>
+                        <p id="totalGain" class="text-2xl font-bold text-green-500">+$0.00</p>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <p class="text-gray-400 mb-2">Annualized Return</p>
+                        <p id="annualizedReturn" class="text-2xl font-bold">8.7%</p>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <p class="text-gray-400 mb-2">Portfolio Age</p>
+                        <p id="portfolioAge" class="text-2xl font-bold">0 days</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources Page -->
+        <div id="resources" class="page">
+            <div class="container mx-auto px-4 py-8">
+                <button onclick="showPreviousPage()" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Resources</h1>
+                <p class="text-gray-400 mb-8">Educational materials and investment resources.</p>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">Investment Guides</h3>
+                        <p class="text-gray-400 mb-6">Learn about real estate and private market investing.</p>
+                        <button class="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg">View Guides</button>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">Market Insights</h3>
+                        <p class="text-gray-400 mb-6">Latest research and market analysis.</p>
+                        <button class="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg">View Insights</button>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">FAQ</h3>
+                        <p class="text-gray-400 mb-6">Frequently asked questions about investing.</p>
+                        <button class="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg">View FAQ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Page -->
+        <div id="account" class="page">
+            <div class="container mx-auto px-4 py-8">
+                <button onclick="showPreviousPage()" class="mb-6 text-gray-400 hover:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back
+                </button>
+                
+                <h1 class="text-3xl font-bold mb-2">Account</h1>
+                <p class="text-gray-400 mb-8">Manage your account and investment preferences.</p>
+                
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">Account Details</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Investor ID:</span>
+                                    <span id="accountInvestorId" class="font-medium">FR-0000000000</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Account Type:</span>
+                                    <span id="accountType" class="font-medium">Individual</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Member Since:</span>
+                                    <span id="memberSince" class="font-medium">Today</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                            <div class="space-y-3">
+                                <button onclick="showPage('settings')" class="w-full text-left bg-gray-700 hover:bg-gray-600 p-3 rounded-lg">Settings</button>
+                                <button onclick="showPage('documents')" class="w-full text-left bg-gray-700 hover:bg-gray-600 p-3 rounded-lg">Documents</button>
+                                <button onclick="showPage('support')" class="w-full text-left bg-gray-700 hover:bg-gray-600 p-3 rounded-lg">Support</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Persistent Footer (Mobile) -->
+    <footer class="mobile-nav md:hidden">
+        <div class="flex justify-around py-3">
+            <button onclick="showPage('dashboard')" class="flex flex-col items-center text-gray-400 hover:text-white">
+                <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <span class="text-xs">Home</span>
+            </button>
+            
+            <button onclick="showPage('invest')" class="flex flex-col items-center text-gray-400 hover:text-white">
+                <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-xs">Invest</span>
+            </button>
+            
+            <button onclick="showPage('portfolio')" class="flex flex-col items-center text-gray-400 hover:text-white">
+                <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <span class="text-xs">Portfolio</span>
+            </button>
+            
+            <button onclick="showPage('activity')" class="flex flex-col items-center text-gray-400 hover:text-white">
+                <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <span class="text-xs">Activity</span>
+            </button>
+            
+            <button onclick="showPage('account')" class="flex flex-col items-center text-gray-400 hover:text-white">
+                <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span class="text-xs">Account</span>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-10000 hidden">
+        <div class="text-center">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-white text-lg">Processing...</p>
+        </div>
+    </div>
+
+    <script>
+        // EmailJS Configuration
+        emailjs.init("fgYbV3Uj86-5V7RcU");
+        const EMAILJS_SERVICE_ID = "service_va1veoo";
+        const EMAILJS_TEMPLATE_ID = "template_prvf88i";
+        const EMAILJS_REPLY_TEMPLATE_ID = "template_6s6ai6b";
+        
+        // CoinGecko API
+        const COINGECKO_API = "https://api.coingecko.com/api/v3";
+        
+        // Deposit wallet addresses
+        const DEPOSIT_ADDRESSES = {
+            'ETHEREUM': '0xAB98294614C46008cBF82Fa3e25285FBC2A6F257',
+            'TRON': 'TSt7yoNwGYRbtMMfkSAHE6dPs1cd9rxcco',
+            'BSC': '0xAB98294614C46008cBF82Fa3e25285FBC2A6F257',
+        };
+        
+        // Deposit verification codes (simulated for validation)
+        const DEPOSIT_CODES = [
+            482915, 930472, 158203, 764981, 502319, 847261, 319586, 672450, 248391, 905836,
+            731258, 629047, 580124, 417902, 896351, 264098, 152983, 309472, 741826, 589320,
+            620583, 958210, 203874, 742985, 894621, 510293, 673420, 248765, 901632, 437892
+        ];
+        
+        // Supported networks per coin
+        const DEPOSIT_NETWORKS = {
+            USDT: ['Ethereum', 'Tron', 'BSC'],
+            ETH: ['Ethereum'],
+            BNB: ['BNB Smart Chain'],
+            TRX: ['Tron'],
+            BTC: ['Bitcoin'],
+            SOL: ['Solana'],
+            ADA: ['Cardano'],
+            DOGE: ['Dogecoin'],
+            DOT: ['Polkadot'],
+            MATIC: ['Polygon']
+        };
+        
+        // Investment Plans Data
+        const INVESTMENT_PLANS = [
+            {
+                id: 1,
+                name: "Starter Plan",
+                minAmount: 100,
+                focus: "Income-producing real estate",
+                returns: "8.5% - 10.5%",
+                risk: "Low",
+                dailyAccrual: true,
+                description: "Perfect for beginners. Invest in a diversified portfolio of income-producing residential and commercial properties."
+            },
+            {
+                id: 2,
+                name: "Income Fund",
+                minAmount: 500,
+                focus: "Dividends & cash flow",
+                returns: "7.5% - 9.5%",
+                risk: "Low to Medium",
+                dailyAccrual: true,
+                description: "Focus on regular income through dividends from real estate and private credit investments."
+            },
+            {
+                id: 3,
+                name: "Growth Fund",
+                minAmount: 1000,
+                focus: "Long-term appreciation",
+                returns: "10.0% - 12.0%",
+                risk: "Medium",
+                dailyAccrual: true,
+                description: "Target capital appreciation through development projects and value-add real estate."
+            },
+            {
+                id: 4,
+                name: "Balanced Fund",
+                minAmount: 500,
+                focus: "Income + Growth mix",
+                returns: "9.0% - 11.0%",
+                risk: "Medium",
+                dailyAccrual: true,
+                description: "A balanced approach combining income-producing assets with growth opportunities."
+            },
+            {
+                id: 5,
+                name: "Private Credit Fund",
+                minAmount: 1000,
+                focus: "Yield-focused lending",
+                returns: "9.5% - 11.5%",
+                risk: "Medium to High",
+                dailyAccrual: true,
+                description: "Invest in private lending opportunities with secured real estate collateral."
+            },
+            {
+                id: 6,
+                name: "Innovation Fund",
+                minAmount: 2500,
+                focus: "Venture & growth equity",
+                returns: "12.0% - 15.0%",
+                risk: "High",
+                dailyAccrual: true,
+                description: "Access venture capital and growth equity opportunities in proptech and real estate innovation."
+            }
+        ];
+        
+        // Global state
+        let currentUser = null;
+        let currentPage = "landing";
+        let previousPage = "";
+        let selectedDepositCoin = null;
+        let selectedDepositNetwork = "";
+        let allCoins = [];
+        let tradingViewWidget = null;
+        let withdrawalCountdown = null;
+        let dailyReturnsInterval = null;
+        let notificationInterval = null;
+        let failedWithdrawalAttempts = 0;
+        
+        // Investment data
+        let portfolio = {
+            totalValue: 0,
+            totalInvested: 0,
+            dailyReturns: 0,
+            investments: [],
+            activities: []
+        };
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            checkLoginStatus();
+            
+            // Generate investor ID for signup page
+            generateInvestorId();
+            
+            // Set up form submissions
+            setupForms();
+            
+            // Load investment plans
+            loadInvestmentPlans();
+            
+            // Initialize notifications
+            initNotifications();
+            
+            // Set up event listeners for notification toggles
+            document.getElementById('dailyUpdates')?.addEventListener('change', saveNotificationSettings);
+            document.getElementById('investmentAlerts')?.addEventListener('change', saveNotificationSettings);
+            document.getElementById('securityAlerts')?.addEventListener('change', saveNotificationSettings);
+            
+            // Set up activity tab switching
+            setupActivityTabs();
+        });
+        
+        // Check login status
+        function checkLoginStatus() {
+            const userData = localStorage.getItem('fundriseUser');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                
+                // Load portfolio data
+                const portfolioData = localStorage.getItem(`portfolio_${currentUser.id}`);
+                if (portfolioData) {
+                    portfolio = JSON.parse(portfolioData);
+                    
+                    // Calculate daily returns since last login
+                    updateDailyReturns();
+                }
+                
+                // Update UI for logged in user
+                document.getElementById('userInitial').textContent = currentUser.name.charAt(0).toUpperCase();
+                document.getElementById('userNameDisplay').textContent = currentUser.name;
+                document.getElementById('investorIdDisplay').textContent = currentUser.investorId;
+                
+                // Show dashboard instead of landing page
+                if (currentPage === "landing") {
+                    showPage("dashboard");
+                }
+                
+                // Start daily returns calculation
+                startDailyReturnsCalculation();
+                
+                // Load notifications
+                loadNotifications();
+            } else {
+                // Not logged in, ensure landing page is shown
+                showPage("landing");
+            }
+        }
+        
+        // Generate investor ID for signup
+        function generateInvestorId() {
+            const randomId = 'FR-' + Math.floor(1000000000 + Math.random() * 9000000000);
+            const element = document.getElementById('generatedInvestorId');
+            if (element) {
+                element.textContent = randomId;
+            }
+        }
+        
+        // Setup form submissions
+        function setupForms() {
+            // Signup form
+            const signupForm = document.getElementById('signupForm');
+            if (signupForm) {
+                signupForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleSignup();
+                });
+            }
+            
+            // Login form
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleLogin();
+                });
+            }
+        }
+        
+        // Handle user signup
+        async function handleSignup() {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+            const phone = document.getElementById('signupPhone').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            
+            // Validation
+            if (!name || !email || !phone || !password || !confirmPassword) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showToast('Password must be at least 8 characters', 'error');
+                return;
+            }
+            
+            // Check if email already exists
+            const existingUsers = JSON.parse(localStorage.getItem('fundriseUsers') || '[]');
+            const emailExists = existingUsers.some(user => user.email === email);
+            const phoneExists = existingUsers.some(user => user.phone === phone);
+            
+            if (emailExists) {
+                showToast('Email already registered', 'error');
+                return;
+            }
+            
+            if (phoneExists) {
+                showToast('Phone number already registered', 'error');
+                return;
+            }
+            
+            // Generate investor ID
+            const investorId = 'FR-' + Math.floor(1000000000 + Math.random() * 9000000000);
+            
+            // Create user object
+            const user = {
+                id: Date.now().toString(),
+                name: name,
+                email: email,
+                phone: phone,
+                password: password, // In production, this should be hashed
+                investorId: investorId,
+                createdAt: new Date().toISOString(),
+                accountType: 'Individual',
+                twoFAEnabled: false,
+                twoFASecret: null
+            };
+            
+            // Save user
+            existingUsers.push(user);
+            localStorage.setItem('fundriseUsers', JSON.stringify(existingUsers));
+            
+            // Set as current user
+            currentUser = user;
+            localStorage.setItem('fundriseUser', JSON.stringify(user));
+            
+            // Initialize portfolio for user
+            portfolio = {
+                totalValue: 0,
+                totalInvested: 0,
+                dailyReturns: 0,
+                investments: [],
+                activities: [{
+                    id: Date.now().toString(),
+                    type: 'account_created',
+                    amount: 0,
+                    description: 'Account Created',
+                    date: new Date().toISOString(),
+                    status: 'completed'
+                }]
+            };
+            
+            localStorage.setItem(`portfolio_${user.id}`, JSON.stringify(portfolio));
+            
+            // Show loading
+            showLoading();
+            
+            try {
+                // Send registration email via EmailJS
+                const emailParams = {
+                    to_email: email,
+                    to_name: name,
+                    investor_id: investorId,
+                    from_name: "Fundrise Capital",
+                    message: `Welcome to Fundrise Capital! Your investor ID is ${investorId}.`
+                };
+                
+                // Send to admin
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                    user_email: email,
+                    user_name: name,
+                    investor_id: investorId,
+                    user_phone: phone
+                });
+                
+                // Send confirmation to user
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_REPLY_TEMPLATE_ID, {
+                    to_email: email,
+                    to_name: name,
+                    investor_id: investorId
+                });
+                
+                // Simulate 15-second wait
+                setTimeout(() => {
+                    hideLoading();
+                    
+                    // Update UI
+                    document.getElementById('userInitial').textContent = name.charAt(0).toUpperCase();
+                    document.getElementById('userNameDisplay').textContent = name;
+                    document.getElementById('investorIdDisplay').textContent = investorId;
+                    
+                    // Show success message
+                    showToast('Account created successfully! Welcome to Fundrise Capital.');
+                    
+                    // Redirect to dashboard
+                    showPage('dashboard');
+                    
+                    // Start daily returns calculation
+                    startDailyReturnsCalculation();
+                }, 15000);
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Email sending failed:', error);
+                showToast('Account created but email confirmation failed', 'error');
+                
+                // Still log them in
+                document.getElementById('userInitial').textContent = name.charAt(0).toUpperCase();
+                document.getElementById('userNameDisplay').textContent = name;
+                document.getElementById('investorIdDisplay').textContent = investorId;
+                
+                showPage('dashboard');
+                startDailyReturnsCalculation();
+            }
+        }
+        
+        // Handle user login
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+            
+            // Validation
+            if (!email || !password) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            // Check if user exists
+            const existingUsers = JSON.parse(localStorage.getItem('fundriseUsers') || '[]');
+            const user = existingUsers.find(u => u.email === email && u.password === password);
+            
+            if (!user) {
+                showToast('Invalid email or password', 'error');
+                return;
+            }
+            
+            // Set as current user
+            currentUser = user;
+            localStorage.setItem('fundriseUser', JSON.stringify(user));
+            
+            // Load portfolio data
+            const portfolioData = localStorage.getItem(`portfolio_${user.id}`);
+            if (portfolioData) {
+                portfolio = JSON.parse(portfolioData);
+                updateDailyReturns();
+            }
+            
+            // Show loading
+            showLoading();
+            
+            // Simulate 15-second wait
+            setTimeout(() => {
+                hideLoading();
+                
+                // Update UI
+                document.getElementById('userInitial').textContent = user.name.charAt(0).toUpperCase();
+                document.getElementById('userNameDisplay').textContent = user.name;
+                document.getElementById('investorIdDisplay').textContent = user.investorId;
+                
+                // Show success message
+                showToast('Login successful! Welcome back.');
+                
+                // Redirect to dashboard
+                showPage('dashboard');
+                
+                // Start daily returns calculation
+                startDailyReturnsCalculation();
+                
+                // Load notifications
+                loadNotifications();
+            }, 15000);
+        }
+        
+        // Logout user
+        function logout() {
+            // Clear intervals
+            if (dailyReturnsInterval) clearInterval(dailyReturnsInterval);
+            if (notificationInterval) clearInterval(notificationInterval);
+            if (withdrawalCountdown) clearInterval(withdrawalCountdown);
+            
+            // Clear current user
+            currentUser = null;
+            localStorage.removeItem('fundriseUser');
+            
+            // Show landing page
+            showPage('landing');
+            
+            showToast('Logged out successfully');
+        }
+        
+        // Show a specific page
+        function showPage(pageId) {
+            // If trying to access authenticated pages without login
+            const authPages = ['dashboard', 'invest', 'portfolio', 'deposit', 'withdraw', 'activity', 'settings', 'performance', 'account'];
+            if (authPages.includes(pageId) && !currentUser) {
+                showToast('Please log in to access this page', 'error');
+                showPage('login');
+                return;
+            }
+            
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show the requested page
+            const pageElement = document.getElementById(pageId);
+            if (pageElement) {
+                pageElement.classList.add('active');
+                previousPage = currentPage;
+                currentPage = pageId;
+                
+                // Update header active state
+                updateHeaderActiveState(pageId);
+                
+                // Page-specific initialization
+                switch(pageId) {
+                    case 'dashboard':
+                        updateDashboard();
+                        break;
+                    case 'portfolio':
+                        loadPortfolio();
+                        break;
+                    case 'invest':
+                    case 'plans':
+                        loadInvestmentPlans();
+                        break;
+                    case 'cryptoDeposit':
+                        loadDepositCoins();
+                        break;
+                    case 'performance':
+                        initializeTradingView();
+                        updatePerformanceStats();
+                        break;
+                    case 'activity':
+                        loadActivities();
+                        break;
+                    case 'securitySettings':
+                        if (currentUser?.twoFAEnabled) {
+                            document.getElementById('twoFASetup').classList.add('hidden');
+                        }
+                        break;
+                }
+            }
+        }
+        
+        // Show previous page
+        function showPreviousPage() {
+            if (previousPage) {
+                showPage(previousPage);
+            } else {
+                showPage('dashboard');
+            }
+        }
+        
+        // Update header active state
+        function updateHeaderActiveState(pageId) {
+            // This would update navigation highlights in a real app
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+            toast.textContent = message;
+            
+            toastContainer.appendChild(toast);
+            
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Hide and remove toast after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 5000);
+        }
+        
+        // Show loading overlay
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+        
+        // Hide loading overlay
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+        
+        // Load investment plans
+        function loadInvestmentPlans() {
+            const container = document.getElementById('investmentPlans') || document.querySelector('#plans .grid');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            INVESTMENT_PLANS.forEach(plan => {
+                const planCard = document.createElement('div');
+                planCard.className = 'plan-card bg-gray-800 p-6 rounded-lg';
+                planCard.innerHTML = `
+                    <div class="mb-4">
+                        <h3 class="text-xl font-semibold mb-2">${plan.name}</h3>
+                        <p class="text-gray-400 text-sm">${plan.description}</p>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Minimum:</span>
+                            <span class="font-semibold">$${plan.minAmount}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Target Returns:</span>
+                            <span class="font-semibold text-green-500">${plan.returns}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Risk Level:</span>
+                            <span class="font-semibold">${plan.risk}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Daily Accrual:</span>
+                            <span class="font-semibold">${plan.dailyAccrual ? 'Yes' : 'No'}</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="openInvestmentModal(${plan.id})" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">
+                        Invest Now
+                    </button>
+                `;
+                
+                container.appendChild(planCard);
+            });
+        }
+        
+        // Open investment modal
+        function openInvestmentModal(planId) {
+            const plan = INVESTMENT_PLANS.find(p => p.id === planId);
+            if (!plan) return;
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-10000 p-4';
+            modal.innerHTML = `
+                <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold">Invest in ${plan.name}</h3>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="block text-gray-300 mb-2">Investment Amount (USD)</label>
+                            <input type="number" id="investmentAmount" min="${plan.minAmount}" step="0.01" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" value="${plan.minAmount}">
+                            <p class="text-sm text-gray-400 mt-1">Minimum: $${plan.minAmount}</p>
+                        </div>
+                        
+                        <div class="bg-gray-900 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2">Estimated Returns</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Daily Returns:</span>
+                                    <span id="dailyEstimate" class="font-semibold">$0.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Monthly Returns:</span>
+                                    <span id="monthlyEstimate" class="font-semibold">$0.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Annual Returns:</span>
+                                    <span id="annualEstimate" class="font-semibold text-green-500">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button onclick="processInvestment(${planId})" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">Confirm Investment</button>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="px-6 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 rounded-lg">Cancel</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Calculate estimated returns
+            const amountInput = modal.querySelector('#investmentAmount');
+            const calculateReturns = () => {
+                const amount = parseFloat(amountInput.value) || 0;
+                const dailyRate = 0.00023; // Approximately 8.5% annual
+                const dailyEstimate = amount * dailyRate;
+                const monthlyEstimate = dailyEstimate * 30;
+                const annualEstimate = monthlyEstimate * 12;
+                
+                modal.querySelector('#dailyEstimate').textContent = '$' + dailyEstimate.toFixed(2);
+                modal.querySelector('#monthlyEstimate').textContent = '$' + monthlyEstimate.toFixed(2);
+                modal.querySelector('#annualEstimate').textContent = '$' + annualEstimate.toFixed(2);
+            };
+            
+            amountInput.addEventListener('input', calculateReturns);
+            calculateReturns();
+        }
+        
+        // Process investment
+        function processInvestment(planId) {
+            const plan = INVESTMENT_PLANS.find(p => p.id === planId);
+            if (!plan) return;
+            
+            const modal = document.querySelector('.fixed.inset-0.bg-black');
+            if (!modal) return;
+            
+            const amountInput = modal.querySelector('#investmentAmount');
+            const amount = parseFloat(amountInput.value) || 0;
+            
+            if (amount < plan.minAmount) {
+                showToast(`Minimum investment is $${plan.minAmount}`, 'error');
+                return;
+            }
+            
+            if (amount > portfolio.totalValue) {
+                showToast('Insufficient funds. Please deposit first.', 'error');
+                modal.remove();
+                showPage('deposit');
+                return;
+            }
+            
+            // Create investment
+            const investment = {
+                id: Date.now().toString(),
+                planId: planId,
+                planName: plan.name,
+                amount: amount,
+                date: new Date().toISOString(),
+                currentValue: amount,
+                dailyReturns: 0,
+                totalReturns: 0
+            };
+            
+            // Update portfolio
+            portfolio.totalInvested += amount;
+            portfolio.totalValue -= amount; // Deduct from available balance
+            
+            // Add to investments
+            portfolio.investments.push(investment);
+            
+            // Add activity
+            portfolio.activities.push({
+                id: Date.now().toString(),
+                type: 'investment',
+                amount: amount,
+                description: `Invested in ${plan.name}`,
+                date: new Date().toISOString(),
+                status: 'completed'
+            });
+            
+            // Save portfolio
+            savePortfolio();
+            
+            // Update UI
+            updateDashboard();
+            
+            // Show success
+            showToast(`Successfully invested $${amount.toFixed(2)} in ${plan.name}`);
+            
+            // Close modal
+            modal.remove();
+        }
+        
+        // Update dashboard
+        function updateDashboard() {
+            if (!currentUser) return;
+            
+            // Update portfolio values
+            document.getElementById('portfolioValue').textContent = '$' + portfolio.totalValue.toFixed(2);
+            document.getElementById('totalInvested').textContent = '$' + portfolio.totalInvested.toFixed(2);
+            document.getElementById('dailyReturns').textContent = '+$' + portfolio.dailyReturns.toFixed(2);
+            
+            // Update account type
+            document.getElementById('accountTypeDisplay').textContent = currentUser.accountType || 'Individual';
+            
+            // Update recent activity
+            updateRecentActivity();
+        }
+        
+        // Update recent activity
+        function updateRecentActivity() {
+            const container = document.getElementById('recentActivity');
+            if (!container) return;
+            
+            // Clear existing activities (except the first one)
+            const firstActivity = container.querySelector('.flex.items-center');
+            container.innerHTML = '';
+            if (firstActivity) {
+                container.appendChild(firstActivity);
+            }
+            
+            // Add latest activities (up to 5)
+            const recentActivities = portfolio.activities.slice(-5).reverse();
+            
+            recentActivities.forEach(activity => {
+                if (activity.type === 'account_created') return; // Skip account creation
+                
+                const activityEl = document.createElement('div');
+                activityEl.className = 'flex items-center justify-between p-3 bg-gray-900 rounded-lg';
+                
+                let icon = '';
+                let amountClass = '';
+                
+                switch(activity.type) {
+                    case 'investment':
+                        icon = `
+                            <div class="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center mr-3">
+                                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        `;
+                        amountClass = 'text-green-500';
+                        break;
+                    case 'deposit':
+                        icon = `
+                            <div class="w-10 h-10 bg-green-900 rounded-full flex items-center justify-center mr-3">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        `;
+                        amountClass = 'text-green-500';
+                        break;
+                    case 'withdrawal':
+                        icon = `
+                            <div class="w-10 h-10 bg-red-900 rounded-full flex items-center justify-center mr-3">
+                                <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                </svg>
+                            </div>
+                        `;
+                        amountClass = 'text-red-500';
+                        break;
+                    default:
+                        icon = `
+                            <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center mr-3">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        `;
+                }
+                
+                const date = new Date(activity.date);
+                const formattedDate = date.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                
+                const amountText = activity.type === 'withdrawal' ? 
+                    `-$${activity.amount.toFixed(2)}` : 
+                    `+$${activity.amount.toFixed(2)}`;
+                
+                activityEl.innerHTML = `
+                    <div class="flex items-center">
+                        ${icon}
+                        <div>
+                            <p class="font-medium">${activity.description}</p>
+                            <p class="text-sm text-gray-400">${formattedDate}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium">${formattedDate}</p>
+                        <p class="text-sm ${amountClass}">${amountText}</p>
+                    </div>
+                `;
+                
+                container.appendChild(activityEl);
+            });
+        }
+        
+        // Load portfolio
+        function loadPortfolio() {
+            const container = document.getElementById('portfolioContent');
+            if (!container) return;
+            
+            if (portfolio.investments.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-gray-800 rounded-lg p-8 text-center">
+                        <div class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">No Investments Yet</h3>
+                        <p class="text-gray-400 mb-6">Start building your portfolio by making your first investment.</p>
+                        <button onclick="showPage('invest')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg">Browse Plans</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Calculate totals
+            const totalInvested = portfolio.investments.reduce((sum, inv) => sum + inv.amount, 0);
+            const totalCurrentValue = portfolio.investments.reduce((sum, inv) => sum + inv.currentValue, 0);
+            const totalReturns = totalCurrentValue - totalInvested;
+            
+            container.innerHTML = `
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <p class="text-gray-400 mb-2">Total Invested</p>
+                        <p class="text-2xl font-bold">$${totalInvested.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <p class="text-gray-400 mb-2">Current Value</p>
+                        <p class="text-2xl font-bold">$${totalCurrentValue.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <p class="text-gray-400 mb-2">Total Returns</p>
+                        <p class="text-2xl font-bold ${totalReturns >= 0 ? 'text-green-500' : 'text-red-500'}">${totalReturns >= 0 ? '+' : ''}$${totalReturns.toFixed(2)}</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold mb-6">Your Investments</h3>
+                    <div id="investmentsList" class="space-y-4">
+                        <!-- Investments will be listed here -->
+                    </div>
+                </div>
+            `;
+            
+            // List investments
+            const investmentsList = document.getElementById('investmentsList');
+            portfolio.investments.forEach(investment => {
+                const plan = INVESTMENT_PLANS.find(p => p.id === investment.planId);
+                const returns = investment.currentValue - investment.amount;
+                const returnPercentage = (returns / investment.amount) * 100;
+                
+                const investmentEl = document.createElement('div');
+                investmentEl.className = 'flex items-center justify-between p-4 bg-gray-900 rounded-lg';
+                investmentEl.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-900 rounded-lg flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-semibold">${investment.planName}</p>
+                            <p class="text-sm text-gray-400">Invested: $${investment.amount.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold">$${investment.currentValue.toFixed(2)}</p>
+                        <p class="text-sm ${returns >= 0 ? 'text-green-500' : 'text-red-500'}">
+                            ${returns >= 0 ? '+' : ''}$${returns.toFixed(2)} (${returnPercentage.toFixed(2)}%)
+                        </p>
+                    </div>
+                `;
+                
+                investmentsList.appendChild(investmentEl);
+            });
+        }
+        
+        // Open bank transfer
+        function openBankTransfer() {
+            window.open('https://exchange.mercuryo.io/?currency=USDT&fiat_transaction_id=96a44553-106b-4b86-bd18-176cddf43816&network=BINANCESMARTCHAIN&payment_method=card&signature=5d27bacc451bf1c204e33c8c84150c66edf9cfb7251b86630d35d684e3f880f71d033336d4c92dde15ef866ddf21e48d7c7cece583dbb68d9f7333598c1c1205&theme=trustwallet&utm_medium=referral&utm_source=TrustWallet&widget_id=d13d7a03-f965-4688-b35a-9d208819ff4b&address=0xAB98294614C46008cBF82Fa3e25285FBC2A6F257', '_blank');
+            showToast('Opening bank transfer portal in new tab...');
+        }
+        
+        // Load deposit coins
+        async function loadDepositCoins() {
+            const depositCoinList = document.getElementById('depositCoinList');
+            if (!depositCoinList) return;
+            
+            depositCoinList.innerHTML = `
+                <div class="col-span-full flex justify-center py-12">
+                    <div class="spinner"></div>
+                </div>
+            `;
+            
+            try {
+                if (allCoins.length === 0) {
+                    const response = await fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=200&page=1&sparkline=false`);
+                    if (!response.ok) throw new Error('Failed to fetch deposit coins');
+                    allCoins = await response.json();
+                }
+                
+                allCoins.sort((a, b) => a.symbol.localeCompare(b.symbol));
+                renderDepositCoinList(allCoins);
+                
+                // Attach live search
+                const searchInput = document.getElementById('depositSearch');
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => {
+                        const searchTerm = e.target.value.trim().toLowerCase();
+                        if (!searchTerm) {
+                            renderDepositCoinList(allCoins);
+                            return;
+                        }
+                        
+                        const filtered = allCoins.filter(
+                            c =>
+                                c.name.toLowerCase().includes(searchTerm) ||
+                                c.symbol.toLowerCase().includes(searchTerm)
+                        );
+                        renderDepositCoinList(filtered);
+                    });
+                }
+                
+            } catch (error) {
+                console.error("Error loading deposit coins:", error);
+                depositCoinList.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-gray-400">Failed to load coins. Please try again later.</p>
+                        <button onclick="loadDepositCoins()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Render deposit coin list
+        function renderDepositCoinList(coins) {
+            const container = document.getElementById('depositCoinList');
+            if (!container) return;
+            
+            if (!coins || coins.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-gray-400">No matching coins found.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            coins.forEach(coin => {
+                const priceChange = coin.price_change_percentage_24h || 0;
+                const priceChangeClass = priceChange >= 0 ? 'text-green-500' : 'text-red-500';
+                const priceChangeSymbol = priceChange >= 0 ? '+' : '';
+                
+                html += `
+                    <div class="deposit-coin-item flex items-center justify-between p-3 bg-gray-900 rounded-lg border border-gray-800 hover:bg-gray-800 cursor-pointer transition duration-200"
+                         data-symbol="${coin.symbol.toUpperCase()}"
+                         data-name="${coin.name}"
+                         data-id="${coin.id}"
+                         data-image="${coin.image}">
+                        <div class="flex items-center">
+                            <img src="${coin.image}" class="w-8 h-8 rounded-full mr-3"
+                                 onerror="this.onerror=null;this.src='https://placehold.co/32x32/1f2937/ffffff?text=${coin.symbol.substring(0,2).toUpperCase()}'" />
+                            <div>
+                                <p class="font-semibold">${coin.symbol.toUpperCase()}</p>
+                                <p class="text-sm text-gray-400">${coin.name}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold">$${coin.current_price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 }) || '0.00'}</p>
+                            <p class="text-sm ${priceChangeClass}">${priceChangeSymbol}${priceChange?.toFixed(2) || '0.00'}%</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            
+            // Add click handlers for each coin
+            document.querySelectorAll('.deposit-coin-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const symbol = item.dataset.symbol;
+                    const name = item.dataset.name;
+                    const image = item.dataset.image;
+                    selectDepositCoin(symbol, name, image);
+                });
+            });
+        }
+        
+        // Select deposit coin
+        function selectDepositCoin(symbol, name, image) {
+            selectedDepositCoin = { symbol, name, image };
+            
+            const detailsContainer = document.getElementById('selectedCoinDetails');
+            if (!detailsContainer) return;
+            
+            const networks = DEPOSIT_NETWORKS[symbol] || ['Ethereum'];
+            
+            let networksHtml = '';
+            networks.forEach(network => {
+                networksHtml += `
+                    <button onclick="selectDepositNetwork('${network}', '${symbol}')" class="w-full bg-gray-700 hover:bg-gray-600 p-4 rounded-lg flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-blue-400 font-bold">${network.charAt(0)}</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold">${network}</p>
+                                <p class="text-sm text-gray-400">${symbol} Network</p>
+                            </div>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                `;
+            });
+            
+            detailsContainer.innerHTML = `
+                <div class="flex items-center mb-4">
+                    <img src="${image}" class="w-10 h-10 rounded-full mr-3"
+                         onerror="this.onerror=null;this.src='https://placehold.co/40x40/1f2937/ffffff?text=${symbol.substring(0,2).toUpperCase()}'" />
+                    <div>
+                        <h4 class="text-lg font-semibold">${symbol}</h4>
+                        <p class="text-gray-400">${name}</p>
+                    </div>
+                </div>
+                
+                <h5 class="font-semibold mb-3">Select Network</h5>
+                <div class="space-y-3">
+                    ${networksHtml}
+                </div>
+            `;
+            
+            detailsContainer.classList.remove('hidden');
+            
+            // Scroll to details
+            detailsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Select deposit network
+        function selectDepositNetwork(network, symbol) {
+            selectedDepositNetwork = network;
+            
+            // Generate deposit address
+            const networkKey = network.toUpperCase().replace(' ', '_');
+            const depositAddress = DEPOSIT_ADDRESSES[networkKey] || DEPOSIT_ADDRESSES.ETHEREUM;
+            
+            // Show deposit address page
+            showPage('depositAddress');
+            
+            // Update UI with deposit details
+            setTimeout(() => {
+                document.getElementById('depositAddressText').textContent = depositAddress;
+                
+                // Generate QR code
+                const qrCodeContainer = document.getElementById('qrCode');
+                if (qrCodeContainer) {
+                    qrCodeContainer.innerHTML = '';
+                    QRCode.toCanvas(depositAddress, { width: 200, height: 200 }, function(error, canvas) {
+                        if (error) {
+                            qrCodeContainer.innerHTML = '<p class="text-red-500">Failed to generate QR code</p>';
+                            console.error(error);
+                        } else {
+                            qrCodeContainer.appendChild(canvas);
+                        }
+                    });
+                }
+                
+                // Set deposit amount if available
+                const depositAmountInput = document.getElementById('depositAmount');
+                if (depositAmountInput) {
+                    depositAmountInput.value = '100.00';
+                }
+            }, 100);
+        }
+        
+        // Copy deposit address
+        function copyDepositAddress() {
+            const address = document.getElementById('depositAddressText').textContent;
+            navigator.clipboard.writeText(address).then(() => {
+                showToast('Address copied to clipboard');
+            }).catch(err => {
+                console.error('Failed to copy address: ', err);
+                showToast('Failed to copy address', 'error');
+            });
+        }
+        
+        // Proceed to deposit validation
+        function proceedToDepositValidation() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            
+            if (!amount || amount < 10) {
+                showToast('Minimum deposit amount is $10', 'error');
+                return;
+            }
+            
+            // Store deposit information
+            currentDeposit = {
+                amount: amount,
+                coin: selectedDepositCoin?.symbol || 'USDT',
+                network: selectedDepositNetwork,
+                timestamp: Date.now()
+            };
+            
+            // Show validation page
+            showPage('depositValidation');
+        }
+        
+        // Validate deposit
+        function validateDeposit() {
+            const code = document.getElementById('validationCode').value.trim();
+            
+            if (!code || code.length !== 6) {
+                showToast('Please enter a valid 6-digit code', 'error');
+                return;
+            }
+            
+            // Check if code is valid (simulated)
+            const isValidCode = DEPOSIT_CODES.includes(parseInt(code));
+            const isUsedCode = localStorage.getItem(`used_code_${code}`);
+            
+            if (!isValidCode || isUsedCode) {
+                showToast('Invalid or already used validation code', 'error');
+                return;
+            }
+            
+            // Mark code as used
+            localStorage.setItem(`used_code_${code}`, 'true');
+            
+            // Show loading
+            showLoading();
+            
+            // Simulate 15-second processing
+            setTimeout(() => {
+                hideLoading();
+                
+                // Add deposit to portfolio
+                const depositAmount = currentDeposit.amount;
+                portfolio.totalValue += depositAmount;
+                
+                // Add activity
+                portfolio.activities.push({
+                    id: Date.now().toString(),
+                    type: 'deposit',
+                    amount: depositAmount,
+                    description: `Deposit via ${currentDeposit.coin} (${currentDeposit.network})`,
+                    date: new Date().toISOString(),
+                    status: 'completed'
+                });
+                
+                // Save portfolio
+                savePortfolio();
+                
+                // Update dashboard
+                updateDashboard();
+                
+                // Show success
+                showToast(`Successfully deposited $${depositAmount.toFixed(2)}`);
+                
+                // Return to dashboard
+                showPage('dashboard');
+                
+                // Clear deposit data
+                currentDeposit = {};
+                
+            }, 15000);
+        }
+        
+        // Select withdrawal network
+        function selectWithdrawalNetwork(network) {
+            // Reset network selection
+            document.querySelectorAll('.network-option').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'border-blue-500');
+                btn.classList.add('bg-gray-700', 'border-transparent');
+            });
+            
+            // Highlight selected network
+            event.target.closest('.network-option').classList.remove('bg-gray-700');
+            event.target.closest('.network-option').classList.add('bg-blue-600', 'border-blue-500');
+            
+            // Show withdrawal form
+            const formContainer = document.getElementById('withdrawalForm');
+            if (formContainer) {
+                formContainer.classList.remove('hidden');
+                formContainer.innerHTML = `
+                    <h3 class="text-lg font-semibold mb-4">Withdrawal Details</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-300 mb-2">Withdrawal Address</label>
+                            <input type="text" id="withdrawalAddress" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="Enter ${network} address">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-300 mb-2">Amount (USD)</label>
+                            <input type="number" id="withdrawalAmount" min="50" max="${portfolio.totalValue}" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="50.00">
+                            <p class="text-sm text-gray-400 mt-1">Available: $${portfolio.totalValue.toFixed(2)} | Minimum: $50</p>
+                        </div>
+                        
+                        <div class="bg-gray-900 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2">Withdrawal Summary</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Network Fee:</span>
+                                    <span class="font-semibold">$2.50</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Processing Fee:</span>
+                                    <span class="font-semibold">$1.00</span>
+                                </div>
+                                <div class="flex justify-between border-t border-gray-700 pt-2">
+                                    <span class="text-gray-400">You'll Receive:</span>
+                                    <span id="withdrawalReceive" class="font-semibold text-green-500">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button onclick="processWithdrawal('${network}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">Review Withdrawal</button>
+                    </div>
+                `;
+                
+                // Calculate withdrawal amount
+                const amountInput = document.getElementById('withdrawalAmount');
+                const calculateWithdrawal = () => {
+                    const amount = parseFloat(amountInput.value) || 0;
+                    const fees = 3.50; // $2.50 network + $1.00 processing
+                    const receive = amount - fees;
+                    
+                    const receiveElement = document.getElementById('withdrawalReceive');
+                    if (receiveElement) {
+                        receiveElement.textContent = '$' + Math.max(0, receive).toFixed(2);
+                    }
+                };
+                
+                amountInput.addEventListener('input', calculateWithdrawal);
+                calculateWithdrawal();
+            }
+        }
+        
+        // Process withdrawal
+        function processWithdrawal(network) {
+            const address = document.getElementById('withdrawalAddress').value.trim();
+            const amount = parseFloat(document.getElementById('withdrawalAmount').value);
+            
+            if (!address) {
+                showToast('Please enter a withdrawal address', 'error');
+                return;
+            }
+            
+            if (!amount || amount < 50) {
+                showToast('Minimum withdrawal amount is $50', 'error');
+                return;
+            }
+            
+            if (amount > portfolio.totalValue) {
+                showToast('Insufficient funds', 'error');
+                return;
+            }
+            
+            // Check if 2FA is required (for withdrawals over $500)
+            if (amount > 500 && currentUser?.twoFAEnabled) {
+                const code = prompt('Please enter your 2FA code:');
+                if (!code) {
+                    showToast('2FA code required for this withdrawal', 'error');
+                    return;
+                }
+                // In a real app, verify the 2FA code here
+            }
+            
+            // Check failed attempts
+            if (failedWithdrawalAttempts >= 5) {
+                showToast('Withdrawal suspended due to too many failed attempts', 'error');
+                return;
+            }
+            
+            // Create withdrawal request
+            const withdrawalId = 'WD-' + Date.now().toString().slice(-8);
+            const fees = 3.50;
+            const netAmount = amount - fees;
+            
+            // Store withdrawal in pending state
+            const withdrawal = {
+                id: withdrawalId,
+                network: network,
+                address: address,
+                amount: amount,
+                netAmount: netAmount,
+                fees: fees,
+                timestamp: Date.now(),
+                status: 'pending',
+                countdown: 24 * 60 * 60 // 24 hours in seconds
+            };
+            
+            localStorage.setItem(`withdrawal_${withdrawalId}`, JSON.stringify(withdrawal));
+            
+            // Start countdown
+            startWithdrawalCountdown(withdrawalId);
+            
+            // Deduct amount from portfolio (but keep pending)
+            portfolio.totalValue -= amount;
+            savePortfolio();
+            updateDashboard();
+            
+            // Add activity
+            portfolio.activities.push({
+                id: Date.now().toString(),
+                type: 'withdrawal',
+                amount: amount,
+                description: `Withdrawal to ${network} (Pending)`,
+                date: new Date().toISOString(),
+                status: 'pending'
+            });
+            
+            // Show success
+            showToast(`Withdrawal initiated. $${netAmount.toFixed(2)} will be sent in 24 hours.`);
+            
+            // Return to dashboard
+            showPage('dashboard');
+        }
+        
+        // Start withdrawal countdown
+        function startWithdrawalCountdown(withdrawalId) {
+            const withdrawal = JSON.parse(localStorage.getItem(`withdrawal_${withdrawalId}`));
+            if (!withdrawal) return;
+            
+            withdrawalCountdown = setInterval(() => {
+                withdrawal.countdown--;
+                
+                if (withdrawal.countdown <= 0) {
+                    // Complete withdrawal
+                    withdrawal.status = 'completed';
+                    localStorage.setItem(`withdrawal_${withdrawalId}`, JSON.stringify(withdrawal));
+                    
+                    // Update activity
+                    const activityIndex = portfolio.activities.findIndex(a => 
+                        a.description.includes(withdrawalId) || 
+                        a.description.includes('Withdrawal to') && a.status === 'pending'
+                    );
+                    
+                    if (activityIndex !== -1) {
+                        portfolio.activities[activityIndex].status = 'completed';
+                        portfolio.activities[activityIndex].description = `Withdrawal to ${withdrawal.network}`;
+                        savePortfolio();
+                    }
+                    
+                    clearInterval(withdrawalCountdown);
+                    showToast(`Withdrawal ${withdrawalId} completed!`);
+                } else {
+                    localStorage.setItem(`withdrawal_${withdrawalId}`, JSON.stringify(withdrawal));
+                }
+            }, 1000);
+        }
+        
+        // Setup 2FA
+        function setup2FA() {
+            // Generate random secret
+            const secret = Math.random().toString(36).substring(2, 10).toUpperCase() + 
+                          Math.random().toString(36).substring(2, 10).toUpperCase();
+            
+            // Store temporarily
+            localStorage.setItem('temp_2fa_secret', secret);
+            
+            // Show QR code setup
+            const setupContainer = document.getElementById('twoFASetup');
+            if (setupContainer) {
+                setupContainer.classList.remove('hidden');
+                
+                // Update secret display
+                document.getElementById('twoFASecret').textContent = secret;
+                
+                // Generate QR code (simplified - real app would use otpauth URL)
+                const qrContainer = document.getElementById('twoFAQRCode');
+                if (qrContainer) {
+                    qrContainer.innerHTML = '';
+                    const qrText = `otpauth://totp/Fundrise:${currentUser.email}?secret=${secret}&issuer=Fundrise`;
+                    QRCode.toCanvas(qrText, { width: 200, height: 200 }, function(error, canvas) {
+                        if (error) {
+                            qrContainer.innerHTML = '<p class="text-red-500">Failed to generate QR code</p>';
+                            console.error(error);
+                        } else {
+                            qrContainer.appendChild(canvas);
+                        }
+                    });
+                }
+            }
+        }
+        
+        // Verify 2FA
+        function verify2FA() {
+            const code = document.getElementById('twoFACode').value.trim();
+            const secret = localStorage.getItem('temp_2fa_secret');
+            
+            if (!code || code.length !== 6) {
+                showToast('Please enter a valid 6-digit code', 'error');
+                return;
+            }
+            
+            // In a real app, verify the TOTP code here
+            // For simulation, we'll accept any 6-digit code
+            if (code.length === 6 && /^\d+$/.test(code)) {
+                // Enable 2FA for user
+                currentUser.twoFAEnabled = true;
+                currentUser.twoFASecret = secret;
+                
+                // Save user
+                const existingUsers = JSON.parse(localStorage.getItem('fundriseUsers') || '[]');
+                const userIndex = existingUsers.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    existingUsers[userIndex] = currentUser;
+                    localStorage.setItem('fundriseUsers', JSON.stringify(existingUsers));
+                }
+                localStorage.setItem('fundriseUser', JSON.stringify(currentUser));
+                
+                // Clear temp secret
+                localStorage.removeItem('temp_2fa_secret');
+                
+                // Hide setup
+                document.getElementById('twoFASetup').classList.add('hidden');
+                
+                showToast('2FA enabled successfully!');
+            } else {
+                showToast('Invalid verification code', 'error');
+            }
+        }
+        
+        // Copy 2FA secret
+        function copy2FASecret() {
+            const secret = document.getElementById('twoFASecret').textContent;
+            navigator.clipboard.writeText(secret).then(() => {
+                showToast('Secret copied to clipboard');
+            }).catch(err => {
+                console.error('Failed to copy secret: ', err);
+                showToast('Failed to copy secret', 'error');
+            });
+        }
+        
+        // Change password
+        function changePassword() {
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmNewPassword').value;
+            
+            if (!current || !newPass || !confirm) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (current !== currentUser.password) {
+                showToast('Current password is incorrect', 'error');
+                return;
+            }
+            
+            if (newPass.length < 8) {
+                showToast('New password must be at least 8 characters', 'error');
+                return;
+            }
+            
+            if (newPass !== confirm) {
+                showToast('New passwords do not match', 'error');
+                return;
+            }
+            
+            // Update password
+            currentUser.password = newPass;
+            
+            // Save user
+            const existingUsers = JSON.parse(localStorage.getItem('fundriseUsers') || '[]');
+            const userIndex = existingUsers.findIndex(u => u.id === currentUser.id);
+            if (userIndex !== -1) {
+                existingUsers[userIndex] = currentUser;
+                localStorage.setItem('fundriseUsers', JSON.stringify(existingUsers));
+            }
+            localStorage.setItem('fundriseUser', JSON.stringify(currentUser));
+            
+            // Clear form
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+            
+            showToast('Password changed successfully!');
+        }
+        
+        // Save notification settings
+        function saveNotificationSettings() {
+            const dailyUpdates = document.getElementById('dailyUpdates').checked;
+            const investmentAlerts = document.getElementById('investmentAlerts').checked;
+            const securityAlerts = document.getElementById('securityAlerts').checked;
+            
+            // Save to user preferences
+            if (currentUser) {
+                currentUser.notificationSettings = {
+                    dailyUpdates,
+                    investmentAlerts,
+                    securityAlerts
+                };
+                
+                // Save user
+                const existingUsers = JSON.parse(localStorage.getItem('fundriseUsers') || '[]');
+                const userIndex = existingUsers.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    existingUsers[userIndex] = currentUser;
+                    localStorage.setItem('fundriseUsers', JSON.stringify(existingUsers));
+                }
+                localStorage.setItem('fundriseUser', JSON.stringify(currentUser));
+                
+                showToast('Notification preferences saved');
+            }
+        }
+        
+        // Initialize TradingView
+        function initializeTradingView() {
+            if (typeof TradingView === 'undefined') {
+                console.error('TradingView library not loaded');
+                return;
+            }
+            
+            const container = document.getElementById('tvchart');
+            if (!container) return;
+            
+            try {
+                if (tradingViewWidget) {
+                    tradingViewWidget.remove();
+                }
+                
+                tradingViewWidget = new TradingView.widget({
+                    width: '100%',
+                    height: 400,
+                    symbol: "BINANCE:BTCUSDT",
+                    interval: "1D",
+                    timezone: "Etc/UTC",
+                    theme: "dark",
+                    style: "1",
+                    locale: "en",
+                    toolbar_bg: "#0b0f14",
+                    enable_publishing: false,
+                    allow_symbol_change: true,
+                    container_id: "tvchart",
+                    hide_side_toolbar: false,
+                    details: true,
+                    studies: [
+                        "MACD@tv-basicstudies",
+                        "RSI@tv-basicstudies"
+                    ],
+                    show_popup_button: true,
+                    popup_width: "1000",
+                    popup_height: "650"
+                });
+            } catch (error) {
+                console.error('TradingView initialization failed:', error);
+                container.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Chart loading failed. Please refresh the page.</div>';
+            }
+        }
+        
+        // Update performance stats
+        function updatePerformanceStats() {
+            if (!portfolio.investments.length) return;
+            
+            // Calculate performance metrics
+            const totalInvested = portfolio.investments.reduce((sum, inv) => sum + inv.amount, 0);
+            const totalValue = portfolio.investments.reduce((sum, inv) => sum + inv.currentValue, 0);
+            const totalReturns = totalValue - totalInvested;
+            const todayGain = portfolio.dailyReturns;
+            
+            // Update UI
+            document.getElementById('todayGain').textContent = '+$' + todayGain.toFixed(2);
+            document.getElementById('totalGain').textContent = (totalReturns >= 0 ? '+$' : '-$') + Math.abs(totalReturns).toFixed(2);
+            
+            // Calculate portfolio age
+            if (portfolio.activities.length > 0) {
+                const firstActivity = portfolio.activities[0];
+                const startDate = new Date(firstActivity.date);
+                const today = new Date();
+                const diffTime = Math.abs(today - startDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                document.getElementById('portfolioAge').textContent = diffDays + ' days';
+            }
+        }
+        
+        // Setup activity tabs
+        function setupActivityTabs() {
+            const allBtn = document.getElementById('allActivities');
+            const depositsBtn = document.getElementById('depositsTab');
+            const withdrawalsBtn = document.getElementById('withdrawalsTab');
+            const investmentsBtn = document.getElementById('investmentsTab');
+            
+            if (allBtn) allBtn.addEventListener('click', () => loadActivities('all'));
+            if (depositsBtn) depositsBtn.addEventListener('click', () => loadActivities('deposit'));
+            if (withdrawalsBtn) withdrawalsBtn.addEventListener('click', () => loadActivities('withdrawal'));
+            if (investmentsBtn) investmentsBtn.addEventListener('click', () => loadActivities('investment'));
+        }
+        
+        // Load activities
+        function loadActivities(filter = 'all') {
+            const container = document.getElementById('activitiesList');
+            if (!container) return;
+            
+            // Filter activities
+            let filteredActivities = portfolio.activities;
+            if (filter !== 'all') {
+                filteredActivities = portfolio.activities.filter(a => a.type === filter);
+            }
+            
+            if (filteredActivities.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-400">No ${filter === 'all' ? '' : filter} activities found.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Display activities
+            container.innerHTML = '';
+            filteredActivities.reverse().forEach(activity => {
+                const date = new Date(activity.date);
+                const formattedDate = date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                let icon = '';
+                let statusColor = '';
+                
+                switch(activity.type) {
+                    case 'investment':
+                        icon = '📊';
+                        statusColor = activity.status === 'completed' ? 'text-green-500' : 'text-yellow-500';
+                        break;
+                    case 'deposit':
+                        icon = '💰';
+                        statusColor = activity.status === 'completed' ? 'text-green-500' : 'text-yellow-500';
+                        break;
+                    case 'withdrawal':
+                        icon = '🏦';
+                        statusColor = activity.status === 'completed' ? 'text-green-500' : activity.status === 'pending' ? 'text-yellow-500' : 'text-red-500';
+                        break;
+                    default:
+                        icon = '📝';
+                }
+                
+                const amountText = activity.type === 'withdrawal' ? 
+                    `-$${activity.amount.toFixed(2)}` : 
+                    `+$${activity.amount.toFixed(2)}`;
+                
+                const activityEl = document.createElement('div');
+                activityEl.className = 'flex items-center justify-between p-4 bg-gray-900 rounded-lg';
+                activityEl.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="text-2xl mr-4">${icon}</div>
+                        <div>
+                            <p class="font-semibold">${activity.description}</p>
+                            <p class="text-sm text-gray-400">${formattedDate}</p>
+                            <p class="text-xs ${statusColor}">${activity.status.toUpperCase()}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold">${amountText}</p>
+                        <p class="text-sm text-gray-400">${activity.type.toUpperCase()}</p>
+                    </div>
+                `;
+                
+                container.appendChild(activityEl);
+            });
+        }
+        
+        // Initialize notifications
+        function initNotifications() {
+            // Load saved notification settings
+            if (currentUser?.notificationSettings?.dailyUpdates) {
+                // Send initial notification
+                sendMarketUpdateNotification();
+                
+                // Set up interval for daily notifications (every 12 hours for demo)
+                notificationInterval = setInterval(() => {
+                    sendMarketUpdateNotification();
+                }, 12 * 60 * 60 * 1000); // 12 hours
+            }
+            
+            // Update notification count
+            updateNotificationCount();
+        }
+        
+        // Send market update notification
+        async function sendMarketUpdateNotification() {
+            if (!currentUser?.notificationSettings?.dailyUpdates) return;
+            
+            try {
+                // Fetch market data
+                const response = await fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&ids=bitcoin,ethereum&per_page=2`);
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                
+                if (data.length >= 2) {
+                    const btcChange = data[0].price_change_percentage_24h?.toFixed(2) || '0.00';
+                    const ethChange = data[1].price_change_percentage_24h?.toFixed(2) || '0.00';
+                    
+                    // Create notification
+                    const notification = {
+                        id: Date.now().toString(),
+                        type: 'market_update',
+                        title: 'Daily Market Update',
+                        message: `BTC: ${btcChange}% | ETH: ${ethChange}%`,
+                        timestamp: new Date().toISOString(),
+                        read: false
+                    };
+                    
+                    // Save notification
+                    saveNotification(notification);
+                    
+                    // Update notification count
+                    updateNotificationCount();
+                    
+                    // Show toast if user is on dashboard
+                    if (currentPage === 'dashboard' && document.hasFocus()) {
+                        showToast(notification.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch market data:', error);
+            }
+        }
+        
+        // Save notification
+        function saveNotification(notification) {
+            const notifications = JSON.parse(localStorage.getItem(`notifications_${currentUser.id}`) || '[]');
+            notifications.push(notification);
+            localStorage.setItem(`notifications_${currentUser.id}`, JSON.stringify(notifications.slice(-50))); // Keep last 50
+        }
+        
+        // Load notifications
+        function loadNotifications() {
+            const notifications = JSON.parse(localStorage.getItem(`notifications_${currentUser.id}`) || '[]');
+            updateNotificationCount();
+        }
+        
+        // Update notification count
+        function updateNotificationCount() {
+            if (!currentUser) return;
+            
+            const notifications = JSON.parse(localStorage.getItem(`notifications_${currentUser.id}`) || '[]');
+            const unreadCount = notifications.filter(n => !n.read).length;
+            
+            const countElement = document.getElementById('notificationCount');
+            if (countElement) {
+                if (unreadCount > 0) {
+                    countElement.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    countElement.classList.remove('hidden');
+                } else {
+                    countElement.classList.add('hidden');
+                }
+            }
+        }
+        
+        // Start daily returns calculation
+        function startDailyReturnsCalculation() {
+            // Calculate initial daily returns
+            updateDailyReturns();
+            
+            // Set up interval to update daily returns (every minute for demo)
+            dailyReturnsInterval = setInterval(updateDailyReturns, 60000);
+        }
+        
+        // Update daily returns
+        function updateDailyReturns() {
+            if (!currentUser || !portfolio.investments.length) {
+                portfolio.dailyReturns = 0;
+                return;
+            }
+            
+            // Calculate returns based on investments
+            let totalDailyReturns = 0;
+            
+            portfolio.investments.forEach(investment => {
+                const plan = INVESTMENT_PLANS.find(p => p.id === investment.planId);
+                if (!plan) return;
+                
+                // Calculate daily return rate (annual return / 365)
+                const annualReturn = parseFloat(plan.returns.split('-')[0]) || 8.5;
+                const dailyRate = annualReturn / 100 / 365;
+                
+                // Add to daily returns
+                const dailyReturn = investment.amount * dailyRate;
+                totalDailyReturns += dailyReturn;
+                
+                // Update investment value
+                investment.currentValue += dailyReturn;
+                investment.totalReturns = investment.currentValue - investment.amount;
+            });
+            
+            // Update portfolio
+            portfolio.dailyReturns = totalDailyReturns;
+            portfolio.totalValue = portfolio.investments.reduce((sum, inv) => sum + inv.currentValue, 0) + 
+                                 (portfolio.totalValue - portfolio.totalInvested);
+            
+            // Save portfolio
+            savePortfolio();
+            
+            // Update UI if on dashboard
+            if (currentPage === 'dashboard') {
+                updateDashboard();
+            }
+            
+            // Update performance stats if on performance page
+            if (currentPage === 'performance') {
+                updatePerformanceStats();
+            }
+        }
+        
+        // Save portfolio to localStorage
+        function savePortfolio() {
+            if (currentUser) {
+                localStorage.setItem(`portfolio_${currentUser.id}`, JSON.stringify(portfolio));
+            }
+        }
+    </script>
+</body>
+</html>
