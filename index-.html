@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fundrise Capital - Real Estate & Private Market Investing</title>
+    <title>Fundrise Capital - Private Market Investing</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -3765,7 +3765,7 @@ function openDepositValidationModal(coin, amount) {
                     </label>
                     <div class="relative">
                         <input type="text" 
-                               id="modalDepositValidationCode" 
+                               id="DEPOSIT_CODES" 
                                class="w-full bg-gray-800 border border-gray-700 rounded-lg py-4 px-4 text-2xl text-center tracking-widest font-mono focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                                placeholder="000000" 
                                maxlength="6"
@@ -3789,7 +3789,7 @@ function openDepositValidationModal(coin, amount) {
                         <i class="fas fa-arrow-left mr-2"></i>
                         Cancel
                     </button>
-                    <button onclick="verifyModalDeposit()" 
+                    <button onclick="verifyDeposit()" 
                             class="btn-primary py-3.5 flex items-center justify-center font-medium">
                         <i class="fas fa-check-circle mr-2"></i>
                         Verify Deposit
@@ -3812,7 +3812,7 @@ function openDepositValidationModal(coin, amount) {
     
     // Focus on input
     setTimeout(() => {
-        const input = document.getElementById('modalDepositValidationCode');
+        const input = document.getElementById('modalDEPOSIT_CODES');
         if (input) {
             input.focus();
             // Add input formatting
@@ -3826,100 +3826,9 @@ function openDepositValidationModal(coin, amount) {
     document.body.style.overflow = 'hidden';
 }
 
-function closeDepositValidationModal() {
-    const modal = document.getElementById('depositValidationModalOverlay');
-    if (modal) {
-        modal.remove();
-    }
-    // Restore scrolling
-    document.body.style.overflow = '';
-}
-
-function clearValidationCode() {
-    const input = document.getElementById('modalDepositValidationCode');
-    if (input) {
-        input.value = '';
-        input.focus();
-    }
-}
-
-function showCodeHelp() {
-    // Show code help modal/info
-    alert('Verification codes are 6-digit codes that can be used to validate deposits. Each code can be used up to 2 times. You can get codes from your account dashboard or purchase them from authorized vendors.');
-}
-
-function verifyModalDeposit() {
-    const codeInput = document.getElementById('modalDepositValidationCode');
-    const enteredCode = parseInt(codeInput.value) || 0;
-    
-    if (!enteredCode || enteredCode.toString().length !== 6) {
-        showToast('Please enter a valid 6-digit code', 'error');
-        codeInput.focus();
-        return;
-    }
-    
-    // Check if entered code is valid and can be used
-    if (!isValidCode(enteredCode)) {
-        showToast('Invalid or already used verification code', 'error');
-        codeInput.value = '';
-        codeInput.focus();
-        return;
-    }
-    
-    // Get pending deposit from sessionStorage
-    const pendingDeposit = JSON.parse(sessionStorage.getItem('pendingDeposit') || '{}');
-    
-    if (!pendingDeposit.coin) {
-        showToast('No pending deposit found', 'error');
-        closeDepositValidationModal();
-        return;
-    }
-    
-    // Check if code was already used (double-check)
-    if (depositCodesUsed.includes(enteredCode)) {
-        showToast('This code has already been used', 'error');
-        codeInput.value = '';
-        codeInput.focus();
-        return;
-    }
-    
-    // Close modal first
-    closeDepositValidationModal();
-    
-    // Mark code as used in our tracking system
-    markCodeAsUsed(enteredCode);
-    
-    // Show loading overlay
-    showLoading('Processing your deposit...');
-    
-    // Simulate processing for 15 seconds
-    setTimeout(() => {
-        hideLoading();
-        
-        // Mark code as used in the old system (for backward compatibility)
-        depositCodesUsed.push(enteredCode);
-        
-        // Process deposit
-        processDeposit(pendingDeposit);
-        
-        // Clear pending deposit
-        sessionStorage.removeItem('pendingDeposit');
-        
-        // Show success message with more details
-        showToast(
-            `Successfully deposited ${pendingDeposit.amount} ${pendingDeposit.coin.symbol}. Funds will be available in your account shortly.`, 
-            'success'
-        );
-        
-        // Return to dashboard
-        showPage('dashboard');
-        
-    }, 15000);
-}
-
 // Also update the existing verifyDeposit function to handle the old flow (if needed)
 function verifyDeposit() {      
-    const codeInput = document.getElementById('depositValidationCode');      
+    const codeInput = document.getElementById('DEPOSIT_CODES');      
     const enteredCode = parseInt(codeInput.value) || 0;      
           
     if (!enteredCode || enteredCode.toString().length !== 6) {      
