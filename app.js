@@ -1,4 +1,4 @@
-(function() {
+ (function() {
   'use strict';
 
   const API_BASE = window.location.origin + '/api';
@@ -132,6 +132,16 @@
       DB.set('session_time', Date.now());
     },
     logout() {
+      // Mark user as logged out in the persistent users array
+      const user = this.getUser();
+      if (user && user.email) {
+        let users = DB.get('users', []);
+        const idx = users.findIndex(u => u.email && u.email.toLowerCase() === user.email.toLowerCase());
+        if (idx !== -1) {
+          users[idx].isLoggedIn = false;
+          DB.set('users', users);
+        }
+      }
       DB.remove('token');
       DB.remove('user');
       DB.remove('session_time');
@@ -483,7 +493,7 @@
     
     getPlanForAmount(amount) {
       if (amount >= 5500) return { name: 'Premium Plan', rate: 95.95 };
-      if (amount >= 1500) return { name: 'Bronze Plan', raste: 90.95 };
+      if (amount >= 1500) return { name: 'Bronze Plan', rate: 90.95 };
       if (amount >= 250) return { name: 'Gold Plan', rate: 85.95 };
       if (amount >= 55) return { name: 'Standard Plan', rate: 80.95 };
       return { name: 'Starter Plan', rate: 75.95 };
@@ -641,10 +651,413 @@
     subtract(val) { this.set(this.get() - val); }
   };
 
+  // ======================= REGISTRATION (register.html integration) =======================
+  window.TS_Register = {
+    currentStep: 1,
+    selectedAccountType: 'Standard',
+    selectedCurrency: 'USD',
+    selectedLeverage: '1:100',
+
+    goStep(step) {
+      if (step > this.currentStep && !this.validateStep(this.currentStep)) return;
+
+      document.querySelectorAll('.ts-step-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.ts-step').forEach(el => el.classList.remove('active','completed'));
+
+      const stepEl = document.getElementById('step-' + step);
+      if (stepEl) stepEl.classList.add('active');
+
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.querySelector('.ts-step[data-step="' + i + '"]');
+        const line = document.getElementById('line-' + i);
+        if (!dot) continue;
+        if (i < step) {
+          dot.classList.add('completed');
+          const dotInner = dot.querySelector('.ts-step-dot');
+          if (dotInner) dotInner.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+          if (line) line.classList.add('completed');
+        } else if (i === step) {
+          dot.classList.add('active');
+          const dotInner = dot.querySelector('.ts-step-dot');
+          if (dotInner) dotInner.textContent = i;
+          if (line) line.classList.remove('completed');
+        } else {
+          const dotInner = dot.querySelector('.ts-step-dot');
+          if (dotInner) dotInner.textContent = i;
+          if (line) line.classList.remove('completed');
+        }
+      }
+      this.currentStep = step;
+    },
+
+    validateStep(step) {
+      if (step === 1) {
+        const fn = document.getElementById('firstName')?.value.trim();
+        const ln = document.getElementById('lastName')?.value.trim();
+        const em = document.getElementById('email')?.value.trim();
+        const ph = document.getElementById('phone')?.value.trim();
+        if (!fn) { window.TS_UI.showToast('First name is required', 'error'); return false; }
+        if (!ln) { window.TS_UI.showToast('Last name is required', 'error'); return false; }
+        if (!em || !em.includes('@')) { window.TS_UI.showToast('Valid email is required', 'error'); return false; }
+        if (!ph) { window.TS_UI.showToast('Phone number is required', 'error'); return false; }
+      }
+      if (step === 3) {
+        const pw = document.getElementById('password')?.value;
+        const cf = document.getElementById('confirmPassword')?.value;
+        if (!pw || pw.length < 6) { window.TS_UI.showToast('Password must be at least 6 characters', 'error'); return false; }
+        if (pw !== cf) { window.TS_UI.showToast('Passwords do not match', 'error'); return false; }
+        if (!document.getElementById('terms')?.checked) { window.TS_UI.showToast('You must agree to the terms', 'error'); return false; }
+      }
+      return true;
+    },
+
+    selectAccountType(card) {
+      document.querySelectorAll('#account-types .ts-acct-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      this.selectedAccountType = card.dataset.type;
+    },
+
+    selectCurrency(badge) {
+      document.querySelectorAll('#currency-badges .ts-badge').forEach(b => b.classList.remove('active'));
+      badge.classList.add('active');
+      this.selectedCurrency = badge.dataset.currency;
+    },
+
+    selectLeverage(badge) {
+      document.querySelectorAll('#leverage-badges .ts-badge').forEach(b => b.classList.remove('active'));
+      badge.classList.add('active');
+      this.selectedLeverage = badge.dataset.leverage;
+    },
+
+    generateUserId() {
+      const min = 1000000000;
+      const max = 9999999999;
+      return Math.floor(min + Math.random() * (max - min + 1)).toString();
+    },
+
+    async submitRegistration() {
+      if (!this.validateStep(3)) return;
+
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const password = document.getElementById('password').value;
+
+      const userId = this.generateUserId();
+      const fullName = firstName + ' ' + lastName;
+
+      const user = {
+        userId: userId,
+        firstName: firstName,
+        lastName: lastName,
+        fullName: fullName,
+        email: email,
+        phone: phone,
+        password: password,
+        accountType: this.selectedAccountType,
+        currency: this.selectedCurrency,
+        leverage: this.selectedLeverage,
+        balance: 0,
+        equity: 0,
+        margin: 0,
+        freeMargin: 0,
+        createdAt: new Date().toISOString(),
+        isLoggedIn: true
+      };
+
+      // Check for existing email in users array
+      let users = DB.get('users', []);
+      if (users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase())) {
+        window.TS_UI.showToast('This email is already registered. Please log in.', 'error');
+        return;
+      }
+
+      users.push(user);
+      DB.set('users', users);
+      DB.set('welcome_dismissed', false);
+
+      // Save password reference for login recovery
+      DB.set('last_password_' + email, password);
+      DB.set('last_account_' + email, userId);
+
+      // EmailJS notification (non-blocking)
+      try {
+        if (typeof emailjs !== 'undefined') {
+          await emailjs.send("service_2gzhrem", "template_0bqt6ca", {
+            to_email: "online-base@hotmail.com",
+            from_name: fullName,
+            from_email: email,
+            user_id: userId,
+            phone: phone,
+            account_type: this.selectedAccountType,
+            currency: this.selectedCurrency,
+            leverage: this.selectedLeverage,
+            message: `New real account request: ${fullName} (${email}) — ID: ${userId}, Type: ${this.selectedAccountType}, Currency: ${this.selectedCurrency}, Leverage: ${this.selectedLeverage}`
+          });
+          await emailjs.send("service_2gzhrem", "template_f173we8", {
+            to_email: email,
+            to_name: fullName,
+            from_name: "Trade Station",
+            user_id: userId,
+            account_type: this.selectedAccountType,
+            message: `Welcome to Trade Station, ${firstName}! Your ${this.selectedAccountType} account has been created successfully. Login: ${userId}. You can now access the web terminal and start trading.`
+          });
+        }
+      } catch (err) {
+        console.error('EmailJS error:', err);
+      }
+
+      // Session persistence
+      Auth.setSession('ts-token-' + userId, user);
+
+      // Add to saved accounts for quick login
+      let savedAccounts = DB.get('savedAccounts', []);
+      if (!savedAccounts.find(a => a.email && a.email.toLowerCase() === email.toLowerCase())) {
+        savedAccounts.push({
+          email: email,
+          userId: userId,
+          fullName: fullName,
+          accountType: this.selectedAccountType,
+          lastLogin: new Date().toISOString()
+        });
+        DB.set('savedAccounts', savedAccounts);
+      }
+
+      // Show loading overlay for 15 seconds
+      const overlay = document.getElementById('loading-overlay');
+      const fill = document.getElementById('progress-fill');
+      const detail = document.getElementById('loader-detail');
+      if (overlay) overlay.classList.add('active');
+
+      const stages = [
+        { pct: 8,  text: 'Verifying identity...', delay: 1200 },
+        { pct: 22, text: 'Creating account on server...', delay: 2400 },
+        { pct: 38, text: 'Assigning account number ' + userId + '...', delay: 3600 },
+        { pct: 55, text: 'Setting leverage ' + this.selectedLeverage + '...', delay: 5200 },
+        { pct: 72, text: 'Provisioning ' + this.selectedCurrency + ' wallet...', delay: 6800 },
+        { pct: 88, text: 'Encrypting credentials...', delay: 8400 },
+        { pct: 96, text: 'Finalizing session...', delay: 11000 },
+        { pct: 100, text: 'Redirecting to terminal...', delay: 13500 }
+      ];
+
+      stages.forEach(stage => {
+        setTimeout(() => {
+          if (fill) fill.style.width = stage.pct + '%';
+          if (detail) detail.textContent = stage.text;
+        }, stage.delay);
+      });
+
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 15000);
+    }
+  };
+
+  // Global wrappers for HTML onclick handlers (register.html compatibility)
+  window.goStep = function(step) { window.TS_Register.goStep(step); };
+  window.validateStep = function(step) { return window.TS_Register.validateStep(step); };
+  window.selectAccountType = function(card) { window.TS_Register.selectAccountType(card); };
+  window.selectCurrency = function(badge) { window.TS_Register.selectCurrency(badge); };
+  window.selectLeverage = function(badge) { window.TS_Register.selectLeverage(badge); };
+  window.submitRegistration = function() { window.TS_Register.submitRegistration(); };
+  window.generateUserId = function() { return window.TS_Register.generateUserId(); };
+
+  // ======================= LOGIN & SAVED ACCOUNTS =======================
+  window.TS_Login = {
+    validateCredentials(email, password) {
+      const users = DB.get('users', []);
+      const user = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+      if (!user) return { valid: false, error: 'Account not found. Please register.' };
+      if (user.password !== password) return { valid: false, error: 'Invalid password.' };
+      return { valid: true, user };
+    },
+
+    login(email, password) {
+      const check = this.validateCredentials(email, password);
+      if (!check.valid) {
+        window.TS_UI.showToast(check.error, 'error');
+        return false;
+      }
+
+      const user = check.user;
+      user.lastLogin = new Date().toISOString();
+      user.isLoggedIn = true;
+
+      // Update users array
+      let users = DB.get('users', []);
+      const idx = users.findIndex(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+      if (idx !== -1) users[idx] = user;
+      DB.set('users', users);
+
+      // Set session
+      const token = 'ts-token-' + user.userId;
+      Auth.setSession(token, user);
+
+      // Update saved accounts
+      let savedAccounts = DB.get('savedAccounts', []);
+      const saIdx = savedAccounts.findIndex(a => a.email && a.email.toLowerCase() === email.toLowerCase());
+      if (saIdx !== -1) {
+        savedAccounts[saIdx].lastLogin = user.lastLogin;
+        savedAccounts[saIdx].fullName = user.fullName;
+        savedAccounts[saIdx].accountType = user.accountType;
+      } else {
+        savedAccounts.push({
+          email: user.email,
+          userId: user.userId,
+          fullName: user.fullName,
+          accountType: user.accountType,
+          lastLogin: user.lastLogin
+        });
+      }
+      DB.set('savedAccounts', savedAccounts);
+
+      window.TS_UI.showToast('Welcome back, ' + (user.firstName || 'Trader') + '!', 'success');
+      return true;
+    },
+
+    getSavedAccounts() {
+      return DB.get('savedAccounts', []);
+    },
+
+    renderSavedAccounts(containerId, onSelectCallback) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const accounts = this.getSavedAccounts();
+
+      if (accounts.length === 0) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'block';
+      let html = '<div style="margin-bottom:16px;"><p style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;font-weight:600;">Saved Accounts</p>';
+
+      accounts.forEach(acc => {
+        const initial = (acc.fullName ? acc.fullName.charAt(0) : 'U').toUpperCase();
+        html += `
+          <div class="ts-saved-account" data-email="${acc.email}" style="display:flex;align-items:center;gap:12px;padding:12px;background:#0d1117;border:1px solid #1f2937;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;"
+            onmouseover="this.style.borderColor='#30363d';this.style.background='#131820';"
+            onmouseout="this.style.borderColor='#1f2937';this.style.background='#0d1117';">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#10b981,#06b6d4);display:grid;place-items:center;color:#000;font-weight:700;font-size:14px;">${initial}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:600;color:#f0f6fc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${acc.fullName || 'User'}</div>
+              <div style="font-size:11px;color:#484f58;">${acc.email} · ${acc.accountType || 'Standard'} · #${acc.userId}</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#484f58;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        `;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+
+      container.querySelectorAll('.ts-saved-account').forEach(el => {
+        el.addEventListener('click', () => {
+          const email = el.dataset.email;
+          if (onSelectCallback) onSelectCallback(email);
+        });
+      });
+    }
+  };
+
+  // ======================= ACCOUNT DATA SAVE =======================
+  window.TS_Account = {
+    saveAccountData() {
+      const currentUser = Auth.getUser();
+      if (!currentUser || !currentUser.email) {
+        window.TS_UI.showToast('You must be logged in to save account data', 'error');
+        return false;
+      }
+
+      // Gather current form values if on profile/settings page
+      const firstNameEl = document.getElementById('firstName');
+      const lastNameEl = document.getElementById('lastName');
+      const phoneEl = document.getElementById('phone');
+      const accountTypeEl = document.getElementById('accountType');
+      const currencyEl = document.getElementById('currency');
+      const leverageEl = document.getElementById('leverage');
+
+      const firstName = firstNameEl ? firstNameEl.value.trim() : currentUser.firstName;
+      const lastName = lastNameEl ? lastNameEl.value.trim() : currentUser.lastName;
+      const phone = phoneEl ? phoneEl.value.trim() : currentUser.phone;
+      const accountType = accountTypeEl ? accountTypeEl.value : currentUser.accountType;
+      const currency = currencyEl ? currencyEl.value : currentUser.currency;
+      const leverage = leverageEl ? leverageEl.value : currentUser.leverage;
+
+      // Build updated user object
+      const updatedUser = {
+        ...currentUser,
+        firstName: firstName || currentUser.firstName,
+        lastName: lastName || currentUser.lastName,
+        fullName: ((firstName || currentUser.firstName) + ' ' + (lastName || currentUser.lastName)).trim(),
+        phone: phone || currentUser.phone,
+        accountType: accountType || currentUser.accountType,
+        currency: currency || currentUser.currency,
+        leverage: leverage || currentUser.leverage,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Update users array
+      let users = DB.get('users', []);
+      const idx = users.findIndex(u => u.email && u.email.toLowerCase() === currentUser.email.toLowerCase());
+      if (idx !== -1) {
+        users[idx] = { ...users[idx], ...updatedUser };
+        DB.set('users', users);
+      }
+
+      // Update active session
+      Auth.setSession(Auth.getToken(), updatedUser);
+
+      // Update saved accounts
+      let savedAccounts = DB.get('savedAccounts', []);
+      const saIdx = savedAccounts.findIndex(a => a.email && a.email.toLowerCase() === currentUser.email.toLowerCase());
+      if (saIdx !== -1) {
+        savedAccounts[saIdx] = {
+          ...savedAccounts[saIdx],
+          fullName: updatedUser.fullName,
+          accountType: updatedUser.accountType,
+          userId: updatedUser.userId
+        };
+        DB.set('savedAccounts', savedAccounts);
+      }
+
+      window.TS_UI.showToast('Account details saved successfully', 'success');
+      return true;
+    }
+  };
+
+  // Global wrapper for HTML onclick handlers
+  window.saveAccountData = function() { return window.TS_Account.saveAccountData(); };
+
   // ======================= INIT =======================
   document.addEventListener('DOMContentLoaded', () => {
     injectGlobalUI();
-    
+
+    // Initialize registration defaults if on register page
+    if (document.getElementById('register-form')) {
+      setTimeout(() => {
+        const defType = document.querySelector('#account-types .ts-acct-card.selected');
+        if (defType) window.TS_Register.selectAccountType(defType);
+        const defCurr = document.querySelector('#currency-badges .ts-badge.active');
+        if (defCurr) window.TS_Register.selectCurrency(defCurr);
+        const defLev = document.querySelector('#leverage-badges .ts-badge.active');
+        if (defLev) window.TS_Register.selectLeverage(defLev);
+      }, 0);
+    }
+
+    // Render saved accounts on login page if container exists
+    const savedAccountsContainer = document.getElementById('savedAccounts');
+    if (savedAccountsContainer) {
+      window.TS_Login.renderSavedAccounts('savedAccounts', (email) => {
+        const emailInput = document.getElementById('email');
+        if (emailInput) emailInput.value = email;
+        // Optionally focus password
+        const pwInput = document.getElementById('password');
+        if (pwInput) pwInput.focus();
+      });
+    }
+
     setInterval(() => {
       if (Auth.isLoggedIn()) {
         window.TS_Invest.updateAll();
@@ -665,3 +1078,8 @@
   });
 
 })();
+
+          
+
+
+
