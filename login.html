@@ -1,117 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Login - Trade Station</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a5f' },
-            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body { background: #0b0f19; }
-    .gradient-text { background: linear-gradient(135deg, #60a5fa, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Trade Station - Sign In</title>
+<script src="app.js"></script>
+<style>
+  :root {
+    --bg-primary: #0b0e11;
+    --bg-secondary: #151a20;
+    --bg-tertiary: #1e2329;
+    --border: #2b3139;
+    --text-primary: #eaecef;
+    --text-secondary: #b7bdc6;
+    --text-muted: #848e9c;
+    --accent-gold: #f0b90b;
+    --accent-red: #f6465d;
+    --font-sans: system-ui, -apple-system, Segoe UI, sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin:0; background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-sans); min-height: 100vh; display: flex; flex-direction: column; }
+  .login-header { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .login-back { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600; }
+  .login-back:hover { color: var(--text-primary); }
+  .login-back svg { width: 18px; height: 18px; }
+  .login-container { flex: 1; padding: 32px 16px; max-width: 420px; margin: 0 auto; width: 100%; }
+  .login-logo { display: flex; justify-content: center; margin-bottom: 28px; }
+  .login-logo svg { width: 48px; height: 48px; }
+  .login-title { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .login-subtitle { text-align: center; font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+  .login-form { display: flex; flex-direction: column; gap: 14px; }
+  .login-group { display: flex; flex-direction: column; gap: 6px; }
+  .login-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; display: flex; align-items: center; gap: 6px; }
+  .login-label svg { width: 14px; height: 14px; stroke-width: 2.5; }
+  .login-input {
+    width: 100%; padding: 10px 12px; background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text-primary); font-size: 13px; outline: none; transition: all 0.12s;
+  }
+  .login-input:focus { border-color: var(--accent-gold); box-shadow: 0 0 0 3px rgba(240,185,11,0.08); }
+  .login-input::placeholder { color: var(--text-muted); opacity: 0.6; }
+  .login-btn {
+    width: 100%; padding: 12px; background: var(--accent-gold); color: var(--bg-primary);
+    border: none; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: all 0.12s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px;
+  }
+  .login-btn:hover { background: #ffe252; }
+  .login-btn:active { transform: scale(0.98); }
+  .login-btn svg { width: 18px; height: 18px; }
+  .login-error { color: var(--accent-red); font-size: 12px; font-weight: 600; display: none; margin-top: 4px; }
+  .login-error.show { display: block; }
+  .login-footer { text-align: center; padding: 20px 16px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); }
+  .login-footer a { color: var(--accent-gold); text-decoration: none; font-weight: 600; }
+  .login-divider { display: flex; align-items: center; gap: 12px; margin: 8px 0; color: var(--text-muted); font-size: 11px; font-weight: 600; }
+  .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+</style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
-  <div class="w-full max-w-md">
-    <div class="text-center mb-8">
-      <svg viewBox="0 0 200 40" class="h-10 mx-auto mb-4" fill="none"><rect x="0" y="8" width="24" height="24" rx="4" fill="#2563EB"/><path d="M6 20L10 16L14 22L18 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text x="32" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="white">Trade Station</text></svg>
-      <h1 class="text-2xl font-bold text-white">Welcome Back</h1>
-      <p class="text-gray-400 text-sm mt-1">Log in to your trading account</p>
+<body>
+
+<div class="login-header">
+  <a href="index.html" class="login-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back
+  </a>
+</div>
+
+<div class="login-container">
+  <div class="login-logo">
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="ts-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#10b981" />
+          <stop offset="100%" stop-color="#06b6d4" />
+        </linearGradient>
+        <filter id="ts-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2" result="blur"/>
+          <feFlood flood-color="#10b981" flood-opacity="0.45"/>
+          <feComposite in2="blur" operator="in"/>
+          <feMerge>
+            <feMergeNode/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <style>
+          .ts-stream { stroke: rgba(16, 185, 129, 0.12); stroke-width: 0.4; stroke-dasharray: 2 6; animation: ts-flow 3s linear infinite; }
+          .ts-stream:nth-child(2) { animation-delay: 1s; }
+          .ts-stream:nth-child(3) { animation-delay: 2s; }
+          @keyframes ts-flow { to { stroke-dashoffset: -16; } }
+          .ts-pulse { animation: ts-breathe 2.5s ease-in-out infinite; transform-origin: 20px 6px; }
+          @keyframes ts-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(1.08); } }
+        </style>
+      </defs>
+      <rect x="0" y="0" width="40" height="40" rx="10" fill="#0a0a0a" />
+      <path d="M4 12 L36 12" class="ts-stream" />
+      <path d="M4 20 L36 20" class="ts-stream" />
+      <path d="M4 28 L36 28" class="ts-stream" />
+      <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#ts-grad)" stroke-width="0.5" fill="none" opacity="0.2" />
+      <g filter="url(#ts-glow)">
+        <path d="M20 6 L6 13 L20 20 L34 13 Z" stroke="url(#ts-grad)" stroke-width="2" stroke-linejoin="round" fill="rgba(16,185,129,0.08)" />
+        <path d="M6 20 L20 27 L34 20" stroke="url(#ts-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M6 27 L20 34 L34 27" stroke="url(#ts-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </g>
+      <circle cx="20" cy="6" r="1.5" fill="#10b981" class="ts-pulse" />
+      <circle cx="20" cy="20" r="1.2" fill="#06b6d4" />
+      <circle cx="20" cy="34" r="1.5" fill="#10b981" />
+      <path d="M6 13 L6 27" stroke="url(#ts-grad)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+      <path d="M34 13 L34 27" stroke="url(#ts-grad)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+    </svg>
+  </div>
+
+  <div class="login-title">Sign In</div>
+  <div class="login-subtitle">Access your Trade Station account</div>
+
+  <form class="login-form" id="login-form" onsubmit="return handleLogin(event)">
+    <div class="login-group">
+      <label class="login-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        Email
+      </label>
+      <input type="email" class="login-input" id="login-email" placeholder="name@example.com" required autocomplete="email">
     </div>
 
-    <form id="login-form" class="bg-dark-800 border border-gray-700/50 rounded-2xl p-6 space-y-4">
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Saved Accounts</label>
-        <select id="savedAccounts" class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors">
-          <option value="">-- Select or enter manually --</option>
-        </select>
-      </div>
-      <div class="relative">
-        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-700"></div></div>
-        <div class="relative flex justify-center text-xs"><span class="px-2 bg-dark-800 text-gray-500">or</span></div>
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Email</label>
-        <input type="email" id="email" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="john@example.com">
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Password</label>
-        <input type="password" id="password" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="Your password">
-      </div>
-      <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-all">Log In</button>
-      <p class="text-center text-sm text-gray-400">Don't have an account? <a href="register.html" class="text-brand-400 font-semibold">Create Account</a></p>
-    </form>
+    <div class="login-group">
+      <label class="login-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        Password
+      </label>
+      <input type="password" class="login-input" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
+    </div>
+
+    <div class="login-error" id="login-error">Invalid email or password</div>
+
+    <button type="submit" class="login-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+        <polyline points="10 17 15 12 10 7"></polyline>
+        <line x1="15" y1="12" x2="3" y2="12"></line>
+      </svg>
+      Sign In
+    </button>
+  </form>
+
+  <div class="login-divider">or</div>
+
+  <div style="text-align:center;">
+    <a href="register.html" class="login-btn" style="background: var(--bg-tertiary); color: var(--text-primary); text-decoration: none; margin-top: 0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="8.5" cy="7" r="4"></circle>
+        <line x1="20" y1="8" x2="20" y2="14"></line>
+        <line x1="23" y1="11" x2="17" y2="11"></line>
+      </svg>
+      Create New Account
+    </a>
   </div>
+</div>
 
-  <div id="loading-overlay" class="hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
-    <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-    <p class="text-white font-medium text-lg">Authenticating...</p>
-  </div>
+<div class="login-footer">
+</div>
 
-  <script src="app.js"></script>
-  <script>
-    // Populate saved accounts
-    const users = TS_DB.get('users', []);
-    const select = document.getElementById('savedAccounts');
-    users.forEach((u, i) => {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = `${u.firstName} ${u.lastName} (${u.email})`;
-      select.appendChild(opt);
-    });
+<script>
+  function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim().toLowerCase();
+    const password = document.getElementById('login-password').value;
+    const errorEl = document.getElementById('login-error');
 
-    select.addEventListener('change', function() {
-      if (this.value !== '') {
-        const u = users[this.value];
-        document.getElementById('email').value = u.email;
-      }
-    });
+    errorEl.classList.remove('show');
 
-    document.getElementById('login-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+    if (typeof TS_Auth === 'undefined' || typeof TS_Accounts === 'undefined') {
+      alert('System error. Please refresh the page.');
+      return;
+    }
 
-      document.getElementById('loading-overlay').classList.remove('hidden');
+    const result = TS_Auth.login(email, password);
+    if (result.success) {
+      window.location.href = 'dashboard.html';
+    } else {
+      errorEl.textContent = result.error || 'Invalid email or password';
+      errorEl.classList.add('show');
+    }
+  }
+</script>
 
-      // Try backend first
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (data.token) {
-          TS_Auth.setSession(data.token, data.user);
-          setTimeout(() => location.href = 'dashboard.html', 2000);
-          return;
-        }
-      } catch {}
-
-      // Fallback to localStorage
-      const localUsers = TS_DB.get('users', []);
-      const user = localUsers.find(u => u.email === email && u.password === password);
-      if (user) {
-        TS_Auth.setSession('local-token-' + user.userId, user);
-        setTimeout(() => location.href = 'dashboard.html', 2000);
-      } else {
-        document.getElementById('loading-overlay').classList.add('hidden');
-        TS_UI.showToast('Invalid email or password', 'error');
-      }
-    });
-  </script>
 </body>
 </html>
