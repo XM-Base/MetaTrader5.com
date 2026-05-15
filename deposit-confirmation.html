@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Deposit Confirmation - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#2979FF', 600: '#1E88E5', 700: '#1565C0' },
+            dark: { 800: '#161B22', 900: '#0D1117', 950: '#0b0f19' },
+            surface: { 800: '#1a1d29', 900: '#13161f' },
+            success: { 500: '#00C853', 600: '#00B248' },
+            warning: { 500: '#FFAB00', 600: '#FF8F00' },
+            danger: { 500: '#FF1744', 600: '#D50000' }
+          },
+          fontFamily: {
+            mono: ['"Roboto Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0b0f19; color: #e6e6e6; -webkit-font-smoothing: antialiased; }
+    .mt5-card {
+      background: linear-gradient(145deg, #161B22 0%, #13161f 100%);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .mt5-input {
+      background: #0D1117;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.2s ease;
+    }
+    .mt5-input:focus {
+      border-color: #2979FF;
+      box-shadow: 0 0 0 3px rgba(41,121,255,0.15);
+      outline: none;
+    }
+    .mt5-btn-primary {
+      background: linear-gradient(135deg, #2979FF 0%, #1E88E5 100%);
+      border: none;
+      box-shadow: 0 4px 16px rgba(41,121,255,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+      transition: all 0.2s ease;
+    }
+    .mt5-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(41,121,255,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    .mt5-btn-primary:active { transform: translateY(0); }
+    .mt5-btn-secondary {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.2s ease;
+    }
+    .mt5-btn-secondary:hover { background: rgba(255,255,255,0.08); }
+    .mt5-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+    .shimmer {
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+      background-size: 1000px 100%;
+      animation: shimmer 2s infinite linear;
+    }
+    .support-banner {
+      background: linear-gradient(135deg, rgba(255,23,68,0.08) 0%, rgba(213,0,0,0.04) 100%);
+      border: 1px solid rgba(255,23,68,0.2);
+      backdrop-filter: blur(12px);
+    }
+    .code-input {
+      letter-spacing: 0.5em;
+      font-variant-numeric: tabular-nums;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+  </style>
+</head>
+<body class="text-white min-h-screen flex flex-col">
+
+  <!-- Global Header -->
+  <div id="ts-global-header"></div>
+
+  <!-- Main Content -->
+  <main class="flex-1 pt-4 pb-28 px-4 max-w-lg mx-auto w-full relative">
+
+    <!-- SVG Header Section -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="10" fill="url(#headerGrad)"/>
+          <path d="M12 28V14L20 24L28 14V28" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 14H28" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="headerGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#2979FF"/>
+              <stop offset="1" stop-color="#1565C0"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-white">Deposit Confirmation</h1>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span class="status-dot bg-success-500 animate-pulse-slow"></span>
+            <span class="text-xs text-gray-400 font-medium">Secure Connection Established</span>
+          </div>
+        </div>
+      </div>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="text-gray-500">
+        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <!-- Deposit Details Card -->
+    <div class="mt5-card rounded-xl p-5 mb-4 relative overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-500/30 to-transparent"></div>
+      <div class="shimmer absolute inset-0 pointer-events-none"></div>
+      
+      <div class="flex items-center gap-2 mb-4 pb-3 border-b border-white/5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-brand-500">
+          <path d="M21 12V7H3V12H21ZM21 14H3V17H21V14ZM21 5V4H3V5H21ZM3 19H21V20H3V19Z" fill="currentColor"/>
+          <path d="M1 3H23V21H1V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+        <span class="text-sm font-semibold text-gray-300 uppercase tracking-wider">Transaction Details</span>
+      </div>
+
+      <div class="space-y-4 relative z-10">
+        <!-- Amount -->
+        <div class="flex items-center justify-between group">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center border border-white/5">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-success-500">
+                <path d="M12 2V22M17 7H9.5C7.567 7 6 8.567 6 10.5C6 12.433 7.567 14 9.5 14H14.5C16.433 14 18 15.567 18 17.5C18 19.433 16.433 21 14.5 21H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <span class="block text-xs text-gray-500 font-medium uppercase tracking-wider">Amount</span>
+            </div>
+          </div>
+          <span class="text-base font-bold text-white font-mono tracking-tight" id="dep-amount">--</span>
+        </div>
+
+        <div class="mt5-divider"></div>
+
+        <!-- Coin -->
+        <div class="flex items-center justify-between group">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center border border-white/5">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-warning-500">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M12 6V18M12 6L9 9M12 6L15 9M12 18L9 15M12 18L15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <span class="block text-xs text-gray-500 font-medium uppercase tracking-wider">Coin</span>
+            </div>
+          </div>
+          <span class="text-sm font-bold text-white" id="dep-coin">--</span>
+        </div>
+
+        <div class="mt5-divider"></div>
+
+        <!-- Network -->
+        <div class="flex items-center justify-between group">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center border border-white/5">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-brand-500">
+                <path d="M5 12L2 12M22 12L19 12M12 5L12 2M12 22L12 19M7.05 7.05L4.93 4.93M19.07 19.07L16.95 16.95M7.05 16.95L4.93 19.07M19.07 4.93L16.95 7.05" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <div>
+              <span class="block text-xs text-gray-500 font-medium uppercase tracking-wider">Network</span>
+            </div>
+          </div>
+          <span class="text-sm font-bold text-white" id="dep-network">--</span>
+        </div>
+
+        <div class="mt5-divider"></div>
+
+        <!-- Address -->
+        <div class="flex items-center justify-between group">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center border border-white/5 flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-gray-400">
+                <path d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 5.02944 7.02944 1 12 1C16.9706 1 21 5.02944 21 10Z" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <span class="block text-xs text-gray-500 font-medium uppercase tracking-wider">Address</span>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-white font-mono truncate max-w-[140px] ml-2" id="dep-address">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Support Banner (Hidden by default) -->
+    <div id="support-banner" class="support-banner rounded-xl p-4 mb-4 hidden">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 mt-0.5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="text-danger-500">
+            <path d="M12 9V13M12 17H12.01M10.29 3.86L1.82 18C1.64537 18.3024 1.55297 18.6453 1.55201 18.9945C1.55105 19.3437 1.64158 19.6871 1.81442 19.9865C1.98727 20.2859 2.23648 20.5297 2.53456 20.6923C2.83264 20.8548 3.16904 20.9297 3.51 20.91H20.49C20.831 20.9297 21.1674 20.8548 21.4654 20.6923C21.7635 20.5297 22.0127 20.2859 22.1856 19.9865C22.3584 19.6871 22.449 19.3437 22.448 18.9945C22.447 18.6453 22.3546 18.3024 22.18 18L13.71 3.86C13.5317 3.56611 13.2807 3.32312 12.9821 3.15561C12.6836 2.9881 12.3477 2.90137 12.005 2.90137C11.6623 2.90137 11.3264 2.9881 11.0279 3.15561C10.7293 3.32312 10.4783 3.56611 10.3 3.86H10.29Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-sm font-bold text-white mb-1">Code Already Used</h3>
+          <p class="text-xs text-gray-300 leading-relaxed mb-3">This deposit code has already been redeemed. If you believe this is an error, please contact our support team immediately for assistance.</p>
+          <div class="flex gap-2">
+            <a href="https://www.smartsupp.com/widget/0aca269b6fb7319bc6e3d94fecac02732bdbdb3a" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 bg-danger-500/20 hover:bg-danger-500/30 text-danger-400 text-xs font-semibold rounded-lg border border-danger-500/30 transition-colors">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="text-current">
+                <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Contact Support
+            </a>
+            <button id="cancel-support-btn" class="px-4 py-2 mt5-btn-secondary text-gray-300 text-xs font-semibold rounded-lg">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verification Form -->
+    <form id="confirm-form" class="space-y-4">
+      <div class="mt5-card rounded-xl p-5">
+        <div class="flex items-center gap-2 mb-4">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-brand-500">
+            <path d="M12 15V17M6 21H18C18.5304 21 19.0391 20.7893 19.4142 20.4142C19.7893 20.0391 20 19.5304 20 19V13C20 12.4696 19.7893 11.9609 19.4142 11.5858C19.0391 11.2107 18.5304 11 18 11H6C5.46957 11 4.96086 11.2107 4.58579 11.5858C4.21071 11.9609 4 12.4696 4 13V19C4 19.5304 4.21071 20.0391 4.58579 20.4142C4.96086 20.7893 5.46957 21 6 21ZM16 11V7C16 5.93913 15.5786 4.92172 14.8284 4.17157C14.0783 3.42143 13.0609 3 12 3C10.9391 3 9.92172 3.42143 9.17157 4.17157C8.42143 4.92172 8 5.93913 8 7V11H16Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="text-sm font-semibold text-gray-300 uppercase tracking-wider">Security Verification</span>
+        </div>
+
+        <div class="relative">
+          <label class="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">6-Digit Verification Code</label>
+          <div class="relative">
+            <input 
+              type="text" 
+              id="code" 
+              required 
+              maxlength="6" 
+              pattern="[A-Za-z0-9]{6}" 
+              inputmode="text"
+              autocomplete="one-time-code"
+              class="w-full px-4 py-3.5 mt5-input rounded-xl text-white text-center text-2xl font-mono code-input focus:outline-none placeholder-gray-600"
+              placeholder="000000"
+            >
+            <div class="absolute right-3 top-1/2 -translate-y-1/2">
+              <svg id="code-valid-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" class="text-success-500 hidden">
+                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <svg id="code-invalid-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" class="text-danger-500 hidden">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">Enter the unique deposit code provided by your payment processor.</p>
+        </div>
+      </div>
+
+      <!-- Submit Button with SVG Label -->
+      <button type="submit" id="submit-btn" class="w-full py-4 mt5-btn-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Submit Deposit</span>
+      </button>
+
+      <!-- Cancel Button -->
+      <button type="button" id="cancel-btn" onclick="location.href='dashboard.html'" class="w-full py-3 mt5-btn-secondary text-gray-400 font-semibold rounded-xl text-sm flex items-center justify-center gap-2 hover:text-white transition-colors">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-current">
+          <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Return to Dashboard
+      </button>
+    </form>
+
+    <!-- Security Footer -->
+    <div class="mt-6 flex items-center justify-center gap-4 text-gray-500">
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="text-gray-600">
+          <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="text-[10px] font-medium uppercase tracking-wider">256-bit SSL</span>
+      </div>
+      <div class="w-1 h-1 rounded-full bg-gray-700"></div>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="text-gray-600">
+          <path d="M12 22S21 18 21 12V5L12 2L3 5V12C3 18 12 22 12 22Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="text-[10px] font-medium uppercase tracking-wider">Encrypted</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Global Footer -->
+  <div id="ts-global-footer"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md">
+    <div class="relative mb-6">
+      <div class="w-14 h-14 border-[3px] border-brand-500/20 rounded-full"></div>
+      <div class="absolute inset-0 w-14 h-14 border-[3px] border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="text-brand-500">
+          <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <p class="text-white font-semibold text-sm tracking-wide">Processing deposit...</p>
+    <p class="text-gray-500 text-xs mt-2">Please do not close this window</p>
+  </div>
+
+  <!-- Original App JS -->
+  <script src="app.js"></script>
+
+  <!-- Deposit Confirmation Logic -->
+  <script>
+    // ============================================================
+    // DEPOSIT CODES CONFIGURATION
+    // ============================================================
+    const DEPOSIT_CODES = [
+      "A7B3C1", "D4E8F2", "G1H9J3", "K5L2M4", "N7P6Q5", "R3S8T6", "U1V4W7", "X9Y2Z8",
+      "B6C5D9", "E3F1G0", "H7J4K2", "L8M6N3", "P5Q9R4", "S2T7U5", "V1W8X6", "Y4Z3A7",
+      "C9D2E8", "F6G5H1", "J7K4L9", "M3N8P2", "Q1R5S7", "T6U4V8", "W2X9Y3", "Z5A7B4",
+      "C1D8E6", "F9G3H5", "J2K7L1", "M4N6P8", "Q3R9S2", "T5U1V7", "W8X4Y6", "Z2A9B3",
+      "C7D5E1", "F4G8H2", "J9K6L3", "M1N7P4", "Q5R2S8", "T3U9V1", "W6X5Y7", "Z4A8B2",
+      "C3D1E9", "F7G6H4", "J5K2L8", "M9N3P1", "Q4R7S6", "T8U5V2", "W1X9Y4", "Z6A3B7",
+      "C2D8E5", "F1G4H9", "J6K7L2", "M5N1P8", "Q9R3S4", "T2U6V7", "W4X8Y1", "Z3A5B9",
+      "C6D7E2", "F8G1H5", "J4K9L6", "M2N5P3", "Q7R1S8", "T9U4V5", "W3X6Y2", "Z1A8B7",
+      "C5D9E4", "F2G7H6", "J1K3L8", "M6N4P9", "Q2R5S1", "T7U8V3", "W9X1Y6", "Z4A2B5",
+      "C8D3E7", "F5G9H1", "J2K6L4", "M7N8P5", "Q1R4S9", "T3U7V2", "W5X8Y4", "Z6A1B3",
+      "C9D5E8", "F4G2H7", "J8K1L6", "M3N9P4", "Q5R7S2", "T1U8V6", "W2X4Y9", "Z7A3B1",
+      "C6D8E5", "F9G1H4", "J5K7L2", "M8N3P6", "Q4R9S1", "T2U5V7", "W6X1Y8", "Z3A4B9",
+      "C7D2E6", "F1G8H5", "J9K4L3", "M5N7P1", "Q8R2S6", "T4U9V5", "W1X3Y7", "Z5A6B2",
+      "C8D1E4", "F7G3H9", "J2K5L8", "M4N6P1", "Q9R7S3", "T5U2V8", "W3X4Y6", "Z1A9B7",
+      "C2D5E8", "F6G1H3", "J7K8L4", "M9N2P5", "Q1R6S7", "T8U3V4", "W5X9Y2", "Z4A7B1",
+      "C3D6E5", "F2G8H9", "J1K4L7", "M5N3P8", "Q7R9S2", "T6U1V5", "W8X2Y4", "Z9A3B6",
+      "C1D7E8", "F4G5H2", "J6K9L1", "M2N8P7", "Q5R3S4", "T1U7V9", "W4X6Y5", "Z2A8B3",
+      "C9D1E7", "F5G4H6", "J3K8L2", "M7N1P9", "Q4R6S5", "T8U2V1", "W9X3Y7", "Z5A4B8",
+      "C6D2E1", "F7G9H3", "J4K5L6", "M8N2P1", "Q3R7S9", "T5U4V2", "W1X8Y6", "Z7A9B5",
+      "C2D4E3", "F6G8H1", "J9K7L5", "M1N4P2", "Q8R5S6", "T3U1V7", "W2X9Y8", "Z4A6B1",
+      "C5D3E7", "F1G2H8", "J6K4L9", "M7N5P3", "Q2R8S1", "T9U6V4", "W3X1Y5", "Z8A2B7",
+      "C4D9E6", "F5G7H1", "J2K8L3", "M6N1P4", "Q7R5S2", "T4U3V9", "W8X6Y1", "Z1A5B4",
+      "C9D7E2", "F3G4H8", "J5K1L6", "M2N9P7"
+    ];
+
+    // ============================================================
+    // AUTH & DATA INITIALIZATION (Preserved from original)
+    // ============================================================
+    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+
+    const pending = TS_DB.get('pending_crypto_deposit', { amount: 0, coin: '--', network: '--', address: '--' });
+
+    document.getElementById('dep-amount').textContent = '$' + pending.amount.toFixed(2);
+    document.getElementById('dep-coin').textContent = pending.coin;
+    document.getElementById('dep-network').textContent = pending.network;
+    document.getElementById('dep-address').textContent = pending.address;
+
+    // ============================================================
+    // SUPPORT BANNER LOGIC
+    // ============================================================
+    const supportBanner = document.getElementById('support-banner');
+    const cancelSupportBtn = document.getElementById('cancel-support-btn');
+
+    cancelSupportBtn.addEventListener('click', function() {
+      supportBanner.classList.add('hidden');
+    });
+
+    function showSupportBanner() {
+      supportBanner.classList.remove('hidden');
+      supportBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function hideSupportBanner() {
+      supportBanner.classList.add('hidden');
+    }
+
+    // ============================================================
+    // CODE VALIDATION HELPERS
+    // ============================================================
+    function getUsedCodes() {
+      return TS_DB.get('used_deposit_codes', []);
+    }
+
+    function markCodeUsed(code) {
+      const used = getUsedCodes();
+      if (!used.includes(code.toUpperCase())) {
+        used.push(code.toUpperCase());
+        TS_DB.set('used_deposit_codes', used);
+      }
+    }
+
+    function isCodeValid(code) {
+      return DEPOSIT_CODES.includes(code.toUpperCase());
+    }
+
+    function isCodeUsed(code) {
+      return getUsedCodes().includes(code.toUpperCase());
+    }
+
+    // ============================================================
+    // FORM SUBMISSION (15-second processing then auto-redirect)
+    // ============================================================
+    document.getElementById('confirm-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const codeInput = document.getElementById('code');
+      const code = codeInput.value.trim();
+      const validIcon = document.getElementById('code-valid-icon');
+      const invalidIcon = document.getElementById('code-invalid-icon');
+
+      // Reset icons
+      validIcon.classList.add('hidden');
+      invalidIcon.classList.add('hidden');
+      codeInput.classList.remove('border-danger-500');
+
+      // Basic format validation
+      if (code.length !== 6) {
+        TS_UI.showToast('Enter a valid 6-character code', 'warning');
+        invalidIcon.classList.remove('hidden');
+        codeInput.classList.add('border-danger-500');
+        setTimeout(() => codeInput.classList.remove('border-danger-500'), 2000);
+        return;
+      }
+
+      // Check if code is in valid list
+      if (!isCodeValid(code)) {
+        TS_UI.showToast('Invalid deposit code', 'error');
+        invalidIcon.classList.remove('hidden');
+        codeInput.classList.add('border-danger-500');
+        setTimeout(() => codeInput.classList.remove('border-danger-500'), 2000);
+        return;
+      }
+
+      // Check if code already used
+      if (isCodeUsed(code)) {
+        TS_UI.showToast('This code has already been used', 'error');
+        invalidIcon.classList.remove('hidden');
+        showSupportBanner();
+        return;
+      }
+
+      // Hide support banner if visible
+      hideSupportBanner();
+
+      // Disable submit button during processing
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+
+      // Show loading overlay for 15 seconds
+      document.getElementById('loading-overlay').classList.remove('hidden');
+
+      setTimeout(() => {
+        // Mark code as used
+        markCodeUsed(code);
+
+        // Add deposited amount to balance
+        TS_Balance.add(pending.amount);
+
+        // Record transaction
+        const txs = TS_DB.get('transactions', []);
+        txs.unshift({
+          type: 'deposit',
+          amount: pending.amount,
+          method: 'crypto',
+          symbol: pending.coin,
+          network: pending.network,
+          depositCode: code.toUpperCase(),
+          status: 'completed',
+          createdAt: new Date().toISOString()
+        });
+        TS_DB.set('transactions', txs);
+
+        // Clear pending deposit
+        TS_DB.remove('pending_crypto_deposit');
+
+        // Show success toast
+        TS_UI.showToast('Deposit successful!', 'success');
+
+        // Automatically redirect to dashboard
+        location.href = 'dashboard.html';
+
+      }, 15000); // 15 seconds loading
+    });
+
+    // ============================================================
+    // INPUT FORMATTING
+    // ============================================================
+    document.getElementById('code').addEventListener('input', function(e) {
+      // Auto-uppercase and alphanumeric only
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      
+      // Hide icons on input
+      document.getElementById('code-valid-icon').classList.add('hidden');
+      document.getElementById('code-invalid-icon').classList.add('hidden');
+      this.classList.remove('border-danger-500');
+    });
+  </script>
+</body>
+</html>
