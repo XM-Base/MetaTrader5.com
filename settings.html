@@ -3,667 +3,213 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Settings — Trade Station</title>
-<script src="app.js"></script>
+<title>Trade Station — Settings</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#050505;color:#e5e5e5;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;padding-bottom:100px;}
-  .max-w-lg{max-width:512px;margin:0 auto;padding:0 16px;}
-  .mt5-header-logo{display:flex;align-items:center;gap:10px;}
-  .mt5-logo-icon{width:32px;height:32px;}
-  .mt5-connection-dot{width:7px;height:7px;border-radius:50%;background:#10b981;}
-  .mt5-scroll-x{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
-  .mt5-scroll-x::-webkit-scrollbar{display:none;}
-  .mt5-nav-tab{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:6px;background:#0f0f0f;border:1px solid #1a1a1a;color:#888;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;}
-  .mt5-nav-tab.active{background:rgba(16,185,129,.12);color:#10b981;border-color:rgba(16,185,129,.25);}
-  .mt5-nav-tab svg{width:14px;height:14px;}
-  .mt5-section-title{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin:20px 0 8px;padding-left:4px;}
-  .mt5-panel{background:#0f0f0f;border:1px solid #1a1a1a;border-radius:10px;}
-  .mt5-icon-wrap{width:32px;height:32px;border-radius:8px;background:#0a0a0a;border:1px solid #1a1a1a;display:flex;align-items:center;justify-content:center;}
-  .mt5-icon-wrap svg{width:18px;height:18px;}
-  .mt5-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.3px;}
-  .mt5-badge-green{background:rgba(16,185,129,.12);color:#10b981;}
-  .mt5-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #1a1a1a;}
-  .mt5-row:last-child{border-bottom:none;}
-  .mt5-row-label{font-size:12px;font-weight:600;color:#e5e5e5;}
-  .mt5-row-desc{font-size:11px;color:#666;margin-top:2px;}
-  .mt5-toggle{width:36px;height:20px;border-radius:10px;background:#333;border:none;position:relative;cursor:pointer;transition:background .2s;}
-  .mt5-toggle.active{background:#10b981;}
-  .mt5-toggle-knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;}
-  .mt5-toggle.active .mt5-toggle-knob{transform:translateX(16px);}
-  .mt5-input{width:100%;background:#0a0a0a;border:1px solid #222;border-radius:6px;padding:9px 12px;color:#e5e5e5;font-size:12px;outline:none;}
-  .mt5-input:focus{border-color:#10b981;}
-  .mt5-select{width:100%;background:#0a0a0a;border:1px solid #222;border-radius:6px;padding:9px 12px;color:#e5e5e5;font-size:12px;outline:none;}
-  .mt5-number-input{width:70px;background:#0a0a0a;border:1px solid #222;border-radius:6px;padding:8px 10px;color:#e5e5e5;font-size:12px;outline:none;text-align:right;}
-  .mt5-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:6px;background:#1a1a1a;color:#c1c1c1;font-size:12px;font-weight:600;border:none;cursor:pointer;}
-  .mt5-btn:hover{background:#252525;color:#fff;}
-  .mt5-btn-primary{background:#10b981;color:#fff;}
-  .mt5-btn-primary:hover{background:#059669;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#050505;color:#e5e5e5;font-family:system-ui,-apple-system,sans-serif;min-height:100vh;}
+  main{max-width:560px;margin:0 auto;padding:8px 16px 100px;}
+  .settings-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .settings-header h1{font-size:16px;font-weight:700;}
+  .settings-header p{font-size:11px;color:#888;}
+  .tab-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;}
+  .mt5-nav-tab{padding:6px 10px;background:#0f0f0f;border:1px solid #1a1a1a;border-radius:6px;font-size:11px;color:#888;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;}
+  .mt5-nav-tab.active{background:rgba(16,185,129,.12);border-color:#10b981;color:#10b981;}
+  .mt5-nav-tab svg{width:13px;height:13px;}
   .page-section{display:none;}
   .page-section.active{display:block;}
-  .text-mt5-text{color:#e5e5e5;}
-  .text-mt5-textMuted{color:#888;}
-  .text-sm{font-size:13px;}
-  .text-base{font-size:15px;}
-  .font-bold{font-weight:700;}
-  .font-semibold{font-weight:600;}
-  .uppercase{text-transform:uppercase;}
-  .tracking-wider{letter-spacing:.05em;}
-  .mb-1{margin-bottom:4px;}
-  .mb-5{margin-bottom:20px;}
-  .mt-2{margin-top:8px;}
-  .mt-0\.5{margin-top:2px;}
-  .pt-1{padding-top:4px;}
-  .pt-2{padding-top:8px;}
-  .pt-3{padding-top:12px;}
-  .pb-1{padding-bottom:4px;}
-  .pb-28{padding-bottom:112px;}
-  .p-4{padding:16px;}
-  .px-4{padding-left:16px;padding-right:16px;}
-  .py-2{padding-top:8px;padding-bottom:8px;}
-  .py-2\.5{padding-top:10px;padding-bottom:10px;}
-  .py-3{padding-top:12px;padding-bottom:12px;}
-  .gap-1{gap:4px;}
-  .gap-1\.5{gap:6px;}
-  .gap-2{gap:8px;}
-  .gap-3{gap:12px;}
-  .flex{display:flex;}
-  .flex-1{flex:1;}
-  .flex-col{flex-direction:column;}
-  .items-center{align-items:center;}
-  .items-start{align-items:flex-start;}
-  .justify-between{justify-content:space-between;}
-  .w-full{width:100%;}
-  .ml-auto{margin-left:auto;}
-  .inline{display:inline;}
-  .block{display:block;}
-  .space-y-3 > * + *{margin-top:12px;}
-  .space-y-4 > * + *{margin-top:16px;}
+  .mt5-section-title{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.6px;margin:14px 0 8px;font-weight:700;}
+  .mt5-panel{background:#0f0f0f;border:1px solid #1a1a1a;border-radius:10px;padding:14px;margin-bottom:10px;}
+  .mt5-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a1a1a;}
+  .mt5-row:last-child{border-bottom:none;}
+  .mt5-row-label{font-size:13px;color:#e5e5e5;}
+  .mt5-row-desc{font-size:11px;color:#666;margin-top:2px;}
+  .mt5-row-value{font-size:12px;color:#e5e5e5;}
+  .mt5-toggle{width:36px;height:20px;background:#333;border-radius:10px;position:relative;cursor:pointer;border:none;outline:none;transition:background .2s;}
+  .mt5-toggle.active{background:#10b981;}
+  .mt5-toggle-knob{width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;}
+  .mt5-toggle.active .mt5-toggle-knob{transform:translateX(16px);}
+  .mt5-input{width:100%;padding:8px 10px;background:#0a0a0a;border:1px solid #222;border-radius:5px;color:#e5e5e5;font-size:12px;outline:none;margin-top:4px;}
+  .mt5-select{width:100%;padding:8px 10px;background:#0a0a0a;border:1px solid #222;border-radius:5px;color:#e5e5e5;font-size:12px;outline:none;}
+  .mt5-number-input{width:70px;padding:6px 8px;background:#0a0a0a;border:1px solid #222;border-radius:5px;color:#e5e5e5;font-size:12px;outline:none;}
+  .mt5-btn{padding:8px 12px;background:#1a1a1a;border:1px solid #222;border-radius:5px;color:#c1c1c1;font-size:12px;cursor:pointer;}
+  .mt5-btn-primary{background:#10b981;color:#fff;border-color:#10b981;}
+  .mt5-icon-wrap{width:32px;height:32px;background:rgba(16,185,129,.08);border-radius:6px;display:flex;align-items:center;justify-content:center;}
 </style>
 </head>
 <body>
 
-  <div id="ts-global-header">
-    <header style="position:sticky;top:0;z-index:50;background:rgba(10,10,10,.95);backdrop-filter:blur(8px);border-bottom:1px solid #171717;">
-      <div class="max-w-lg" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;">
-        <div class="mt5-header-logo">
-          <svg class="mt5-logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="32" height="32" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-            <path d="M8 22L14 14L18 18L24 8" stroke="#58a6ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="24" cy="8" r="2" fill="#58a6ff"/>
-            <path d="M8 24h16" stroke="#30363d" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <div>
-            <h1 class="text-sm font-bold text-mt5-text tracking-tight">Trade Station</h1>
-            <div class="flex items-center gap-1.5 mt-0.5">
-              <div class="mt5-connection-dot"></div>
-              <span class="text-mt5-textMuted" style="font-size:10px;font-weight:500;">Connected</span>
-            </div>
-          </div>
-        </div>
-        <button onclick="TS_UI.showModal('About','Trade Station v2.5.0<br>Build 4321<br>MetaTrader 5 Compatible',[{'text':'OK',primary:true}])" class="mt5-btn p-2">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="7" stroke="#8b949e" stroke-width="1.5"/>
-            <path d="M8 7v4.5" stroke="#8b949e" stroke-width="1.5" stroke-linecap="round"/>
-            <circle cx="8" cy="5" r="0.8" fill="#8b949e"/>
-          </svg>
-        </button>
-      </div>
-    </header>
+<div id="ts-global-header"></div>
+
+<<main>
+  <div class="settings-header">
+    <div class="mt5-icon-wrap">
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.93 3.93l1.41 1.41M12.66 12.66l1.41 1.41M3.93 14.07l1.41-1.41M12.66 5.34l1.41-1.41" stroke="#8b949e" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="9" r="3" stroke="#58a6ff" stroke-width="1.5"/></svg>
+    </div>
+    <div>
+      <h1>Settings</h1>
+      <p>Platform configuration and preferences</p>
+    </div>
   </div>
 
-  <main class="pb-28 pt-3 px-4 max-w-lg">
-    <div class="flex items-center gap-3 mb-5">
-      <div class="mt5-icon-wrap">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.93 3.93l1.41 1.41M12.66 12.66l1.41 1.41M3.93 14.07l1.41-1.41M12.66 5.34l1.41-1.41" stroke="#8b949e" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="9" cy="9" r="3" stroke="#58a6ff" stroke-width="1.5"/>
-        </svg>
-      </div>
-      <div>
-        <h1 class="text-base font-bold text-mt5-text">Settings</h1>
-        <p class="text-mt5-textMuted" style="font-size:11px;">Platform configuration and preferences</p>
-      </div>
-    </div>
+  <div class="tab-row">
+    <button onclick="showSettingsPage('server')" id="tab-server" class="mt5-nav-tab active"><svg viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 6h1M3 8h1M6 6h5M6 8h5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>Server</button>
+    <button onclick="showSettingsPage('charts')" id="tab-charts" class="mt5-nav-tab"><svg viewBox="0 0 14 14" fill="none"><path d="M1 11h2V7H1v4zm4 0h2V4H5v7zm4 0h2V1H9v10z" fill="currentColor"/></svg>Charts</button>
+    <button onclick="showSettingsPage('trade')" id="tab-trade" class="mt5-nav-tab"><svg viewBox="0 0 14 14" fill="none"><path d="M2 7l3-3 3 3 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Trade</button>
+    <button onclick="showSettingsPage('expert')" id="tab-expert" class="mt5-nav-tab"><svg viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3.5L12 5.5 9.5 8l.5 3.5L7 7.5 3.5 11.5 4 8 1.5 5.5 5.5 4.5 7 1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>Expert</button>
+    <button onclick="showSettingsPage('events')" id="tab-events" class="mt5-nav-tab"><svg viewBox="0 0 14 14" fill="none"><path d="M7 1.5v2M7 11.5v2M1.5 7h2M11.5 7h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.2"/></svg>Events</button>
+    <button onclick="showSettingsPage('notifications')" id="tab-notifications" class="mt5-nav-tab"><svg viewBox="0 0 14 14" fill="none"><path d="M7 1.5a4.5 4.5 0 014.5 4.5v3l1.5 2H1.5L3 8.5v-3A4.5 4.5 0 017 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M5.5 11.5a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Alerts</button>
+    <button onclick="showSettingsPage('community')" id="tab-community" class="mt5-nav-tab"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 12c0-2.5 2.5-4 5-4s5 1.5 5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Community</button>
+    <button onclick="showSettingsPage('account')" id="tab-account" class="mt5-nav-tab"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 12c0-2.5 2.5-4 5-4s5 1.5 5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="9" y="1" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1"/><path d="M10.5 2.5l1 1M11.5 2.5l-1 1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>Account</button>
+  </div>
 
-    <div class="mt5-scroll-x mb-5">
-      <button onclick="showSettingsPage('server')" id="tab-server" class="mt5-nav-tab active">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 6h1M3 8h1M6 6h5M6 8h5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
-        Server
-      </button>
-      <button onclick="showSettingsPage('charts')" id="tab-charts" class="mt5-nav-tab">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 11h2V7H1v4zm4 0h2V4H5v7zm4 0h2V1H9v10z" fill="currentColor"/></svg>
-        Charts
-      </button>
-      <button onclick="showSettingsPage('trade')" id="tab-trade" class="mt5-nav-tab">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3-3 3 3 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        Trade
-      </button>
-      <button onclick="showSettingsPage('expert')" id="tab-expert" class="mt5-nav-tab">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3.5L12 5.5 9.5 8l.5 3.5L7 9.5 3.5 11.5 4 8 1.5 5.5 5.5 4.5 7 1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-        Expert Advisors
-      </button>
-      <button onclick="showSettingsPage('events')" id="tab-events" class="mt5-nav-tab">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5v2M7 11.5v2M1.5 7h2M11.5 7h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.2"/></svg>
-        Events
-      </button>
-      <button onclick="showSettingsPage('notifications')" id="tab-notifications" class="mt5-nav-tab">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5a4 4 0 014 4v3l1.5 2H1.5L3 8.5v-3a4 4 0 014-4z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M5.5 11.5a1.5 1.5 0 003 0" stroke="currentColor" stroke-width="1.2"/></svg>
-        Notifications
-      </button>
-      <button onclick="showSettingsPage('community')" id="tab-community" class="mt5-nav-tab">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 12c0-2.5 2.5-4 5-4s5 1.5 5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        Community
-      </button>
-      <button onclick="showSettingsPage('account')" id="tab-account" class="mt5-nav-tab">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 12c0-2.5 2.5-4 5-4s5 1.5 5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="9" y="1" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1"/><path d="M10.5 2.5l1 1M11.5 2.5l-1 1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
-        Account
-      </button>
-    </div>
-
-    <div id="page-server" class="page-section active space-y-4">
-      <div class="mt5-section-title">Connection</div>
-      <div class="mt5-panel p-4 space-y-4">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="mt5-icon-wrap">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect x="2" y="6" width="14" height="8" rx="2" stroke="#58a6ff" stroke-width="1.5"/>
-              <path d="M5 6V4.5a4 4 0 018 0V5" stroke="#58a6ff" stroke-width="1.5" stroke-linecap="round"/>
-              <circle cx="9" cy="10" r="1.5" stroke="#58a6ff" stroke-width="1.2"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-mt5-text">Trade Server</div>
-            <div class="text-mt5-textMuted" style="font-size:11px;">MetaQuotes-Demo</div>
-          </div>
-          <span class="mt5-badge mt5-badge-green ml-auto">Online</span>
-        </div>
-        <div class="space-y-3">
-          <div>
-            <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">Server Address</label>
-            <input type="text" id="server-address" value="access.metatrader5.com:443" class="mt5-input" onchange="saveSetting('serverAddress', this.value)">
-          </div>
-          <div class="flex gap-3">
-            <div class="flex-1">
-              <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">Login</label>
-              <input type="text" id="server-login" value="1713357" class="mt5-input" readonly>
-            </div>
-            <div class="flex-1">
-              <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">Password</label>
-              <input type="password" id="server-password" value="••••••••" class="mt5-input" readonly>
-            </div>
-          </div>
-          <button onclick="TS_UI.showModal('Change Password','Password must be at least 8 characters with uppercase, lowercase, numbers and special characters.',[{'text':'Cancel'},{'text':'Change',primary:true,onClick:()=>TS_UI.showToast('Password changed successfully','success')}])" class="mt5-btn mt5-btn-primary w-full py-2.5 text-sm font-medium">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="inline mr-1.5" style="margin-top:-2px;">
-              <rect x="2" y="5" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-              <path d="M4 5V3.5a3 3 0 016 0V5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-              <circle cx="7" cy="8.5" r="1" fill="currentColor"/>
-            </svg>
-            Change Password
-          </button>
-        </div>
-      </div>
-
-      <div class="mt5-section-title">Proxy & Network</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">Enable Proxy Server</div>
-            <div class="mt5-row-desc">Route connection through proxy</div>
-          </div>
-          <button id="proxy-toggle" onclick="toggleSetting('proxyEnabled')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div id="proxy-config" style="display:none;" class="space-y-3 pt-2">
-          <div>
-            <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">Proxy Server</label>
-            <input type="text" id="proxy-server" placeholder="192.168.0.1:8080" class="mt5-input" onchange="saveSetting('proxyServer', this.value)">
-          </div>
-          <div>
-            <select id="proxy-type" class="mt5-select" onchange="saveSetting('proxyType', this.value)">
-              <option value="HTTP">HTTP</option>
-              <option value="SOCKS4">SOCKS4</option>
-              <option value="SOCKS5">SOCKS5</option>
-            </select>
-          </div>
-          <div class="flex gap-3">
-            <input type="text" id="proxy-login" placeholder="Proxy Login" class="mt5-input" onchange="saveSetting('proxyLogin', this.value)">
-            <input type="password" id="proxy-password" placeholder="Proxy Password" class="mt5-input" onchange="saveSetting('proxyPassword', this.value)">
-          </div>
-          <button onclick="testProxyConnection()" class="mt5-btn w-full py-2 text-sm">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="inline mr-1.5" style="margin-top:-2px;">
-              <path d="M7 1v2M7 11v2M1 7h2M11 7h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-              <circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.2"/>
-            </svg>
-            Test Connection
-          </button>
-        </div>
-      </div>
-
-      <div class="mt5-section-title">News & Startup</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">Keep Personal Settings</div>
-            <div class="mt5-row-desc">Save account data at startup</div>
-          </div>
-          <button id="keep-settings-toggle" onclick="toggleSetting('keepSettings')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">Enable News</div>
-            <div class="mt5-row-desc">Receive financial news feed</div>
-          </div>
-          <button id="news-toggle" onclick="toggleSetting('newsEnabled')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button>
-        </div>
+  <!-- SERVER -->
+  <div id="page-server" class="page-section active">
+    <div class="mt5-section-title">Connection</div>
+    <div class="mt5-panel">
+      <div class="mt5-row">
         <div>
-          <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;margin-top:8px;">News Languages</label>
-          <select id="news-languages" class="mt5-select" onchange="saveSetting('newsLanguages', this.value)">
-            <option value="auto">Auto Select</option>
-            <option value="en">English</option>
-            <option value="en,ru">English, Russian</option>
-            <option value="en,es,de">English, Spanish, German</option>
-          </select>
+          <div class="mt5-row-label">Trade Server</div>
+          <div class="mt5-row-desc">MetaQuotes-Demo</div>
         </div>
+        <span style="font-size:11px;color:#10b981;font-weight:600;">Online</span>
+      </div>
+      <div style="margin-top:8px;">
+        <label style="font-size:11px;color:#888;">Server Address</label>
+        <input type="text" class="mt5-input" value="access.metatrader5.com:443" onchange="saveSetting('serverAddress', this.value)">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <div style="flex:1;"><label style="font-size:11px;color:#888;">Login</label><input type="text" class="mt5-input" value="1713357" readonly></div>
+        <div style="flex:1;"><label style="font-size:11px;color:#888;">Password</label><input type="password" class="mt5-input" value="••••••••" readonly></div>
+      </div>
+      <button class="mt5-btn mt5-btn-primary" style="width:100%;margin-top:10px;" onclick="TS_UI.showModal('Change Password','Password must be at least 8 characters.',[{text:'Cancel'},{text:'Change',primary:true,onClick:()=>TS_UI.showToast('Password changed','success')}])">Change Password</button>
+    </div>
+
+    <div class="mt5-section-title">Proxy & Network</div>
+    <div class="mt5-panel">
+      <div class="mt5-row">
+        <div><div class="mt5-row-label">Enable Proxy Server</div><div class="mt5-row-desc">Route connection through proxy</div></div>
+        <button id="proxy-enabled-toggle" onclick="toggleSetting('proxyEnabled')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button>
       </div>
     </div>
 
-    <div id="page-charts" class="page-section space-y-4">
-      <div class="mt5-section-title">Chart Display</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">Color Print</div>
-            <div class="mt5-row-desc">Print charts in color</div>
-          </div>
-          <button id="color-print-toggle" onclick="toggleSetting('colorPrint')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">Show Trade History</div>
-            <div class="mt5-row-desc">Display entries and exits on chart</div>
-          </div>
-          <button id="trade-history-toggle" onclick="toggleSetting('showTradeHistory')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">Show Trade Levels</div>
-            <div class="mt5-row-desc">Display SL/TP and open price levels</div>
-          </div>
-          <button id="trade-levels-toggle" onclick="toggleSetting('showTradeLevels')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">Preload Chart Data</div>
-            <div class="mt5-row-desc">Background load for open positions</div>
-          </div>
-          <button id="preload-toggle" onclick="toggleSetting('preloadChartData')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button>
-        </div>
+    <div class="mt5-section-title">News & Startup</div>
+    <div class="mt5-panel">
+      <div class="mt5-row">
+        <div><div class="mt5-row-label">Keep Personal Settings</div><div class="mt5-row-desc">Save account data at startup</div></div>
+        <button id="keep-settings-toggle" onclick="toggleSetting('keepSettings')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button>
       </div>
-
-      <div class="mt5-section-title">Object Management</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">Show Object Properties</div>
-            <div class="mt5-row-desc">Auto-open properties after creation</div>
-          </div>
-          <button id="obj-props-toggle" onclick="toggleSetting('showObjectProps')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">Select Object After Creation</div>
-            <div class="mt5-row-desc">Auto-select new objects</div>
-          </div>
-          <button id="select-after-toggle" onclick="toggleSetting('selectAfterCreation')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">Single Click Selection</div>
-            <div class="mt5-row-desc">Select objects with one click</div>
-          </div>
-          <button id="single-click-toggle" onclick="toggleSetting('singleClickSelect')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">Precise Time Scale</div>
-            <div class="mt5-row-desc">Position objects between bars</div>
-          </div>
-          <button id="precise-time-toggle" onclick="toggleSetting('preciseTimeScale')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row items-start">
-          <div class="pt-1">
-            <div class="mt5-row-label">Magnet Sensitivity</div>
-            <div class="mt5-row-desc">Snap to bar prices (0 = disabled)</div>
-          </div>
-          <div class="flex items-center gap-2">
-            <input type="number" id="magnet-sensitivity" value="10" min="0" max="50" class="mt5-number-input" onchange="saveSetting('magnetSensitivity', parseInt(this.value)||0)">
-            <span class="text-mt5-textMuted" style="font-size:11px;">px</span>
-          </div>
-        </div>
-        <div class="mt5-row items-start">
-          <div class="pt-1">
-            <div class="mt5-row-label">Max Bars in Chart</div>
-            <div class="mt5-row-desc">Historical bars to display</div>
-          </div>
-          <div class="flex items-center gap-2">
-            <input type="number" id="max-bars" value="100000" min="1000" max="500000" step="1000" class="mt5-number-input" style="width:100px" onchange="saveSetting('maxBars', parseInt(this.value)||100000)">
-          </div>
-        </div>
-      </div>
-
-      <div class="mt5-section-title">Trade Level Dragging</div>
-      <div class="mt5-panel p-4">
-        <select id="drag-mode" class="mt5-select" onchange="saveSetting('dragMode', this.value)">
-          <option value="enable">Enable dragging of trade levels</option>
-          <option value="disable">Disable dragging of trade levels</option>
-          <option value="alt">Enable with Alt key only</option>
-        </select>
+      <div class="mt5-row">
+        <div><div class="mt5-row-label">Enable News</div><div class="mt5-row-desc">Receive financial news feed</div></div>
+        <button id="news-enabled-toggle" onclick="toggleSetting('newsEnabled')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button>
       </div>
     </div>
+  </div>
 
-    <div id="page-trade" class="page-section space-y-4">
-      <div class="mt5-section-title">Default Trade Parameters</div>
-      <div class="mt5-panel p-4 space-y-4">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="mt5-icon-wrap">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M3 9h3l2-4 3 8 2-4h2" stroke="#f85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <rect x="1" y="1" width="16" height="16" rx="3" stroke="#30363d" stroke-width="1"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-mt5-text">Order Defaults</div>
-            <div class="text-mt5-textMuted" style="font-size:11px;">New order preset values</div>
-          </div>
-        </div>
-        <div>
-          <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">Default Symbol</label>
-          <select id="default-symbol" class="mt5-select" onchange="saveSetting('defaultSymbol', this.value)">
-            <option value="EURUSD">EURUSD</option>
-            <option value="GBPUSD">GBPUSD</option>
-            <option value="USDJPY">USDJPY</option>
-            <option value="XAUUSD">XAUUSD</option>
-            <option value="US30">US30</option>
-            <option value="BTCUSD">BTCUSD</option>
-          </select>
-        </div>
-        <div class="flex gap-3">
-          <div class="flex-1">
-            <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">Default Volume</label>
-            <input type="number" id="default-volume" value="0.10" min="0.01" max="100" step="0.01" class="mt5-input" onchange="saveSetting('defaultVolume', parseFloat(this.value)||0.1)">
-          </div>
-          <div class="flex-1">
-            <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">Deviation (pts)</label>
-            <input type="number" id="deviation" value="10" min="0" max="1000" class="mt5-input" onchange="saveSetting('deviation', parseInt(this.value)||10)">
-          </div>
-        </div>
-        <div>
-          <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">Fill Policy</label>
-          <select id="fill-policy" class="mt5-select" onchange="saveSetting('fillPolicy', this.value)">
-            <option value="fok">Fill or Kill (FOK)</option>
-            <option value="ioc">Immediate or Cancel (IOC)</option>
-            <option value="return">Return</option>
-          </select>
-        </div>
-      </div>
+  <!-- CHARTS -->
+  <div id="page-charts" class="page-section">
+    <div class="mt5-section-title">Chart Display</div>
+    <div class="mt5-panel">
+      <div class="mt5-row"><div><div class="mt5-row-label">Color Print</div><div class="mt5-row-desc">Print charts in color</div></div><button id="color-print-toggle" onclick="toggleSetting('colorPrint')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button></div>
+      <div class="mt5-row"><div><div class="mt5-row-label">Show Trade History</div><div class="mt5-row-desc">Display entries and exits</div></div><button id="show-trade-history-toggle" onclick="toggleSetting('showTradeHistory')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button></div>
+      <div class="mt5-row"><div><div class="mt5-row-label">Show Trade Levels</div><div class="mt5-row-desc">Display SL/TP and open price</div></div><button id="show-trade-levels-toggle" onclick="toggleSetting('showTradeLevels')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button></div>
+    </div>
+    <div class="mt5-section-title">Object Management</div>
+    <div class="mt5-panel">
+      <div class="mt5-row"><div><div class="mt5-row-label">Show Object Properties</div></div><button id="show-object-props-toggle" onclick="toggleSetting('showObjectProps')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button></div>
+      <div class="mt5-row"><div><div class="mt5-row-label">Select Object After Creation</div></div><button id="select-after-creation-toggle" onclick="toggleSetting('selectAfterCreation')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button></div>
+      <div class="mt5-row"><div class="mt5-row-label">Magnet Sensitivity</div><div style="display:flex;align-items:center;gap:6px;"><input type="number" class="mt5-number-input" value="10" onchange="saveSetting('magnetSensitivity', parseInt(this.value)||0)"><span style="font-size:11px;color:#666;">px</span></div></div>
+    </div>
+  </div>
 
-      <div class="mt5-section-title">Stop Levels</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="mt5-row">
-          <div><div class="mt5-row-label">Default Stop Loss</div></div>
-          <div class="flex items-center gap-2">
-            <input type="number" id="default-sl" value="0" class="mt5-number-input" onchange="saveSetting('defaultSL', parseInt(this.value)||0)">
-            <span class="text-mt5-textMuted" style="font-size:11px;">pts</span>
-          </div>
-        </div>
-        <div class="mt5-row">
-          <div><div class="mt5-row-label">Default Take Profit</div></div>
-          <div class="flex items-center gap-2">
-            <input type="number" id="default-tp" value="0" class="mt5-number-input" onchange="saveSetting('defaultTP', parseInt(this.value)||0)">
-            <span class="text-mt5-textMuted" style="font-size:11px;">pts</span>
-          </div>
-        </div>
-        <div class="mt5-row">
-          <div>
-            <div class="mt5-row-label">One-Click Trading</div>
-            <div class="mt5-row-desc">Execute orders without confirmation</div>
-          </div>
-          <button id="oneclick-toggle" onclick="toggleSetting('oneClickTrading')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button>
-        </div>
+  <!-- TRADE -->
+  <div id="page-trade" class="page-section">
+    <div class="mt5-section-title">Default Trade Parameters</div>
+    <div class="mt5-panel">
+      <div style="margin-bottom:8px;"><label style="font-size:11px;color:#888;">Default Symbol</label><select class="mt5-select" onchange="saveSetting('defaultSymbol', this.value)"><option value="EURUSD">EURUSD</option><option value="GBPUSD">GBPUSD</option><option value="USDJPY">USDJPY</option><option value="XAUUSD">XAUUSD</option><option value="BTCUSD">BTCUSD</option></select></div>
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1;"><label style="font-size:11px;color:#888;">Default Volume</label><input type="number" class="mt5-input" value="0.10" step="0.01" onchange="saveSetting('defaultVolume', parseFloat(this.value)||0.1)"></div>
+        <div style="flex:1;"><label style="font-size:11px;color:#888;">Deviation (pts)</label><input type="number" class="mt5-input" value="10" onchange="saveSetting('deviation', parseInt(this.value)||10)"></div>
       </div>
     </div>
-
-    <div id="page-expert" class="page-section space-y-4">
-      <div class="mt5-section-title">Expert Advisors</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="mt5-icon-wrap">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 2l2 2.5h2.5L12.5 7l1 2.5-2.5-.5L9 10l-2-1-2.5.5 1-2.5L2.5 4.5H5L7 2z" stroke="#d29922" stroke-width="1.2" stroke-linejoin="round"/>
-              <path d="M5 12h8M6 14h6M7 16h4" stroke="#30363d" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-mt5-text">EA Global Settings</div>
-            <div class="text-mt5-textMuted" style="font-size:11px;">Common parameters for all EAs</div>
-          </div>
-        </div>
-        <div class="mt5-row">
-          <div><div class="mt5-row-label">Allow Live Trading</div><div class="mt5-row-desc">Enable automated trading</div></div>
-          <button id="ea-live-toggle" onclick="toggleSetting('eaAllowLive')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div><div class="mt5-row-label">Allow DLL Imports</div><div class="mt5-row-desc">External library calls from EAs</div></div>
-          <button id="ea-dll-toggle" onclick="toggleSetting('eaAllowDLL')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div><div class="mt5-row-label">Allow External Experts</div><div class="mt5-row-desc">Import functions from other EAs</div></div>
-          <button id="ea-external-toggle" onclick="toggleSetting('eaAllowExternal')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div><div class="mt5-row-label">Confirm DLL Function Calls</div><div class="mt5-row-desc">Manual confirmation for each call</div></div>
-          <button id="ea-confirm-dll-toggle" onclick="toggleSetting('eaConfirmDLL')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div><div class="mt5-row-label">Confirm External Expert Calls</div><div class="mt5-row-desc">Manual confirmation for imports</div></div>
-          <button id="ea-confirm-external-toggle" onclick="toggleSetting('eaConfirmExternal')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div class="mt5-row">
-          <div><div class="mt5-row-label">Allow WebRequest</div><div class="mt5-row-desc">HTTP requests from EAs</div></div>
-          <button id="ea-web-toggle" onclick="toggleSetting('eaAllowWeb')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button>
-        </div>
-      </div>
-
-      <div class="mt5-section-title">OpenCL</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="mt5-row">
-          <div><div class="mt5-row-label">Enable OpenCL</div><div class="mt5-row-desc">GPU acceleration for calculations</div></div>
-          <button id="opencl-toggle" onclick="toggleSetting('openclEnabled')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button>
-        </div>
-        <div>
-          <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;margin-top:8px;">OpenCL Device</label>
-          <select id="opencl-device" class="mt5-select" onchange="saveSetting('openclDevice', this.value)">
-            <option value="cpu">CPU (Intel Core i7)</option>
-            <option value="gpu0">GPU 0 - NVIDIA GeForce RTX</option>
-            <option value="gpu1">GPU 1 - AMD Radeon</option>
-          </select>
-        </div>
-      </div>
+    <div class="mt5-section-title">Stop Levels</div>
+    <div class="mt5-panel">
+      <div class="mt5-row"><div class="mt5-row-label">Default Stop Loss</div><div style="display:flex;align-items:center;gap:6px;"><input type="number" class="mt5-number-input" value="0" onchange="saveSetting('defaultSL', parseInt(this.value)||0)"><span style="font-size:11px;color:#666;">pts</span></div></div>
+      <div class="mt5-row"><div class="mt5-row-label">Default Take Profit</div><div style="display:flex;align-items:center;gap:6px;"><input type="number" class="mt5-number-input" value="0" onchange="saveSetting('defaultTP', parseInt(this.value)||0)"><span style="font-size:11px;color:#666;">pts</span></div></div>
+      <div class="mt5-row"><div><div class="mt5-row-label">One-Click Trading</div><div class="mt5-row-desc">Execute orders without confirmation</div></div><button id="one-click-trading-toggle" onclick="toggleSetting('oneClickTrading')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button></div>
     </div>
+  </div>
 
-    <div id="page-events" class="page-section space-y-4">
-      <div class="mt5-section-title">System Events</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="mt5-icon-wrap">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2" stroke="#f85149" stroke-width="1.5" stroke-linecap="round"/>
-              <circle cx="9" cy="9" r="3.5" stroke="#f85149" stroke-width="1.5"/>
-              <path d="M3.5 3.5l1.5 1.5M13 13l1.5 1.5M3.5 14.5l1.5-1.5M13 5l1.5-1.5" stroke="#f85149" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-mt5-text">Event Alerts</div>
-            <div class="text-mt5-textMuted" style="font-size:11px;">Configure system notifications</div>
-          </div>
-        </div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Connection Loss</div><div class="mt5-row-desc">Alert when server disconnects</div></div><button id="event-connect-toggle" onclick="toggleSetting('eventConnectionLoss')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Trade Transaction</div><div class="mt5-row-desc">Alert on order execution</div></div><button id="event-trade-toggle" onclick="toggleSetting('eventTrade')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">News Arrival</div><div class="mt5-row-desc">Alert when news is received</div></div><button id="event-news-toggle" onclick="toggleSetting('eventNews')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Mailbox Message</div><div class="mt5-row-desc">Alert on internal mail</div></div><button id="event-mail-toggle" onclick="toggleSetting('eventMail')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Calendar Event</div><div class="mt5-row-desc">Alert on economic calendar events</div></div><button id="event-calendar-toggle" onclick="toggleSetting('eventCalendar')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Terminal Update</div><div class="mt5-row-desc">Alert on new version available</div></div><button id="event-update-toggle" onclick="toggleSetting('eventUpdate')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button></div>
-      </div>
-
-      <div class="mt5-section-title">Sound Configuration</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="mt5-row"><div><div class="mt5-row-label">Enable Sound</div><div class="mt5-row-desc">Play sounds for events</div></div><button id="sound-toggle" onclick="toggleSetting('soundEnabled')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button></div>
-        <div>
-          <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;margin-top:8px;">Sound File</label>
-          <select id="sound-file" class="mt5-select" onchange="saveSetting('soundFile', this.value)">
-            <option value="default">Default (alert.wav)</option>
-            <option value="bell">Bell (bell.wav)</option>
-            <option value="chime">Chime (chime.wav)</option>
-            <option value="notify">Notify (notify.wav)</option>
-          </select>
-        </div>
-      </div>
+  <!-- EXPERT -->
+  <div id="page-expert" class="page-section">
+    <div class="mt5-section-title">Expert Advisors</div>
+    <div class="mt5-panel">
+      <div class="mt5-row"><div><div class="mt5-row-label">Allow Live Trading</div><div class="mt5-row-desc">Enable automated trading</div></div><button id="ea-allow-live-toggle" onclick="toggleSetting('eaAllowLive')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button></div>
+      <div class="mt5-row"><div><div class="mt5-row-label">Allow DLL Imports</div><div class="mt5-row-desc">External library calls from EAs</div></div><button id="ea-allow-dll-toggle" onclick="toggleSetting('eaAllowDLL')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button></div>
+      <div class="mt5-row"><div><div class="mt5-row-label">Allow WebRequest</div><div class="mt5-row-desc">HTTP requests from EAs</div></div><button id="ea-allow-web-toggle" onclick="toggleSetting('eaAllowWeb')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button></div>
     </div>
-
-    <div id="page-notifications" class="page-section space-y-4">
-      <div class="mt5-section-title">Push Notifications</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="mt5-icon-wrap">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 1.5a4.5 4.5 0 014.5 4.5v3l1.5 2H3l1.5-2v-3A4.5 4.5 0 019 1.5z" stroke="#58a6ff" stroke-width="1.5" stroke-linejoin="round"/>
-              <path d="M6.5 13.5a2.5 2.5 0 005 0" stroke="#58a6ff" stroke-width="1.2" stroke-linecap="round"/>
-              <circle cx="14" cy="4" r="3" fill="#238636" stroke="#161b22" stroke-width="1.5"/>
-              <path d="M13 4h2M14 3v2" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-mt5-text">Mobile Push</div>
-            <div class="text-mt5-textMuted" style="font-size:11px;">Send to MetaTrader 5 mobile app</div>
-          </div>
-        </div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Push Notifications</div><div class="mt5-row-desc">Send alerts to mobile devices</div></div><button id="notif-toggle" onclick="toggleSetting('notifications')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Market Alerts</div><div class="mt5-row-desc">Price and indicator alerts</div></div><button id="alerts-toggle" onclick="toggleSetting('marketAlerts')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Trade Notifications</div><div class="mt5-row-desc">Order execution confirmations</div></div><button id="trade-notif-toggle" onclick="toggleSetting('tradeNotifications')" class="mt5-toggle active" data-default="true"><span class="mt5-toggle-knob"></span></button></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Journal Notifications</div><div class="mt5-row-desc">Platform log events</div></div><button id="journal-notif-toggle" onclick="toggleSetting('journalNotifications')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button></div>
-      </div>
-
-      <div class="mt5-section-title">Email Settings</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="mt5-row"><div><div class="mt5-row-label">Enable Email</div><div class="mt5-row-desc">Send reports via SMTP</div></div><button id="email-toggle" onclick="toggleSetting('emailEnabled')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button></div>
-        <div id="email-config" style="display:none;" class="space-y-3 pt-2">
-          <div><label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">SMTP Server</label><input type="text" id="smtp-server" placeholder="smtp.gmail.com:465" class="mt5-input" onchange="saveSetting('smtpServer', this.value)"></div>
-          <div><label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">SMTP Login</label><input type="text" id="smtp-login" placeholder="your@email.com" class="mt5-input" onchange="saveSetting('smtpLogin', this.value)"></div>
-          <div><label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">SMTP Password</label><input type="password" id="smtp-password" placeholder="App password" class="mt5-input" onchange="saveSetting('smtpPassword', this.value)"></div>
-          <div><label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">From Address</label><input type="text" id="email-from" placeholder="trader@platform.com" class="mt5-input" onchange="saveSetting('emailFrom', this.value)"></div>
-          <div><label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">To Address</label><input type="text" id="email-to" placeholder="admin@company.com" class="mt5-input" onchange="saveSetting('emailTo', this.value)"></div>
-          <button onclick="testEmailConnection()" class="mt5-btn w-full py-2 text-sm">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="inline mr-1.5" style="margin-top:-2px;">
-              <rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-              <path d="M1 4l6 4 6-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Test Email
-          </button>
-        </div>
-      </div>
-
-      <div class="mt5-section-title">FTP Publishing</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="mt5-row"><div><div class="mt5-row-label">Enable FTP</div><div class="mt5-row-desc">Auto-publish account reports</div></div><button id="ftp-toggle" onclick="toggleSetting('ftpEnabled')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button></div>
-        <div id="ftp-config" style="display:none;" class="space-y-3 pt-2">
-          <div><label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">FTP Server</label><input type="text" id="ftp-server" placeholder="ftp.yoursite.com" class="mt5-input" onchange="saveSetting('ftpServer', this.value)"></div>
-          <div><label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">FTP Path</label><input type="text" id="ftp-path" placeholder="/reports/" class="mt5-input" onchange="saveSetting('ftpPath', this.value)"></div>
-          <div class="flex gap-3"><input type="text" id="ftp-login" placeholder="FTP Login" class="mt5-input" onchange="saveSetting('ftpLogin', this.value)"><input type="password" id="ftp-password" placeholder="FTP Password" class="mt5-input" onchange="saveSetting('ftpPassword', this.value)"></div>
-          <div>
-            <label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">Report Interval</label>
-            <select id="ftp-interval" class="mt5-select" onchange="saveSetting('ftpInterval', this.value)">
-              <option value="0">Every 5 minutes</option>
-              <option value="1">Every 15 minutes</option>
-              <option value="2">Every 30 minutes</option>
-              <option value="3">Every hour</option>
-              <option value="4">Daily</option>
-            </select>
-          </div>
-        </div>
-      </div>
+    <div class="mt5-section-title">OpenCL</div>
+    <div class="mt5-panel">
+      <div class="mt5-row"><div><div class="mt5-row-label">Enable OpenCL</div><div class="mt5-row-desc">GPU acceleration</div></div><button id="opencl-enabled-toggle" onclick="toggleSetting('openclEnabled')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button></div>
+      <div style="margin-top:8px;"><label style="font-size:11px;color:#888;">OpenCL Device</label><select class="mt5-select" onchange="saveSetting('openclDevice', this.value)"><option value="cpu">CPU (Intel Core i7)</option><option value="gpu0">GPU 0 - NVIDIA RTX</option><option value="gpu1">GPU 1 - AMD Radeon</option></select></div>
     </div>
+  </div>
 
-    <div id="page-community" class="page-section space-y-4">
-      <div class="mt5-section-title">MQL5.community</div>
-      <div class="mt5-panel p-4 space-y-4">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="mt5-icon-wrap">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="6" r="3" stroke="#58a6ff" stroke-width="1.5"/>
-              <path d="M3 16c0-3 3-5 6-5s6 2 6 5" stroke="#58a6ff" stroke-width="1.5" stroke-linecap="round"/>
-              <circle cx="14" cy="3" r="2.5" fill="#238636" stroke="#161b22" stroke-width="1.5"/>
-              <path d="M13 3h2M14 2v2" stroke="#fff" stroke-width="1" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-sm font-semibold text-mt5-text">Community Account</div>
-            <div class="text-mt5-textMuted" style="font-size:11px;">MQL5 account integration</div>
-          </div>
-        </div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Auto-Login</div><div class="mt5-row-desc">Sign in automatically at startup</div></div><button id="community-auto-toggle" onclick="toggleSetting('communityAutoLogin')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button></div>
-        <div><label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">MQL5 Login</label><input type="text" id="mql5-login" placeholder="MQL5 ID or Email" class="mt5-input" onchange="saveSetting('mql5Login', this.value)"></div>
-        <div><label class="text-mt5-textMuted" style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;">MQL5 Password</label><input type="password" id="mql5-password" placeholder="Password" class="mt5-input" onchange="saveSetting('mql5Password', this.value)"></div>
-        <button onclick="loginMQL5()" class="mt5-btn mt5-btn-primary w-full py-2.5 text-sm font-medium">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="inline mr-1.5" style="margin-top:-2px;">
-            <path d="M7 1.5l1.5 2.5h2.5L9.5 6l1 2.5-2.5-.5L7 7.5l-2-1-2.5.5 1-2.5L2.5 4H5L7 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-          </svg>
-          Login to MQL5
-        </button>
-      </div>
-
-      <div class="mt5-section-title">Signals Service</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="mt5-row"><div><div class="mt5-row-label">Enable Signal Subscription</div><div class="mt5-row-desc">Copy trades from providers</div></div><button id="signals-toggle" onclick="toggleSetting('signalsEnabled')" class="mt5-toggle inactive" data-default="false"><span class="mt5-toggle-knob"></span></button></div>
-      </div>
+  <!-- EVENTS -->
+  <div id="page-events" class="page-section">
+    <div class="mt5-section-title">System Events</div>
+    <div class="mt5-panel">
+      <div class="mt5-row"><div><div class="mt5-row-label">Connection Loss</div><div class="mt5-row-desc">Alert when server disconnects</div></div><button id="event-connection-loss-toggle" onclick="toggleSetting('eventConnectionLoss')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button></div>
+      <div class="mt5-row"><div><div class="mt5-row-label">Trade Transaction</div><div class="mt5-row-desc">Alert on order execution</div></div><button id="event-trade-toggle" onclick="toggleSetting('eventTrade')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button></div>
+      <div class="mt5-row"><div><div class="mt5-row-label">News Arrival</div><div class="mt5-row-desc">Alert when news is received</div></div><button id="event-news-toggle" onclick="toggleSetting('eventNews')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button></div>
+      <div class="mt5-row"><div><div class="mt5-row-label">Mailbox Message</div><div class="mt5-row-desc">Alert on internal mail</div></div><button id="event-mail-toggle" onclick="toggleSetting('eventMail')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button></div>
     </div>
-
-    <div id="page-account" class="page-section space-y-4">
-      <div class="mt5-section-title">Device & Location</div>
-      <div class="mt5-panel p-4 space-y-3">
-        <div class="mt5-row"><div><div class="mt5-row-label">Country</div></div><span class="text-mt5-textMuted" style="font-size:12px;" id="setting-country">Detecting...</span></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">IP Address</div></div><span class="text-mt5-textMuted" style="font-size:12px;" id="setting-ip">Detecting...</span></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Timezone</div></div><span class="text-mt5-textMuted" style="font-size:12px;" id="setting-timezone">Detecting...</span></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Language</div></div><span class="text-mt5-textMuted" style="font-size:12px;" id="setting-language">Detecting...</span></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Platform</div></div><span class="text-mt5-textMuted" style="font-size:12px;" id="setting-platform">Detecting...</span></div>
-      </div>
-
-      <div class="mt5-section-title">Registration Details</div>
-      <div class="mt5-panel p-4 space-y-3" id="settings-reg-details">
-        <div class="mt5-row"><div><div class="mt5-row-label">Full Name</div></div><span class="text-mt5-textMuted" style="font-size:12px;" id="setting-reg-name">--</span></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Email</div></div><span class="text-mt5-textMuted" style="font-size:12px;" id="setting-reg-email">--</span></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Account Type</div></div><span class="text-mt5-textMuted" style="font-size:12px;" id="setting-reg-type">--</span></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Base Currency</div></div><span class="text-mt5-textMuted" style="font-size:12px;" id="setting-reg-currency">--</span></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Leverage</div></div><span class="text-mt5-textMuted" style="font-size:12px;" id="setting-reg-leverage">--</span></div>
-        <div class="mt5-row"><div><div class="mt5-row-label">Account ID</div></div><span class="text-mt5-textMuted" style="font-size:12px;" id="setting-reg-id">--</span></div>
-      </div>
+    <div class="mt5-section-title">Sound Configuration</div>
+    <div class="mt5-panel">
+      <div class="mt5-row"><div><div class="mt5-row-label">Enable Sound</div></div><button id="sound-enabled-toggle" onclick="toggleSetting('soundEnabled')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button></div>
+      <div style="margin-top:8px;"><label style="font-size:11px;color:#888;">Sound File</label><select class="mt5-select" onchange="saveSetting('soundFile', this.value)"><option value="default">Default (alert.wav)</option><option value="bell">Bell</option><option value="chime">Chime</option></select></div>
     </div>
-  </main>
+  </div>
 
-  <div id="ts-global-footer"></div>
+  <!-- NOTIFICATIONS -->
+  <div id="page-notifications" class="page-section">
+    <div class="mt5-section-title">Push Notifications</div>
+    <div class="mt5-panel">
+      <div class="mt5-row"><div><div class="mt5-row-label">Push Notifications</div><div class="mt5-row-desc">Send alerts to mobile devices</div></div><button id="notifications-toggle" onclick="toggleSetting('notifications')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button></div>
+      <div class="mt5-row"><div><div class="mt5-row-label">Market Alerts</div><div class="mt5-row-desc">Price and indicator alerts</div></div><button id="market-alerts-toggle" onclick="toggleSetting('marketAlerts')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button></div>
+      <div class="mt5-row"><div><div class="mt5-row-label">Trade Notifications</div><div class="mt5-row-desc">Order execution confirmations</div></div><button id="trade-notifications-toggle" onclick="toggleSetting('tradeNotifications')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button></div>
+    </div>
+    <div class="mt5-section-title">Email Settings</div>
+    <div class="mt5-panel">
+      <div class="mt5-row"><div><div class="mt5-row-label">Enable Email</div><div class="mt5-row-desc">Send reports via SMTP</div></div><button id="email-enabled-toggle" onclick="toggleSetting('emailEnabled')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button></div>
+    </div>
+  </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const user = TS_Auth.getUser();
-      if (user) {
-        const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt || '--'; };
-        set('setting-reg-name', `${user.firstName || ''} ${user.lastName || ''}`.trim());
-        set('setting-reg-email', user.email);
-        set('setting-reg-type', user.accountType);
-        set('setting-reg-currency', user.currency);
-        set('setting-reg-leverage', user.leverage);
-        set('setting-reg-id', user.userId);
-      }
-    });
-  </script>
+  <!-- COMMUNITY -->
+  <div id="page-community" class="page-section">
+    <div class="mt5-section-title">MQL5.community</div>
+    <div class="mt5-panel">
+      <div class="mt5-row"><div><div class="mt5-row-label">Auto-Login</div><div class="mt5-row-desc">Sign in automatically at startup</div></div><button id="community-auto-login-toggle" onclick="toggleSetting('communityAutoLogin')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button></div>
+      <div style="margin-top:8px;"><label style="font-size:11px;color:#888;">MQL5 Login</label><input type="text" class="mt5-input" placeholder="MQL5 ID or Email" onchange="saveSetting('mql5Login', this.value)"></div>
+      <div style="margin-top:8px;"><label style="font-size:11px;color:#888;">MQL5 Password</label><input type="password" class="mt5-input" placeholder="Password" onchange="saveSetting('mql5Password', this.value)"></div>
+      <button class="mt5-btn mt5-btn-primary" style="width:100%;margin-top:10px;" onclick="loginMQL5()">Login to MQL5</button>
+    </div>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div id="page-account" class="page-section">
+    <div class="mt5-section-title">User Details</div>
+    <div class="mt5-panel" id="account-details-content"></div>
+
+    <div class="mt5-section-title">Device & Location</div>
+    <div class="mt5-panel">
+      <div class="mt5-row"><div class="mt5-row-label">Detected Location</div><div class="mt5-row-value" id="detected-location">--</div></div>
+      <div class="mt5-row"><div class="mt5-row-label">Browser Language</div><div class="mt5-row-value" id="detected-language">--</div></div>
+      <div class="mt5-row"><div class="mt5-row-label">Device Platform</div><div class="mt5-row-value" id="detected-device">--</div></div>
+    </div>
+  </div>
+</main>
+
+<div id="ts-global-footer"></div>
+<script src="app.js"></script>
 </body>
 </html>
