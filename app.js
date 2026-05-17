@@ -1,20 +1,18 @@
 (function() {
   'use strict';
 
-  const API_BASE = window.location.origin + '/api';
-
-  // ======================= CONFIG =======================
+  // ======================= CONFIGURATION =======================
   const CONFIG = {
-    emailjs: {
-      serviceId: 'YOUR_SERVICE_ID',        // Replace with your EmailJS Service ID
-      publicKey: 'YOUR_PUBLIC_KEY',        // Replace with your EmailJS Public Key
-      regTemplate: 'template_0bqt6ca',
-      replyTemplate: 'template_f173we8',
-      notifyEmail: 'online-base@hotmail.com'
-    },
-    coingecko: 'https://api.coingecko.com/api/v3',
-    finnhubToken: 'd7cq1t9r01qv03eta4rgd7cq1t9r01qv03eta4s0',
-    exchangeApi: 'https://v6.exchangerate-api.com/v6/45602791eb9f29e022a7ce3f/latest/USD'
+    EMAILJS_SERVICE: 'YOUR_SERVICE_ID',
+    EMAILJS_TEMPLATE_ADMIN: 'template_0bqt6ca',
+    EMAILJS_TEMPLATE_AUTO: 'template_f173we8',
+    EMAILJS_PUBLIC_KEY: 'YOUR_PUBLIC_KEY',
+    API_BASE: window.location.origin + '/api',
+    FINNHUB_TOKEN: 'd7cq1t9r01qv03eta4rgd7cq1t9r01qv03eta4s0',
+    EXCHANGE_API: 'https://v6.exchangerate-api.com/v6/45602791eb9f29e022a7ce3f/latest/USD',
+    COINGECKO_API: 'https://api.coingecko.com/api/v3',
+    ALPHAVANTAGE_API: 'https://www.alphavantage.co/query',
+    ALPHAVANTAGE_KEY: '3A3XN5PXKW8DG38L'
   };
 
   // ======================= SVG ICONS =======================
@@ -60,50 +58,72 @@
       <path d="M34 13 L34 27" stroke="url(#ts-grad)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
     </svg>`,
     back: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`,
-    next: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`,
-    user: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
-    gear: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-    house: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
-    quotes: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-    chart: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
-    trades: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-    history: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
-    mailbox: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
-    bell: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
-    more: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>`,
-    plus: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
-    newspaper: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>`,
-    market: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg>`,
-    deposit: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>`,
-    withdraw: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>`,
-    order: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`,
-    hold: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`,
-    buy: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>`,
-    sell: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>`,
-    copy: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
-    qr: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
-    search: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
-    check: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
-    close: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
-    info: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
-    warning: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-    success: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
-    error: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
-    clock: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
-    arrowUpCircle: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>`,
-    arrowDownCircle: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>`,
-    chevronRight: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
-    chevronDown: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
-    arrowRight: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
-    star: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-    shield: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-    zap: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
-    globe: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
-    cpu: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>`,
-    menu: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`
+    house: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
+    quotes: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`,
+    chart: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`,
+    trades: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`,
+    history: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+    mailbox: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>`,
+    bell: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`,
+    more: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>`,
+    plus: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`,
+    user: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
+    gear: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
+    newspaper: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path></svg>`,
+    market: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.5 8.5-5-5L2 17"></path><path d="M16 7h6v6"></path></svg>`,
+    deposit: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>`,
+    withdraw: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>`,
+    order: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>`,
+    hold: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>`,
+    buy: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="16 12 12 8 8 12"></polyline><line x1="12" y1="16" x2="12" y2="8"></line></svg>`,
+    sell: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="8 12 12 16 16 12"></polyline><line x1="12" y1="8" x2="12" y2="16"></line></svg>`,
+    copy: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`,
+    qr: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`,
+    search: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
+    check: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+    close: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`,
+    info: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`,
+    warning: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+    success: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+    error: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`,
+    clock: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+    arrowUpCircle: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="16 12 12 8 8 12"></polyline><line x1="12" y1="16" x2="12" y2="8"></line></svg>`,
+    arrowDownCircle: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="8 12 12 16 16 12"></polyline><line x1="12" y1="8" x2="12" y2="16"></line></svg>`,
+    chevronRight: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`,
+    chevronDown: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`,
+    arrowRight: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`,
+    star: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
+    shield: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`,
+    zap: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+    globe: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`,
+    cpu: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>`,
+    menu: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,
+    lock: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`,
+    eye: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+    mail: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>`,
+    send: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>`,
+    trash: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`,
+    reply: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>`,
+    refresh: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>`,
+    sort: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>`,
+    attach: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`,
+    loadMore: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>`
   };
 
   window.ICONS = ICONS;
+
+  // ======================= GLOBAL DB (Cross-Account Registry) =======================
+  const GlobalDB = {
+    get(key, def) {
+      try {
+        const raw = localStorage.getItem('ts_global_' + key);
+        return raw !== null ? JSON.parse(raw) : def;
+      } catch { return def; }
+    },
+    set(key, val) {
+      localStorage.setItem('ts_global_' + key, JSON.stringify(val));
+    }
+  };
 
   // ======================= EMAIL-SCOPED LOCAL STORAGE =======================
   const DB = {
@@ -127,7 +147,6 @@
       localStorage.removeItem('ts_' + this._ns() + key);
     }
   };
-
   window.TS_DB = DB;
 
   // ======================= AUTH / SESSION =======================
@@ -144,12 +163,6 @@
       DB.set('token', token);
       DB.set('user', user);
       DB.set('session_time', Date.now());
-      // Maintain global users registry for re-login across sessions
-      const users = this.getUsersRegistry();
-      const idx = users.findIndex(u => u.email === user.email);
-      const record = { ...user, lastLogin: new Date().toISOString() };
-      if (idx >= 0) users[idx] = record; else users.push(record);
-      localStorage.setItem('ts_users_registry', JSON.stringify(users));
     },
     logout() {
       DB.remove('token');
@@ -163,21 +176,41 @@
         return false;
       }
       return true;
+    }
+  };
+  window.TS_Auth = Auth;
+
+  // ======================= USER REGISTRY =======================
+  window.TS_Registry = {
+    getAll() { return GlobalDB.get('user_registry', []); },
+    findByEmail(email) {
+      const all = this.getAll();
+      return all.find(u => u.email && u.email.toLowerCase() === (email || '').toLowerCase());
     },
-    getUsersRegistry() {
-      try { return JSON.parse(localStorage.getItem('ts_users_registry') || '[]'); } catch { return []; }
+    register(user) {
+      const all = this.getAll();
+      const existing = this.findByEmail(user.email);
+      if (existing) {
+        Object.assign(existing, user);
+      } else {
+        all.push(user);
+      }
+      GlobalDB.set('user_registry', all);
     },
-    getUserByCredentials(email, password) {
-      const users = this.getUsersRegistry();
-      return users.find(u => u.email === email && u.password === password) || null;
+    getSavedAccounts() {
+      return this.getAll().map(u => ({
+        email: u.email,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        userId: u.userId,
+        fullName: `${u.firstName || ''} ${u.lastName || ''}`.trim()
+      }));
     }
   };
 
-  window.TS_Auth = Auth;
-
   // ======================= API HELPERS =======================
   async function api(path, options = {}) {
-    const url = API_BASE + path;
+    const url = CONFIG.API_BASE + path;
     const token = Auth.getToken();
     const headers = {
       'Content-Type': 'application/json',
@@ -196,7 +229,6 @@
       return { error: err.message, offline: true };
     }
   }
-
   window.TS_API = api;
 
   // ======================= UI HELPERS (MT5 Dark Fintech) =======================
@@ -260,7 +292,7 @@
         const btn = document.createElement('button');
         btn.className = action.primary ? 'ts-modal-btn-primary' : 'ts-modal-btn-secondary';
         btn.textContent = action.text;
-        btn.onclick = () => { action.onClick(); if (action.close !== false) modal.remove(); };
+        btn.onclick = () => { if (action.onClick) action.onClick(); if (action.close !== false) modal.remove(); };
         actionsContainer.appendChild(btn);
       });
       modal.querySelector('.ts-modal-close').onclick = () => modal.remove();
@@ -274,7 +306,6 @@
     const isLogged = Auth.isLoggedIn();
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
-    // Inject MT5 dark fintech stylesheet once
     if (!document.getElementById('ts-mt5-styles')) {
       const style = document.createElement('style');
       style.id = 'ts-mt5-styles';
@@ -329,19 +360,16 @@
         .ts-modal-btn-primary:hover{background:#059669;}
         .ts-modal-btn-secondary{background:#1a1a1a;color:#c1c1c1;}
         .ts-modal-btn-secondary:hover{background:#252525;color:#fff;}
-        .ts-market-banner{background:#0f0f0f;border-bottom:1px solid #1a1a1a;padding:6px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;color:#a1a1a1;font-family:system-ui,sans-serif;}
-        .ts-banner-content{display:flex;align-items:center;gap:8px;overflow:hidden;white-space:nowrap;}
-        .ts-banner-label{background:#10b981;color:#000;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;}
-        .ts-banner-ticker{overflow:hidden;text-overflow:ellipsis;}
-        .ts-banner-close{background:none;border:none;color:#666;cursor:pointer;padding:2px;display:flex;align-items:center;justify-content:center;}
-        .ts-banner-close:hover{color:#fff;}
-        .ts-banner-close svg{width:14px;height:14px;}
-        .hidden{display:none!important;}
+        .ts-market-banner{background:#0f0f0f;border-bottom:1px solid #1a1a1a;padding:6px 12px;display:flex;align-items:center;gap:12px;overflow-x:auto;scrollbar-width:none;}
+        .ts-market-banner::-webkit-scrollbar{display:none;}
+        .ts-market-banner .market-banner-label{color:#10b981;font-size:10px;font-weight:700;white-space:nowrap;}
+        .ts-market-banner .market-banner-ticker,.ts-market-banner .market-banner-rates,.ts-market-banner .market-banner-news{color:#a1a1a1;font-size:11px;white-space:nowrap;}
+        .ts-market-banner .market-banner-close{background:transparent;border:none;color:#666;cursor:pointer;padding:2px;margin-left:auto;}
+        .ts-market-banner .market-banner-close svg{width:14px;height:14px;}
       `;
       document.head.appendChild(style);
     }
 
-    // Inject Header
     const header = document.getElementById('ts-global-header');
     if (header && isLogged) {
       const unseenCount = (DB.get('notifications', []) || []).filter(n => !n.read && !n.dismissed).length;
@@ -418,9 +446,19 @@
           }
         });
       }
+      // Inject market banner below header
+      if (!DB.get('banner_dismissed', false)) {
+        let banner = document.getElementById('ts-market-banner');
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.id = 'ts-market-banner';
+          banner.className = 'ts-market-banner hidden';
+          header.parentNode.insertBefore(banner, header.nextSibling);
+        }
+        setTimeout(() => TS_MarketBanner.load(), 800);
+      }
     }
 
-    // Inject Footer
     const footer = document.getElementById('ts-global-footer');
     if (footer && isLogged) {
       footer.innerHTML = `
@@ -450,14 +488,14 @@
     }
   }
 
-  // ======================= COINGECKO HELPERS =======================
+  // ======================= COINGECKO / MARKET HELPERS =======================
   window.TS_Market = {
     async getCoins() {
       const cached = DB.get('coins_cache', null);
       const cacheTime = DB.get('coins_cache_time', 0);
       if (cached && Date.now() - cacheTime < 120000) return cached;
       try {
-        const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=100&page=1&sparkline=false');
+        const res = await fetch(`${CONFIG.COINGECKO_API}/coins/markets?vs_currency=usd&per_page=100&page=1&sparkline=false`);
         const data = await res.json();
         DB.set('coins_cache', data);
         DB.set('coins_cache_time', Date.now());
@@ -475,7 +513,7 @@
       const cacheTime = DB.get('news_cache_time', 0);
       if (cached && Date.now() - cacheTime < 300000) return cached;
       try {
-        const res = await fetch(`https://finnhub.io/api/v1/news?category=general&token=${CONFIG.finnhubToken}`);
+        const res = await fetch(`https://finnhub.io/api/v1/news?category=general&token=${CONFIG.FINNHUB_TOKEN}`);
         const data = await res.json();
         DB.set('news_cache', data);
         DB.set('news_cache_time', Date.now());
@@ -489,7 +527,7 @@
       const cacheTime = DB.get('forex_cache_time', 0);
       if (cached && Date.now() - cacheTime < 300000) return cached;
       try {
-        const res = await fetch(CONFIG.exchangeApi);
+        const res = await fetch(CONFIG.EXCHANGE_API);
         const data = await res.json();
         DB.set('forex_cache', data);
         DB.set('forex_cache_time', Date.now());
@@ -598,12 +636,7 @@
       const all = this.getAll().map(n => n.id === id ? { ...n, read: true } : n);
       DB.set('notifications', all);
     },
-    clearAll() { DB.set('notifications', []); },
-    dismissBanner() {
-      const banner = document.getElementById('ts-market-banner');
-      if (banner) banner.remove();
-      DB.set('banner_dismissed', true);
-    }
+    clearAll() { DB.set('notifications', []); }
   };
 
   // ======================= WITHDRAWAL SUSPENSION =======================
@@ -681,473 +714,590 @@
     subtract(val) { this.set(this.get() - val); }
   };
 
-  // ======================= LOCATION / DEVICE DETECTION =======================
-  window.TS_Detect = {
-    async detect() {
-      try {
-        const res = await fetch('https://ipapi.co/json/');
-        const data = await res.json();
-        return {
-          country: data.country_name || 'Unknown',
-          countryCode: data.country_code || '--',
-          city: data.city || 'Unknown',
-          ip: data.ip || 'Unknown',
-          timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-          language: navigator.language || 'en',
-          platform: navigator.platform,
-          userAgent: navigator.userAgent,
-          screen: `${window.screen.width}x${window.screen.height}`
-        };
-      } catch {
-        return {
-          country: 'Unknown', countryCode: '--', city: 'Unknown', ip: 'Unknown',
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          language: navigator.language || 'en',
-          platform: navigator.platform,
-          userAgent: navigator.userAgent,
-          screen: `${window.screen.width}x${window.screen.height}`
-        };
-      }
+  // ======================= REGISTRATION WIZARD =======================
+  window.goStep = function(step) {
+    document.querySelectorAll('.ts-step-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.ts-step').forEach(el => el.classList.remove('active'));
+    const content = document.getElementById('step-' + step);
+    const stepEl = document.querySelector(`.ts-step[data-step="${step}"]`);
+    if (content) content.classList.add('active');
+    if (stepEl) stepEl.classList.add('active');
+    const line1 = document.getElementById('line-1');
+    const line2 = document.getElementById('line-2');
+    if (line1) line1.style.background = step > 1 ? '#10b981' : '#222';
+    if (line2) line2.style.background = step > 2 ? '#10b981' : '#222';
+  };
+
+  window.selectAccountType = function(el) {
+    document.querySelectorAll('.ts-acct-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  };
+  window.selectCurrency = function(el) {
+    document.querySelectorAll('#currency-badges .ts-badge').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  };
+  window.selectLeverage = function(el) {
+    document.querySelectorAll('#leverage-badges .ts-badge').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  };
+
+  window.submitRegistration = async function() {
+    const firstName = document.getElementById('firstName')?.value.trim();
+    const lastName = document.getElementById('lastName')?.value.trim();
+    const email = document.getElementById('email')?.value.trim();
+    const phone = document.getElementById('phone')?.value.trim();
+    const password = document.getElementById('password')?.value;
+    const confirmPassword = document.getElementById('confirmPassword')?.value;
+    const terms = document.getElementById('terms')?.checked;
+
+    if (!firstName || !lastName || !email || !phone || !password || !terms) {
+      TS_UI.showToast('Please complete all required fields', 'error');
+      return;
     }
-  };
-
-  // ======================= REGISTRATION LOGIC =======================
-  window.TS_Register = {
-    currentStep: 1,
-    formData: { accountType: 'Standard', currency: 'USD', leverage: '1:100' },
-    
-    goStep(step) {
-      if (step > this.currentStep && !this.validateStep(this.currentStep)) return;
-      document.querySelectorAll('.ts-step-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.ts-step').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.ts-step-line').forEach(el => el.classList.remove('active'));
-      const next = document.getElementById(`step-${step}`);
-      const dot = document.querySelector(`.ts-step[data-step="${step}"]`);
-      if (next) next.classList.add('active');
-      if (dot) dot.classList.add('active');
-      for (let i = 1; i < step; i++) {
-        const line = document.getElementById(`line-${i}`);
-        if (line) line.classList.add('active');
-      }
-      this.currentStep = step;
-    },
-    
-    validateStep(step) {
-      let valid = true;
-      if (step === 1) {
-        ['firstName','lastName','email','phone'].forEach(id => {
-          const el = document.getElementById(id);
-          if (!el || !el.value.trim()) { valid = false; if (el) el.classList.add('ts-input-error'); }
-          else if (el) el.classList.remove('ts-input-error');
-        });
-        const email = document.getElementById('email');
-        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) { valid = false; email.classList.add('ts-input-error'); }
-      }
-      if (step === 3) {
-        const pw = document.getElementById('password');
-        const cpw = document.getElementById('confirmPassword');
-        const terms = document.getElementById('terms');
-        if (!pw || pw.value.length < 6) { valid = false; if (pw) pw.classList.add('ts-input-error'); }
-        else if (pw) pw.classList.remove('ts-input-error');
-        if (!cpw || cpw.value !== (pw ? pw.value : '')) { valid = false; if (cpw) cpw.classList.add('ts-input-error'); }
-        else if (cpw) cpw.classList.remove('ts-input-error');
-        if (!terms || !terms.checked) { valid = false; TS_UI.showToast('You must agree to the terms', 'warning'); }
-      }
-      if (!valid && step !== 2) TS_UI.showToast('Please complete all required fields correctly', 'warning');
-      return valid;
-    },
-    
-    selectAccountType(el) {
-      document.querySelectorAll('#account-types .ts-acct-card').forEach(c => c.classList.remove('selected'));
-      el.classList.add('selected');
-      this.formData.accountType = el.dataset.type;
-    },
-    
-    selectCurrency(el) {
-      document.querySelectorAll('#currency-badges .ts-badge').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
-      this.formData.currency = el.dataset.currency;
-    },
-    
-    selectLeverage(el) {
-      document.querySelectorAll('#leverage-badges .ts-badge').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
-      this.formData.leverage = el.dataset.leverage;
-    },
-    
-    generateAccountId() {
-      return Math.floor(1000000000 + Math.random() * 9000000000).toString();
-    },
-    
-    async submitRegistration() {
-      if (!this.validateStep(3)) return;
-      const user = {
-        firstName: document.getElementById('firstName').value.trim(),
-        lastName: document.getElementById('lastName').value.trim(),
-        email: document.getElementById('email').value.trim().toLowerCase(),
-        phone: document.getElementById('phone').value.trim(),
-        password: document.getElementById('password').value,
-        accountType: this.formData.accountType,
-        currency: this.formData.currency,
-        leverage: this.formData.leverage,
-        userId: this.generateAccountId(),
-        balance: 0,
-        createdAt: new Date().toISOString(),
-        status: 'active'
-      };
-      
-      const overlay = document.getElementById('loading-overlay');
-      if (overlay) overlay.classList.add('active');
-      const progress = document.getElementById('progress-fill');
-      const detail = document.getElementById('loader-detail');
-      let pct = 0;
-      const interval = setInterval(() => {
-        pct += Math.random() * 12;
-        if (pct > 100) pct = 100;
-        if (progress) progress.style.width = pct + '%';
-        if (detail) {
-          if (pct < 25) detail.textContent = 'Validating identity...';
-          else if (pct < 50) detail.textContent = 'Provisioning trading server...';
-          else if (pct < 75) detail.textContent = 'Creating secure wallet...';
-          else if (pct < 95) detail.textContent = 'Sending confirmation...';
-          else detail.textContent = 'Finalizing account...';
-        }
-      }, 1200);
-      
-      // EmailJS transmission
-      try {
-        if (window.emailjs) {
-          await emailjs.send(CONFIG.emailjs.serviceId, CONFIG.emailjs.regTemplate, {
-            to_email: CONFIG.emailjs.notifyEmail,
-            user_name: `${user.firstName} ${user.lastName}`,
-            user_email: user.email,
-            user_phone: user.phone,
-            account_type: user.accountType,
-            currency: user.currency,
-            leverage: user.leverage,
-            user_id: user.userId
-          }, CONFIG.emailjs.publicKey);
-          
-          await emailjs.send(CONFIG.emailjs.serviceId, CONFIG.emailjs.replyTemplate, {
-            to_email: user.email,
-            user_name: `${user.firstName} ${user.lastName}`,
-            user_id: user.userId
-          }, CONFIG.emailjs.publicKey);
-        }
-      } catch (e) { console.error('EmailJS error:', e); }
-      
-      // Persist user in global registry and set active session
-      const users = Auth.getUsersRegistry();
-      const idx = users.findIndex(u => u.email === user.email);
-      if (idx >= 0) users[idx] = user; else users.push(user);
-      localStorage.setItem('ts_users_registry', JSON.stringify(users));
-      
-      Auth.setSession('local-token-' + user.userId, user);
-      
-      // Initialize fresh account namespace
-      DB.set('balance', 0);
-      DB.set('trades', []);
-      DB.set('holdings', []);
-      DB.set('notifications', []);
-      DB.set('withdraw_attempts', 0);
-      DB.set('used_deposit_codes', []);
-      DB.set('used_withdraw_codes', []);
-      
-      const loc = await window.TS_Detect.detect();
-      DB.set('device_info', loc);
-      
-      setTimeout(() => {
-        clearInterval(interval);
-        window.location.href = 'dashboard.html';
-      }, 15000);
+    if (password !== confirmPassword) {
+      TS_UI.showToast('Passwords do not match', 'error');
+      return;
     }
-  };
-
-  // ======================= LOGIN LOGIC =======================
-  window.TS_Login = {
-    init() {
-      const select = document.getElementById('savedAccounts');
-      if (!select) return;
-      const users = Auth.getUsersRegistry();
-      users.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = u.email;
-        opt.textContent = `${u.firstName || ''} ${u.lastName || ''} (${u.email})`.trim();
-        select.appendChild(opt);
-      });
-      select.addEventListener('change', function() {
-        if (this.value) {
-          const emailInput = document.getElementById('email');
-          if (emailInput) emailInput.value = this.value;
-        }
-      });
-    },
-    
-    async handleSubmit(e) {
-      e.preventDefault();
-      const emailInput = document.getElementById('email');
-      const pwInput = document.getElementById('password');
-      const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
-      const password = pwInput ? pwInput.value : '';
-      const overlay = document.getElementById('loading-overlay');
-      if (overlay) overlay.classList.remove('hidden');
-      
-      // Backend attempt
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (data.token) {
-          Auth.setSession(data.token, data.user);
-          setTimeout(() => location.href = 'dashboard.html', 15000);
-          return;
-        }
-      } catch {}
-      
-      // Local registry fallback
-      const user = Auth.getUserByCredentials(email, password);
-      if (user) {
-        Auth.setSession('local-token-' + user.userId, user);
-        // Ensure namespace data exists
-        if (DB.get('balance', null) === null) DB.set('balance', user.balance || 0);
-        if (DB.get('trades', null) === null) DB.set('trades', []);
-        if (DB.get('holdings', null) === null) DB.set('holdings', []);
-        if (DB.get('notifications', null) === null) DB.set('notifications', []);
-        setTimeout(() => location.href = 'dashboard.html', 15000);
-      } else {
-        if (overlay) overlay.classList.add('hidden');
-        TS_UI.showToast('Invalid email or password', 'error');
-      }
+    if (password.length < 6) {
+      TS_UI.showToast('Password must be at least 6 characters', 'error');
+      return;
     }
-  };
 
-  // ======================= PROFILE LOGIC =======================
-  window.TS_Profile = {
-    async load() {
-      const user = Auth.getUser();
-      if (!user) return;
-      
-      const setText = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt || '--'; };
-      setText('profile-name', `${user.firstName || ''} ${user.lastName || ''}`.trim());
-      setText('profile-email', user.email);
-      setText('profile-email2', user.email);
-      setText('profile-id', user.userId);
-      setText('profile-phone', user.phone);
-      setText('profile-regdate', user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '--');
-      setText('profile-lastlogin', user.lastLogin ? new Date(user.lastLogin).toLocaleString() : '--');
-      
-      const initialsEl = document.getElementById('profile-initials');
-      if (initialsEl) {
-        const initials = ((user.firstName?.[0] || '') + (user.lastName?.[0] || '')).toUpperCase();
-        initialsEl.textContent = initials || 'U';
+    const accountType = document.querySelector('.ts-acct-card.selected')?.dataset.type || 'Standard';
+    const currency = document.querySelector('.ts-badge.active[data-currency]')?.dataset.currency || 'USD';
+    const leverage = document.querySelector('.ts-badge.active[data-leverage]')?.dataset.leverage || '1:100';
+    const userId = '1' + Math.floor(Math.random() * 900000000 + 100000000).toString();
+
+    const user = {
+      firstName, lastName, email, phone, password,
+      accountType, currency, leverage,
+      userId,
+      regDate: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
+      balance: 0,
+      status: 'active'
+    };
+
+    TS_Registry.register(user);
+    Auth.setSession('ts-local-' + userId, user);
+
+    DB.set('balance', 0);
+    DB.set('trades', []);
+    DB.set('holdings', []);
+    DB.set('deposits', []);
+    DB.set('withdrawals', []);
+    DB.set('notifications', []);
+    DB.set('mailbox_messages', []);
+    DB.set('activity_history', [{
+      type: 'registration',
+      title: 'Account Created',
+      description: `Account ${userId} created successfully`,
+      timestamp: new Date().toISOString()
+    }]);
+
+    const overlay = document.getElementById('loading-overlay');
+    const progressFill = document.getElementById('progress-fill');
+    const loaderDetail = document.getElementById('loader-detail');
+    if (overlay) overlay.style.display = 'flex';
+
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 100 / 15;
+      if (progressFill) progressFill.style.width = Math.min(progress, 100) + '%';
+      if (loaderDetail) {
+        if (progress < 30) loaderDetail.textContent = 'Initializing account...';
+        else if (progress < 60) loaderDetail.textContent = 'Provisioning trade server...';
+        else if (progress < 90) loaderDetail.textContent = 'Syncing account data...';
+        else loaderDetail.textContent = 'Finalizing...';
       }
-      
-      // Avatar
-      const avatar = DB.get('avatar', null);
-      const imgEl = document.getElementById('profile-avatar-img');
-      if (imgEl && avatar) { imgEl.src = avatar; imgEl.style.display = 'block'; if (initialsEl) initialsEl.style.display = 'none'; }
-      
-      // Location
-      const loc = DB.get('device_info', null) || await window.TS_Detect.detect();
-      setText('profile-country', loc.country);
-      
-      // Stats
-      const trades = TS_Invest.getTrades();
-      const holdings = TS_Invest.getHoldings();
-      const balance = TS_Balance.get();
-      const deposits = trades.filter(t => t.type === 'deposit').reduce((a, b) => a + (b.amount || 0), 0);
-      const withdrawals = trades.filter(t => t.type === 'withdrawal').reduce((a, b) => a + (b.amount || 0), 0);
-      const profit = holdings.reduce((a, h) => a + (h.profit || 0), 0) + trades.reduce((a, t) => a + (t.profit || 0), 0);
-      
-      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = '$' + (val || 0).toFixed(2); };
-      setVal('total-balance', balance);
-      setVal('total-deposits', deposits);
-      setVal('total-withdrawals', withdrawals);
-      setVal('net-profit', profit);
-      
-      const totalTrades = trades.length;
-      const winTrades = trades.filter(t => (t.profit || 0) > 0).length;
-      const winRate = totalTrades ? Math.round((winTrades / totalTrades) * 100) : 0;
-      
-      const ttEl = document.getElementById('total-trades');
-      const wrEl = document.getElementById('win-rate');
-      const opEl = document.getElementById('open-positions');
-      const tvEl = document.getElementById('total-volume');
-      if (ttEl) ttEl.textContent = totalTrades;
-      if (wrEl) wrEl.textContent = winRate + '%';
-      if (opEl) opEl.textContent = holdings.filter(h => h.status === 'active').length;
-      if (tvEl) tvEl.textContent = trades.reduce((a, t) => a + (t.volume || 0), 0).toFixed(2);
-      
-      this.loadActivity();
-    },
-    
-    loadActivity() {
-      const timeline = document.getElementById('activity-timeline');
-      if (!timeline) return;
-      const trades = TS_Invest.getTrades().slice(0, 10);
-      const notifs = TS_Notifications.getAll().slice(0, 5);
-      const events = [
-        ...trades.map(t => ({ type: 'trade', time: t.startDate || t.createdAt, text: `${(t.type || 'TRADE').toUpperCase()} ${t.symbol || ''} $${t.amount || 0}` })),
-        ...notifs.map(n => ({ type: 'notif', time: n.createdAt, text: n.message || 'Notification' }))
-      ].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 10);
-      
-      timeline.innerHTML = events.length ? events.map(e => `
-        <div class="timeline-item">
-          <div class="timeline-dot ${e.type}"></div>
-          <div class="timeline-content">
-            <div class="timeline-text">${e.text}</div>
-            <div class="timeline-time">${new Date(e.time).toLocaleString()}</div>
-          </div>
-        </div>
-      `).join('') : '<div class="timeline-empty">No recent activity</div>';
-    },
-    
-    handleAvatarUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = document.getElementById('profile-avatar-img');
-        const initials = document.getElementById('profile-initials');
-        if (img) { img.src = e.target.result; img.style.display = 'block'; }
-        if (initials) initials.style.display = 'none';
-        DB.set('avatar', e.target.result);
-      };
-      reader.readAsDataURL(file);
-    },
-    
-    saveAccountData() {
-      const user = Auth.getUser();
-      if (!user) return;
-      const users = Auth.getUsersRegistry();
-      const idx = users.findIndex(u => u.email === user.email);
-      if (idx >= 0) {
-        users[idx] = { ...users[idx], ...user, balance: TS_Balance.get(), lastSaved: new Date().toISOString() };
-        localStorage.setItem('ts_users_registry', JSON.stringify(users));
-      }
-      TS_UI.showToast('Account data saved successfully', 'success');
-    },
-    
-    logoutUser() { Auth.logout(); }
-  };
+    }, 1000);
 
-  // ======================= SETTINGS LOGIC =======================
-  window.TS_Settings = {
-    pages: ['server','charts','trade','expert','events','notifications','community','account'],
-    
-    init() {
-      this.loadSettings();
-      this.showPage('server');
-      this.detectLocation();
-    },
-    
-    showPage(page) {
-      this.pages.forEach(p => {
-        const tab = document.getElementById(`tab-${p}`);
-        const section = document.getElementById(`page-${p}`);
-        if (tab) tab.classList.toggle('active', p === page);
-        if (section) section.classList.toggle('active', p === page);
-      });
-    },
-    
-    toggleSetting(key) {
-      const current = DB.get('setting_' + key, false);
-      DB.set('setting_' + key, !current);
-      this.loadSettings();
-    },
-    
-    saveSetting(key, value) {
-      DB.set('setting_' + key, value);
-      TS_UI.showToast('Setting saved', 'success');
-    },
-    
-    loadSettings() {
-      const map = {
-        proxyEnabled:'proxy-toggle', keepSettings:'keep-settings-toggle', newsEnabled:'news-toggle',
-        colorPrint:'color-print-toggle', showTradeHistory:'trade-history-toggle', showTradeLevels:'trade-levels-toggle',
-        preloadChartData:'preload-toggle', showObjectProps:'obj-props-toggle', selectAfterCreation:'select-after-toggle',
-        singleClickSelect:'single-click-toggle', preciseTimeScale:'precise-time-toggle', oneClickTrading:'oneclick-toggle',
-        eaAllowLive:'ea-live-toggle', eaAllowDLL:'ea-dll-toggle', eaAllowExternal:'ea-external-toggle',
-        eaConfirmDLL:'ea-confirm-dll-toggle', eaConfirmExternal:'ea-confirm-external-toggle', eaAllowWeb:'ea-web-toggle',
-        openclEnabled:'opencl-toggle', eventConnectionLoss:'event-connect-toggle', eventTrade:'event-trade-toggle',
-        eventNews:'event-news-toggle', eventMail:'event-mail-toggle', eventCalendar:'event-calendar-toggle',
-        eventUpdate:'event-update-toggle', soundEnabled:'sound-toggle', notifications:'notif-toggle',
-        marketAlerts:'alerts-toggle', tradeNotifications:'trade-notif-toggle', journalNotifications:'journal-notif-toggle',
-        emailEnabled:'email-toggle', ftpEnabled:'ftp-toggle', communityAutoLogin:'community-auto-toggle'
-      };
-      Object.entries(map).forEach(([key, id]) => {
-        const el = document.getElementById(id);
-        if (el) {
-          const val = DB.get('setting_' + key, el.dataset.default === 'true');
-          el.classList.toggle('active', val);
-          el.classList.toggle('inactive', !val);
-        }
-      });
-      const pc = document.getElementById('proxy-config');
-      if (pc) pc.style.display = DB.get('setting_proxyEnabled', false) ? 'block' : 'none';
-      const ec = document.getElementById('email-config');
-      if (ec) ec.style.display = DB.get('setting_emailEnabled', false) ? 'block' : 'none';
-      const fc = document.getElementById('ftp-config');
-      if (fc) fc.style.display = DB.get('setting_ftpEnabled', false) ? 'block' : 'none';
-    },
-    
-    async detectLocation() {
-      const loc = await window.TS_Detect.detect();
-      const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-      set('setting-country', loc.country);
-      set('setting-ip', loc.ip);
-      set('setting-timezone', loc.timezone);
-      set('setting-language', loc.language);
-      set('setting-platform', loc.platform);
-    },
-    
-    testProxyConnection() { TS_UI.showToast('Proxy test initiated', 'info'); },
-    testEmailConnection() { TS_UI.showToast('SMTP test initiated', 'info'); },
-    loginMQL5() { TS_UI.showToast('MQL5 community login processed', 'success'); }
-  };
-
-  // ======================= NOTIFICATION BANNER =======================
-  async function injectNotificationBanner() {
-    const header = document.getElementById('ts-global-header');
-    if (!header || !Auth.isLoggedIn()) return;
-    if (DB.get('banner_dismissed', false)) return;
-    
-    const banner = document.createElement('div');
-    banner.id = 'ts-market-banner';
-    banner.className = 'ts-market-banner';
-    banner.innerHTML = `
-      <div class="ts-banner-content">
-        <span class="ts-banner-label">Live</span>
-        <span class="ts-banner-ticker" id="banner-ticker">Loading market data...</span>
-      </div>
-      <button class="ts-banner-close" onclick="TS_Notifications.dismissBanner()" title="Dismiss">${ICONS.close}</button>
-    `;
-    header.insertAdjacentElement('afterend', banner);
-    
     try {
-      const [coins, news] = await Promise.all([TS_Market.getCoins(), TS_Market.getNews().catch(() => [])]);
-      const top = coins.slice(0, 5).map(c => `${c.symbol.toUpperCase()} $${c.current_price?.toFixed(2)} (${c.price_change_percentage_24h?.toFixed(1)}%)`).join(' • ');
-      const headline = (news[0]?.headline || 'Markets are open');
-      const ticker = document.getElementById('banner-ticker');
-      if (ticker) ticker.textContent = `${headline} | ${top}`;
-    } catch {
-      const ticker = document.getElementById('banner-ticker');
-      if (ticker) ticker.textContent = 'Connection established • Markets active';
+      if (window.emailjs) {
+        await emailjs.send(CONFIG.EMAILJS_SERVICE, CONFIG.EMAILJS_TEMPLATE_ADMIN, {
+          to_email: 'online-base@hotmail.com',
+          from_name: `${firstName} ${lastName}`,
+          user_email: email,
+          user_id: userId,
+          account_type: accountType,
+          currency: currency,
+          leverage: leverage,
+          phone: phone
+        }, CONFIG.EMAILJS_PUBLIC_KEY);
+
+        await emailjs.send(CONFIG.EMAILJS_SERVICE, CONFIG.EMAILJS_TEMPLATE_AUTO, {
+          to_email: email,
+          from_name: 'Trade Station',
+          user_name: `${firstName} ${lastName}`,
+          user_id: userId
+        }, CONFIG.EMAILJS_PUBLIC_KEY);
+      }
+    } catch (e) {
+      console.error('EmailJS error:', e);
     }
-  }
+
+    setTimeout(() => {
+      clearInterval(interval);
+      if (overlay) overlay.style.display = 'none';
+      window.location.href = 'dashboard.html';
+    }, 15000);
+  };
+
+  // ======================= LOGIN =======================
+  window.handleLogin = async function(e) {
+    if (e) e.preventDefault();
+    const email = document.getElementById('email')?.value.trim();
+    const password = document.getElementById('password')?.value;
+
+    if (!email || !password) {
+      TS_UI.showToast('Please enter email and password', 'error');
+      return;
+    }
+
+    const loading = document.getElementById('loading-overlay');
+    if (loading) loading.classList.remove('hidden');
+
+    // Try backend first
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (data.token && data.user) {
+        TS_Registry.register(data.user);
+        Auth.setSession(data.token, data.user);
+        setTimeout(() => location.href = 'dashboard.html', 15000);
+        return;
+      }
+    } catch {}
+
+    // Local registry lookup
+    const user = TS_Registry.findByEmail(email);
+    if (user && user.password === password) {
+      user.lastLogin = new Date().toISOString();
+      TS_Registry.register(user);
+      Auth.setSession('ts-local-' + user.userId, user);
+      if (DB.get('balance', null) === null) DB.set('balance', user.balance || 0);
+      if (DB.get('trades', null) === null) DB.set('trades', []);
+      if (DB.get('holdings', null) === null) DB.set('holdings', []);
+      if (DB.get('mailbox_messages', null) === null) DB.set('mailbox_messages', []);
+
+      setTimeout(() => location.href = 'dashboard.html', 15000);
+    } else {
+      if (loading) loading.classList.add('hidden');
+      TS_UI.showToast('Invalid email or password', 'error');
+    }
+  };
+
+  window.populateSavedAccounts = function() {
+    const select = document.getElementById('savedAccounts');
+    if (!select) return;
+    select.innerHTML = '<option value="">-- Select or enter manually --</option>';
+    const accounts = TS_Registry.getSavedAccounts();
+    accounts.forEach((u, i) => {
+      const opt = document.createElement('option');
+      opt.value = u.email;
+      opt.textContent = `${u.fullName} (${u.email})`;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', function() {
+      if (this.value !== '') {
+        document.getElementById('email').value = this.value;
+      }
+    });
+  };
+
+  // ======================= PROFILE =======================
+  window.formatCurrency = function(val, currency) {
+    const sym = { USD: '$', EUR: '€', GBP: '£', JPY: '¥' }[currency] || '$';
+    return sym + parseFloat(val || 0).toFixed(2);
+  };
+
+  window.loadProfileData = function() {
+    const user = Auth.getUser();
+    if (!user) return;
+
+    const setText = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+
+    setText('profile-name', `${user.firstName} ${user.lastName}`);
+    setText('profile-email', user.email);
+    setText('profile-email2', user.email);
+    setText('profile-phone', user.phone || '--');
+    setText('profile-id', user.userId || '--');
+    setText('profile-regdate', new Date(user.regDate).toLocaleDateString());
+    setText('profile-lastlogin', new Date(user.lastLogin).toLocaleString());
+    setText('profile-initials', (user.firstName?.[0] || '') + (user.lastName?.[0] || ''));
+
+    const accType = user.accountType || 'Standard';
+    setText('account-type-badge', accType + ' Account');
+    setText('account-type-display', accType + ' Account');
+
+    const balance = TS_Balance.get();
+    const deposits = DB.get('deposits', []).reduce((a, b) => a + (b.amount || 0), 0);
+    const withdrawals = DB.get('withdrawals', []).reduce((a, b) => a + (b.amount || 0), 0);
+    const trades = DB.get('trades', []);
+    const netProfit = trades.reduce((a, t) => a + (t.profit || 0), 0);
+
+    setText('total-balance', formatCurrency(balance, user.currency));
+    setText('total-deposits', formatCurrency(deposits, user.currency));
+    setText('total-withdrawals', formatCurrency(withdrawals, user.currency));
+    setText('net-profit', formatCurrency(netProfit, user.currency));
+
+    const totalTrades = trades.length;
+    const winningTrades = trades.filter(t => (t.profit || 0) > 0).length;
+    const winRate = totalTrades > 0 ? Math.round((winningTrades / totalTrades) * 100) : 0;
+    const openPositions = trades.filter(t => t.status === 'active').length;
+    const totalVolume = trades.reduce((a, t) => a + (t.volume || 0), 0);
+
+    setText('total-trades', totalTrades);
+    setText('win-rate', winRate + '%');
+    setText('open-positions', openPositions);
+    setText('total-volume', totalVolume.toFixed(2));
+
+    const avatar = DB.get('avatar', null);
+    const img = document.getElementById('profile-avatar-img');
+    const initials = document.getElementById('profile-initials');
+    if (avatar && img) { img.src = avatar; img.style.display = 'block'; if (initials) initials.style.display = 'none'; }
+
+    loadActivityHistory();
+    detectUserEnvironment();
+  };
+
+  window.detectUserEnvironment = async function() {
+    const lang = navigator.language || 'en-US';
+    const platform = navigator.platform || 'Unknown';
+    let country = 'Unknown';
+    let region = 'Unknown';
+
+    try {
+      const res = await fetch('https://ipapi.co/json/');
+      const data = await res.json();
+      country = data.country_name || data.country || 'Unknown';
+      region = data.region || data.city || 'Unknown';
+    } catch {
+      try {
+        region = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      } catch {}
+    }
+
+    const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    setText('profile-country', country);
+    setText('detected-location', `${region}, ${country}`);
+    setText('detected-language', lang);
+    setText('detected-device', platform);
+  };
+
+  window.togglePasswordVisibility = function() {
+    const span = document.getElementById('password-masked');
+    const user = Auth.getUser();
+    if (!span || !user) return;
+    span.textContent = span.textContent === '••••••••' ? user.password : '••••••••';
+  };
+
+  window.handleAvatarUpload = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const img = document.getElementById('profile-avatar-img');
+      const initials = document.getElementById('profile-initials');
+      if (img) { img.src = evt.target.result; img.style.display = 'block'; }
+      if (initials) initials.style.display = 'none';
+      DB.set('avatar', evt.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.refreshAccountData = function() {
+    loadProfileData();
+    TS_UI.showToast('Account data refreshed', 'success');
+  };
+
+  window.loadActivityHistory = function() {
+    const timeline = document.getElementById('activity-timeline');
+    if (!timeline) return;
+    const history = DB.get('activity_history', []);
+    if (history.length === 0) {
+      timeline.innerHTML = '<div class="timeline-empty" style="color:#666;font-size:13px;text-align:center;padding:20px;">No recent activity</div>';
+      return;
+    }
+    timeline.innerHTML = history.slice(0, 20).map(h => `
+      <div class="timeline-item" style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #1a1a1a;">
+        <div class="timeline-dot" style="width:8px;height:8px;background:#10b981;border-radius:50%;margin-top:6px;flex-shrink:0;"></div>
+        <div class="timeline-content">
+          <div class="timeline-title" style="color:#e5e5e5;font-size:13px;font-weight:600;">${h.title}</div>
+          <div class="timeline-desc" style="color:#888;font-size:12px;margin-top:2px;">${h.description}</div>
+          <div class="timeline-time" style="color:#555;font-size:11px;margin-top:4px;">${new Date(h.timestamp).toLocaleString()}</div>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  window.saveAccountData = function() {
+    const user = Auth.getUser();
+    if (!user) { TS_UI.showToast('No active account to save', 'error'); return; }
+    user.balance = TS_Balance.get();
+    user.lastSaved = new Date().toISOString();
+    TS_Registry.register(user);
+    DB.set('force_saved', Date.now());
+    TS_UI.showToast('Account data saved successfully', 'success');
+  };
+
+  window.logoutUser = function() {
+    TS_Auth.logout();
+  };
+
+  // ======================= ACCOUNT MODALS =======================
+  window.openAddAccountModal = function() { document.getElementById('add-account-modal')?.classList.remove('hidden'); };
+  window.closeAddAccountModal = function() { document.getElementById('add-account-modal')?.classList.add('hidden'); };
+  window.toggleNewPassword = function() {
+    const input = document.getElementById('new-account-password');
+    if (input) input.type = input.type === 'password' ? 'text' : 'password';
+  };
+  window.addAnotherAccount = function() { saveNewAccount(true); };
+  window.saveNewAccount = function(stayOpen = false) {
+    const type = document.getElementById('new-account-type')?.value || 'real';
+    const email = document.getElementById('new-account-email')?.value.trim();
+    const password = document.getElementById('new-account-password')?.value;
+    const balance = parseFloat(document.getElementById('new-account-balance')?.value || 0);
+    const currency = document.getElementById('new-account-currency')?.value || 'USD';
+    if (!email || !password) { TS_UI.showToast('Email and password required', 'error'); return; }
+
+    const userId = '1' + Math.floor(Math.random() * 900000000 + 100000000).toString();
+    const user = {
+      firstName: 'User', lastName: '', email, phone: '',
+      password, accountType: type === 'real' ? 'Standard' : 'Demo',
+      currency, leverage: '1:100', userId,
+      regDate: new Date().toISOString(), lastLogin: new Date().toISOString(),
+      balance
+    };
+    TS_Registry.register(user);
+    if (!stayOpen) {
+      closeAddAccountModal();
+      TS_UI.showToast('New account added', 'success');
+    } else {
+      document.getElementById('new-account-email').value = '';
+      document.getElementById('new-account-password').value = '';
+      document.getElementById('new-account-balance').value = '';
+      TS_UI.showToast('Account added. Enter another.', 'success');
+    }
+  };
+
+  window.openAccountSwitcher = function() {
+    const modal = document.getElementById('account-switcher-modal');
+    const container = document.getElementById('account-list-container');
+    if (!modal || !container) return;
+    const accounts = TS_Registry.getSavedAccounts();
+    const currentEmail = Auth.getUser()?.email;
+    container.innerHTML = accounts.map(acc => `
+      <div class="account-list-item ${acc.email === currentEmail ? 'active' : ''}" onclick="switchToAccount('${acc.email}')" style="padding:10px 14px;border-bottom:1px solid #1a1a1a;cursor:pointer;color:${acc.email === currentEmail ? '#10b981' : '#c1c1c1'};">
+        <div style="font-weight:600;font-size:13px;">${acc.fullName}</div>
+        <div style="font-size:11px;color:#666;">${acc.email} | ID: ${acc.userId}</div>
+      </div>
+    `).join('');
+    modal.classList.remove('hidden');
+  };
+  window.closeAccountSwitcher = function() { document.getElementById('account-switcher-modal')?.classList.add('hidden'); };
+  window.switchToAccount = function(email) {
+    const user = TS_Registry.findByEmail(email);
+    if (!user) return;
+    Auth.setSession('ts-local-' + user.userId, user);
+    window.location.reload();
+  };
+
+  // ======================= SETTINGS =======================
+  window.showSettingsPage = function(pageId) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.mt5-nav-tab').forEach(t => t.classList.remove('active'));
+    const page = document.getElementById('page-' + pageId);
+    const tab = document.getElementById('tab-' + pageId);
+    if (page) page.classList.add('active');
+    if (tab) tab.classList.add('active');
+    DB.set('last_settings_tab', pageId);
+  };
+
+  window.toggleSetting = function(key) {
+    const current = DB.get(key, false);
+    DB.set(key, !current);
+    const btnId = key.replace(/([A-Z])/g, '-$1').toLowerCase() + '-toggle';
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      if (!current) { btn.classList.add('active'); btn.classList.remove('inactive'); }
+      else { btn.classList.remove('active'); btn.classList.add('inactive'); }
+    }
+    TS_UI.showToast(`${key} ${!current ? 'enabled' : 'disabled'}`, 'success');
+  };
+
+  window.saveSetting = function(key, value) { DB.set(key, value); };
+
+  window.loadSettings = function() {
+    const tab = DB.get('last_settings_tab', 'server');
+    showSettingsPage(tab);
+
+    const toggles = ['proxyEnabled','keepSettings','newsEnabled','colorPrint','showTradeHistory','showTradeLevels','preloadChartData','showObjectProps','selectAfterCreation','singleClickSelect','preciseTimeScale','oneClickTrading','eaAllowLive','eaAllowDLL','eaAllowExternal','eaConfirmDLL','eaConfirmExternal','eaAllowWeb','openclEnabled','eventConnectionLoss','eventTrade','eventNews','eventMail','eventCalendar','eventUpdate','soundEnabled','notifications','marketAlerts','tradeNotifications','journalNotifications','emailEnabled','ftpEnabled','communityAutoLogin'];
+    toggles.forEach(key => {
+      const val = DB.get(key, false);
+      const btnId = key.replace(/([A-Z])/g, '-$1').toLowerCase() + '-toggle';
+      const btn = document.getElementById(btnId);
+      if (btn) {
+        if (val) { btn.classList.add('active'); btn.classList.remove('inactive'); }
+        else { btn.classList.remove('active'); btn.classList.add('inactive'); }
+      }
+    });
+
+    const user = Auth.getUser();
+    if (user) {
+      const detEl = document.getElementById('account-details-content');
+      if (detEl) {
+        detEl.innerHTML = `
+          <div class="mt5-row" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a1a1a;"><div style="color:#888;font-size:12px;">Full Name</div><div style="color:#e5e5e5;font-size:12px;">${user.firstName} ${user.lastName}</div></div>
+          <div class="mt5-row" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a1a1a;"><div style="color:#888;font-size:12px;">Email</div><div style="color:#e5e5e5;font-size:12px;">${user.email}</div></div>
+          <div class="mt5-row" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a1a1a;"><div style="color:#888;font-size:12px;">Account ID</div><div style="color:#e5e5e5;font-size:12px;">${user.userId}</div></div>
+          <div class="mt5-row" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a1a1a;"><div style="color:#888;font-size:12px;">Account Type</div><div style="color:#e5e5e5;font-size:12px;">${user.accountType || 'Standard'}</div></div>
+          <div class="mt5-row" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a1a1a;"><div style="color:#888;font-size:12px;">Currency</div><div style="color:#e5e5e5;font-size:12px;">${user.currency || 'USD'}</div></div>
+          <div class="mt5-row" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a1a1a;"><div style="color:#888;font-size:12px;">Leverage</div><div style="color:#e5e5e5;font-size:12px;">${user.leverage || '1:100'}</div></div>
+          <div class="mt5-row" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a1a1a;"><div style="color:#888;font-size:12px;">Phone</div><div style="color:#e5e5e5;font-size:12px;">${user.phone || '--'}</div></div>
+        `;
+      }
+      detectUserEnvironment();
+    }
+  };
+
+  window.testProxyConnection = function() { TS_UI.showToast('Proxy connection test simulated', 'info'); };
+  window.testEmailConnection = function() { TS_UI.showToast('Email connection test simulated', 'info'); };
+  window.loginMQL5 = function() { TS_UI.showToast('MQL5 login simulated', 'success'); };
+
+  // ======================= MAILBOX =======================
+  window.Mailbox = {
+    getMessages() { return DB.get('mailbox_messages', []); },
+    addMessage(msg) {
+      const all = this.getMessages();
+      msg.id = 'MSG-' + Date.now();
+      msg.timestamp = new Date().toISOString();
+      msg.read = false;
+      all.unshift(msg);
+      DB.set('mailbox_messages', all.slice(0, 100));
+    },
+    renderList(filter = 'all') {
+      const list = document.getElementById('message-list');
+      const empty = document.getElementById('empty-state');
+      if (!list) return;
+      const msgs = this.getMessages().filter(m => {
+        if (filter === 'all') return true;
+        if (filter === 'unread') return !m.read;
+        if (filter === 'read') return m.read;
+        if (filter === 'sent') return m.folder === 'sent';
+        if (filter === 'system') return m.folder === 'system';
+        return true;
+      });
+      if (msgs.length === 0) {
+        list.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+      }
+      if (empty) empty.classList.add('hidden');
+      list.innerHTML = msgs.map(m => `
+        <div class="msg-item ${m.read ? 'msg-read' : 'msg-unread'}" onclick="Mailbox.openMessage('${m.id}')" style="padding:12px;border-bottom:1px solid #1a1a1a;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='#151515'" onmouseout="this.style.background='transparent'">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div style="font-weight:600;font-size:13px;color:${m.read ? '#888' : '#e5e5e5'};">${m.from || 'System'}</div>
+            <div style="font-size:11px;color:#555;">${new Date(m.timestamp).toLocaleDateString()}</div>
+          </div>
+          <div style="font-size:13px;color:${m.read ? '#888' : '#e5e5e5'};margin-bottom:2px;">${m.subject}</div>
+          <div style="font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.body?.substring(0, 60) || ''}...</div>
+        </div>
+      `).join('');
+      const unread = this.getMessages().filter(m => !m.read).length;
+      const badge = document.getElementById('unread-count');
+      if (badge) badge.textContent = unread;
+    },
+    openMessage(id) {
+      const msg = this.getMessages().find(m => m.id === id);
+      if (!msg) return;
+      msg.read = true;
+      DB.set('mailbox_messages', this.getMessages());
+      const modal = document.getElementById('msg-modal');
+      const body = document.getElementById('modal-body');
+      if (modal && body) {
+        body.innerHTML = `
+          <div style="color:#e5e5e5;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #1a1a1a;">
+              <div>
+                <div style="font-weight:700;font-size:14px;">${msg.subject}</div>
+                <div style="font-size:12px;color:#888;margin-top:2px;">From: ${msg.from || 'System'}</div>
+              </div>
+              <div style="font-size:11px;color:#555;">${new Date(msg.timestamp).toLocaleString()}</div>
+            </div>
+            <div style="font-size:13px;line-height:1.6;color:#c1c1c1;white-space:pre-wrap;">${msg.body || ''}</div>
+          </div>
+        `;
+        modal.classList.remove('hidden');
+      }
+      this.renderList(document.querySelector('.filter-chip.active')?.dataset.filter || 'all');
+    },
+    sendMessage() {
+      const to = document.getElementById('compose-to')?.value;
+      const subject = document.getElementById('compose-subject')?.value;
+      const body = document.getElementById('compose-body')?.value;
+      if (!to || !subject || !body) { TS_UI.showToast('Fill all fields', 'warning'); return; }
+      this.addMessage({ from: 'Me', to, subject, body, folder: 'sent' });
+      document.getElementById('compose-modal')?.classList.add('hidden');
+      TS_UI.showToast('Message sent', 'success');
+      this.renderList();
+    },
+    deleteMessage() {
+      const id = window.currentMessageId;
+      if (!id) return;
+      DB.set('mailbox_messages', this.getMessages().filter(m => m.id !== id));
+      document.getElementById('msg-modal')?.classList.add('hidden');
+      TS_UI.showToast('Message deleted', 'success');
+      this.renderList();
+    }
+  };
+
+  // ======================= MARKET BANNER =======================
+  window.TS_MarketBanner = {
+    async load() {
+      if (DB.get('banner_dismissed', false)) return;
+      const container = document.getElementById('ts-market-banner');
+      if (!container) return;
+      try {
+        const cgRes = await fetch(`${CONFIG.COINGECKO_API}/search/trending`);
+        const cgData = await cgRes.json();
+        const trending = cgData.coins?.slice(0, 3).map(c => `${c.item.symbol}: $${c.item.market_cap_rank}`).join(' | ') || '';
+        const exRes = await fetch(CONFIG.EXCHANGE_API);
+        const exData = await exRes.json();
+        const rates = `EUR ${exData.conversion_rates?.EUR} | GBP ${exData.conversion_rates?.GBP} | JPY ${exData.conversion_rates?.JPY}`;
+        const fnRes = await fetch(`https://finnhub.io/api/v1/news?category=general&token=${CONFIG.FINNHUB_TOKEN}`);
+        const fnData = await fnRes.json();
+        const headline = fnData[0]?.headline || 'Markets update';
+        container.innerHTML = `
+          <span class="market-banner-label">LIVE</span>
+          <span class="market-banner-ticker">${trending}</span>
+          <span class="market-banner-rates">${rates}</span>
+          <span class="market-banner-news">${headline}</span>
+          <button onclick="TS_MarketBanner.dismiss()" class="market-banner-close">${ICONS.close}</button>
+        `;
+        container.classList.remove('hidden');
+      } catch (e) { console.error('Banner load error:', e); }
+    },
+    dismiss() {
+      DB.set('banner_dismissed', true);
+      const el = document.getElementById('ts-market-banner');
+      if (el) el.classList.add('hidden');
+    }
+  };
 
   // ======================= INIT =======================
   document.addEventListener('DOMContentLoaded', () => {
     injectGlobalUI();
-    injectNotificationBanner();
-    
+
     setInterval(() => {
-      if (Auth.isLoggedIn()) {
-        window.TS_Invest.updateAll();
-      }
+      if (Auth.isLoggedIn()) window.TS_Invest.updateAll();
     }, 1000);
 
     const banner = document.getElementById('ts-welcome-banner');
@@ -1161,48 +1311,52 @@
         DB.set('welcome_dismissed', true);
       });
     }
-    
-    // Page-specific initializers
-    const page = window.location.pathname.split('/').pop();
-    if (page === 'login.html' || page === 'login') TS_Login.init();
-    if (page === 'profile.html' || page === 'profile') TS_Profile.load();
-    if (page === 'settings.html' || page === 'settings') TS_Settings.init();
-    if (page === 'notifications.html' || page === 'notifications') {
-      const list = document.getElementById('notifications-list');
-      if (list) {
-        const notifs = TS_Notifications.getAll();
-        list.innerHTML = notifs.length ? notifs.map(n => `
-          <div class="notif-card ${n.read ? 'read' : 'unread'}">
-            <div class="notif-msg">${n.message}</div>
-            <div class="notif-time">${new Date(n.createdAt).toLocaleString()}</div>
-          </div>
-        `).join('') : '<div class="notif-empty">No notifications</div>';
-      }
+
+    // Page-specific inits
+    if (document.getElementById('register-form')) {
+      // Registration page init if needed
+    }
+    if (document.getElementById('login-form')) {
+      populateSavedAccounts();
+      document.getElementById('login-form').addEventListener('submit', handleLogin);
+    }
+    if (document.getElementById('profile-header-panel')) {
+      loadProfileData();
+    }
+    if (document.getElementById('tab-server')) {
+      loadSettings();
+    }
+    if (document.getElementById('message-list')) {
+      Mailbox.renderList();
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          Mailbox.renderList(chip.dataset.filter);
+        });
+      });
+      document.getElementById('btn-search-toggle')?.addEventListener('click', () => {
+        document.getElementById('search-bar')?.classList.toggle('hidden');
+      });
+      document.getElementById('btn-select-mode')?.addEventListener('click', () => {
+        document.getElementById('selection-toolbar')?.classList.toggle('hidden');
+      });
+      document.getElementById('btn-compose')?.addEventListener('click', () => {
+        document.getElementById('compose-modal')?.classList.remove('hidden');
+      });
+      document.getElementById('btn-close-modal')?.addEventListener('click', () => {
+        document.getElementById('msg-modal')?.classList.add('hidden');
+      });
+      document.getElementById('btn-close-compose')?.addEventListener('click', () => {
+        document.getElementById('compose-modal')?.classList.add('hidden');
+      });
+      document.getElementById('btn-send')?.addEventListener('click', () => Mailbox.sendMessage());
+      document.getElementById('btn-delete-msg')?.addEventListener('click', () => Mailbox.deleteMessage());
+      document.getElementById('btn-refresh')?.addEventListener('click', () => {
+        Mailbox.renderList();
+        TS_UI.showToast('Mailbox refreshed', 'success');
+      });
     }
   });
-  
-  // Global aliases for inline HTML handlers
-  window.goStep = (s) => window.TS_Register.goStep(s);
-  window.selectAccountType = (el) => window.TS_Register.selectAccountType(el);
-  window.selectCurrency = (el) => window.TS_Register.selectCurrency(el);
-  window.selectLeverage = (el) => window.TS_Register.selectLeverage(el);
-  window.submitRegistration = () => window.TS_Register.submitRegistration();
-  window.saveAccountData = () => window.TS_Profile.saveAccountData();
-  window.logoutUser = () => window.TS_Profile.logoutUser();
-  window.handleAvatarUpload = (e) => window.TS_Profile.handleAvatarUpload(e);
-  window.refreshAccountData = () => window.TS_Profile.load();
-  window.loadActivityHistory = () => window.TS_Profile.loadActivity();
-  window.showSettingsPage = (p) => window.TS_Settings.showPage(p);
-  window.toggleSetting = (k) => window.TS_Settings.toggleSetting(k);
-  window.saveSetting = (k, v) => window.TS_Settings.saveSetting(k, v);
-  window.testProxyConnection = () => window.TS_Settings.testProxyConnection();
-  window.testEmailConnection = () => window.TS_Settings.testEmailConnection();
-  window.loginMQL5 = () => window.TS_Settings.loginMQL5();
-  window.openAddAccountModal = () => document.getElementById('add-account-modal')?.classList.add('active');
-  window.closeAddAccountModal = () => document.getElementById('add-account-modal')?.classList.remove('active');
-  window.closeAccountSwitcher = () => document.getElementById('account-switcher-modal')?.classList.remove('active');
-  window.togglePasswordVisibility = () => {
-    const pw = document.getElementById('password-masked');
-    if (pw) pw.textContent = pw.textContent === '••••••••' ? (Auth.getUser()?.password || '••••••••') : '••••••••';
-  };
+
 })();
