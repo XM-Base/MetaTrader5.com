@@ -3,91 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Log In — Trade Station</title>
-<script src="app.js"></script>
+<title>Trade Station — Log In</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#050505;color:#e5e5e5;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
-  .login-card{width:100%;max-width:400px;background:#0f0f0f;border:1px solid #1a1a1a;border-radius:14px;padding:28px;}
-  .login-logo{text-align:center;margin-bottom:24px;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#050505;color:#e5e5e5;font-family:system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
+  .login-box{width:100%;max-width:400px;}
+  .login-logo{text-align:center;margin-bottom:28px;}
   .login-logo svg{margin:0 auto;display:block;}
-  .login-title{text-align:center;font-size:20px;font-weight:700;margin-bottom:4px;}
-  .login-sub{text-align:center;font-size:12px;color:#888;margin-bottom:20px;}
-  .ts-field{margin-bottom:14px;}
-  .ts-field-label{display:block;font-size:11px;color:#888;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;}
-  .ts-input{width:100%;background:#0a0a0a;border:1px solid #222;border-radius:6px;padding:10px 12px;color:#e5e5e5;font-size:13px;outline:none;}
-  .ts-input:focus{border-color:#10b981;}
-  .ts-select{width:100%;background:#0a0a0a;border:1px solid #222;border-radius:6px;padding:10px 12px;color:#e5e5e5;font-size:13px;outline:none;}
-  .ts-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:#555;font-size:11px;}
-  .ts-divider::before,.ts-divider::after{content:'';flex:1;height:1px;background:#222;}
-  .ts-btn-primary{width:100%;padding:12px;background:#10b981;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;}
-  .ts-btn-primary:hover{background:#059669;}
-  .ts-link{color:#10b981;text-decoration:none;font-weight:600;font-size:12px;}
-  .ts-hint{text-align:center;font-size:12px;color:#888;margin-top:14px;}
-  #loading-overlay{position:fixed;inset:0;background:rgba(5,5,5,.95);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
-  #loading-overlay.active{display:flex;}
-  .spinner{width:40px;height:40px;border:3px solid #222;border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg)}}
+  .login-title{text-align:center;margin-bottom:6px;font-size:22px;font-weight:700;}
+  .login-sub{text-align:center;color:#888;font-size:13px;margin-bottom:24px;}
+  .login-form{background:#0f0f0f;border:1px solid #1a1a1a;border-radius:12px;padding:24px;}
+  .form-group{margin-bottom:16px;}
+  .form-label{display:block;font-size:11px;color:#888;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+  .form-input{width:100%;padding:10px 12px;background:#0a0a0a;border:1px solid #222;border-radius:6px;color:#e5e5e5;font-size:13px;outline:none;}
+  .form-input:focus{border-color:#10b981;}
+  .form-select{width:100%;padding:10px 12px;background:#0a0a0a;border:1px solid #222;border-radius:6px;color:#e5e5e5;font-size:13px;outline:none;}
+  .divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:#555;font-size:11px;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:#222;}
+  .btn-primary{width:100%;padding:12px;background:#10b981;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;}
+  .btn-primary:hover{background:#059669;}
+  .login-footer{text-align:center;margin-top:16px;font-size:12px;color:#888;}
+  .login-footer a{color:#06b6d4;text-decoration:none;font-weight:600;}
+  #loading-overlay.hidden{display:none!important;}
+  #loading-overlay{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,5,5,.95);backdrop-filter:blur(4px);gap:16px;}
+  .login-loader{width:40px;height:40px;border:3px solid #222;border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
 
-  <div class="login-card">
-    <div class="login-logo">
-      <svg viewBox="0 0 40 40" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="ts-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#10b981" />
-            <stop offset="100%" stop-color="#06b6d4" />
-          </linearGradient>
-        </defs>
-        <rect x="0" y="0" width="40" height="40" rx="10" fill="#0a0a0a" />
+<div class="login-box">
+  <div class="login-logo">
+    <svg viewBox="0 0 40 40" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto;">
+      <defs>
+        <linearGradient id="ts-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#10b981" />
+          <stop offset="100%" stop-color="#06b6d4" />
+        </linearGradient>
+        <filter id="ts-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2" result="blur"/>
+          <feFlood flood-color="#10b981" flood-opacity="0.45"/>
+          <feComposite in2="blur" operator="in"/>
+          <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <style>
+          .ts-stream { stroke: rgba(16, 185, 129, 0.12); stroke-width: 0.4; stroke-dasharray: 2 6; animation: ts-flow 3s linear infinite; }
+          @keyframes ts-flow { to { stroke-dashoffset: -16; } }
+          .ts-pulse { animation: ts-breathe 2.5s ease-in-out infinite; transform-origin: 20px 6px; }
+          @keyframes ts-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(1.08); } }
+        </style>
+      </defs>
+      <rect x="0" y="0" width="40" height="40" rx="10" fill="#0a0a0a" />
+      <path d="M4 12 L36 12" class="ts-stream" />
+      <path d="M4 20 L36 20" class="ts-stream" />
+      <path d="M4 28 L36 28" class="ts-stream" />
+      <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#ts-grad)" stroke-width="0.5" fill="none" opacity="0.2" />
+      <g filter="url(#ts-glow)">
         <path d="M20 6 L6 13 L20 20 L34 13 Z" stroke="url(#ts-grad)" stroke-width="2" stroke-linejoin="round" fill="rgba(16,185,129,0.08)" />
         <path d="M6 20 L20 27 L34 20" stroke="url(#ts-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
         <path d="M6 27 L20 34 L34 27" stroke="url(#ts-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        <circle cx="20" cy="6" r="1.5" fill="#10b981" />
-        <circle cx="20" cy="20" r="1.2" fill="#06b6d4" />
-        <circle cx="20" cy="34" r="1.5" fill="#10b981" />
-      </svg>
-    </div>
-    <div class="login-title">Welcome Back</div>
+      </g>
+      <circle cx="20" cy="6" r="1.5" fill="#10b981" class="ts-pulse" />
+      <circle cx="20" cy="20" r="1.2" fill="#06b6d4" />
+      <circle cx="20" cy="34" r="1.5" fill="#10b981" />
+    </svg>
+    <div class="login-title" style="margin-top:10px;">Welcome Back</div>
     <div class="login-sub">Log in to your trading account</div>
+  </div>
 
-    <form id="login-form">
-      <div class="ts-field">
-        <label class="ts-field-label">Saved Accounts</label>
-        <select id="savedAccounts" class="ts-select">
-          <option value="">-- Select or enter manually --</option>
-        </select>
-      </div>
-      <div class="ts-divider">or</div>
-      <div class="ts-field">
-        <label class="ts-field-label">Email</label>
-        <input type="email" id="email" required class="ts-input" placeholder="john@example.com" autocomplete="email">
-      </div>
-      <div class="ts-field">
-        <label class="ts-field-label">Password</label>
-        <input type="password" id="password" required class="ts-input" placeholder="Your password" autocomplete="current-password">
-      </div>
-      <button type="submit" class="ts-btn-primary">Log In</button>
-    </form>
-
-    <div class="ts-hint">
-      Don't have an account? <a href="register.html" class="ts-link">Create Account</a>
+  <form id="login-form" class="login-form" onsubmit="return false;">
+    <div class="form-group">
+      <label class="form-label">Saved Accounts</label>
+      <select id="savedAccounts" class="form-select">
+        <option value="">-- Select or enter manually --</option>
+      </select>
     </div>
-  </div>
+    <div class="divider">or</div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" id="email" required class="form-input" placeholder="john@example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" id="password" required class="form-input" placeholder="Your password">
+    </div>
+    <button type="submit" class="btn-primary" onclick="handleLogin(event)">Log In</button>
+    <div class="login-footer">
+      Don't have an account? <a href="register.html">Create Account</a>
+    </div>
+  </form>
+</div>
 
-  <div id="loading-overlay">
-    <div class="spinner"></div>
-    <div style="font-size:14px;font-weight:600;">Authenticating...</div>
-    <div style="font-size:11px;color:#888;">Restoring your session and market data</div>
-  </div>
+<div id="loading-overlay" class="hidden">
+  <div class="login-loader"></div>
+  <p style="color:#e5e5e5;font-weight:600;">Authenticating...</p>
+  <p style="color:#666;font-size:12px;">Please wait 15 seconds</p>
+</div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      TS_Login.init();
-      document.getElementById('login-form').addEventListener('submit', TS_Login.handleSubmit);
-    });
-  </script>
+<script src="app.js"></script>
 </body>
 </html>
