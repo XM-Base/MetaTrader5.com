@@ -4,295 +4,471 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications - Trade Station</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' rx='10' fill='%230a0a0a'/><path d='M20 6L6 13L20 20L34 13Z' stroke='%2310b981' stroke-width='2' fill='rgba(16,185,129,0.08)'/><circle cx='20' cy='6' r='1.5' fill='%2310b981'/></svg>">
     <style>
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #0f0f0f;
-            --bg-tertiary: #161616;
-            --border-color: #1a1a1a;
-            --border-light: #222;
-            --text-primary: #e5e5e5;
-            --text-secondary: #a1a1a1;
-            --text-muted: #666;
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
             --accent-start: #10b981;
             --accent-end: #06b6d4;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
+            --accent-blue: #58a6ff;
+            --danger: #f85149;
+            --warning: #d29922;
+            --success: #238636;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
         }
-        .toast-container {
-            position: fixed;
-            top: 18px;
-            right: 18px;
-            z-index: 9998;
-        }
+
         main {
-            max-width: 600px;
+            max-width: 560px;
             margin: 0 auto;
             padding: 8px 16px 100px;
         }
-        .page-title {
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding-top: 4px;
+        }
+        .page-header-left {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 20px;
-            padding-top: 8px;
         }
-        .page-title h1 {
-            font-size: 20px;
+        .page-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(210,153,34,0.2), rgba(210,153,34,0.1));
+            border: 1px solid rgba(210,153,34,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .page-icon svg {
+            width: 20px;
+            height: 20px;
+            color: var(--warning);
+        }
+        .page-header h1 {
+            font-size: 17px;
             font-weight: 700;
+        }
+        .page-header p {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        .icon-btn:hover {
+            background: var(--bg-secondary);
             color: var(--text-primary);
         }
-        .page-title svg {
-            width: 28px;
-            height: 28px;
-            color: var(--accent-start);
+        .icon-btn svg {
+            width: 16px;
+            height: 16px;
         }
-        .notif-card {
-            background: var(--bg-secondary);
+        .btn-clear {
+            padding: 8px 14px;
+            border-radius: 8px;
+            background: rgba(248,81,73,0.1);
+            border: 1px solid rgba(248,81,73,0.2);
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+        .btn-clear:hover {
+            background: rgba(248,81,73,0.2);
+        }
+
+        .market-banner {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 16px;
-            margin-bottom: 10px;
+            margin-bottom: 14px;
+        }
+        .market-banner-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .market-banner-title svg {
+            width: 16px;
+            height: 16px;
+        }
+        .market-banner-content {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .market-ticker {
             display: flex;
             gap: 12px;
-            transition: all 0.2s;
+            overflow-x: auto;
+            padding: 8px 0;
+            scrollbar-width: none;
+        }
+        .market-ticker::-webkit-scrollbar { display: none; }
+        .ticker-item {
+            flex-shrink: 0;
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            min-width: 90px;
+        }
+        .ticker-symbol {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .ticker-price {
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+        .ticker-change {
+            font-size: 10px;
+            font-weight: 600;
+            margin-top: 1px;
+        }
+        .ticker-change.up { color: var(--success); }
+        .ticker-change.down { color: var(--danger); }
+        .banner-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
             cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            float: right;
         }
-        .notif-card:hover {
-            border-color: var(--border-light);
-            background: var(--bg-tertiary);
+        .banner-close:hover {
+            color: var(--text-primary);
         }
-        .notif-card.unread {
-            border-left: 3px solid var(--accent-start);
+        .banner-close svg {
+            width: 16px;
+            height: 16px;
         }
-        .notif-card.read {
-            opacity: 0.6;
+
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
         }
-        .notif-icon {
-            width: 40px;
-            height: 40px;
+
+        .notification-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .notification-item {
+            display: flex;
+            gap: 10px;
+            padding: 12px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            align-items: flex-start;
+        }
+        .notification-item:hover {
+            border-color: var(--text-muted);
+        }
+        .notification-item.unread {
+            border-left: 3px solid var(--warning);
+            background: rgba(210,153,34,0.03);
+        }
+        .notification-icon {
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
         }
-        .notif-icon.success {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
+        .notification-icon.success { background: rgba(35,134,54,0.2); color: var(--success); }
+        .notification-icon.warning { background: rgba(210,153,34,0.2); color: var(--warning); }
+        .notification-icon.error { background: rgba(248,81,73,0.2); color: var(--danger); }
+        .notification-icon.info { background: rgba(88,166,255,0.2); color: var(--accent-blue); }
+        .notification-icon svg {
+            width: 16px;
+            height: 16px;
         }
-        .notif-icon.warning {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--warning);
-        }
-        .notif-icon.info {
-            background: rgba(37, 99, 235, 0.15);
-            color: #2563eb;
-        }
-        .notif-icon.error {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-        }
-        .notif-icon svg {
-            width: 20px;
-            height: 20px;
-        }
-        .notif-content {
+        .notification-content {
             flex: 1;
             min-width: 0;
         }
-        .notif-title {
-            font-size: 14px;
+        .notification-title {
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 4px;
         }
-        .notif-message {
-            font-size: 12px;
+        .notification-message {
+            font-size: 11px;
             color: var(--text-secondary);
+            margin-top: 2px;
             line-height: 1.4;
         }
-        .notif-time {
+        .notification-time {
             font-size: 10px;
             color: var(--text-muted);
-            margin-top: 6px;
+            margin-top: 4px;
         }
-        .notif-actions {
-            display: flex;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-        .notif-btn {
-            background: transparent;
+        .notification-dismiss {
+            background: none;
             border: none;
             color: var(--text-muted);
             cursor: pointer;
             padding: 4px;
             border-radius: 4px;
-            transition: all 0.15s;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.15s;
         }
-        .notif-btn:hover {
-            color: var(--text-primary);
-            background: var(--bg-tertiary);
+        .notification-item:hover .notification-dismiss {
+            opacity: 1;
         }
-        .notif-btn svg {
-            width: 16px;
-            height: 16px;
+        .notification-dismiss:hover {
+            color: var(--danger);
+            background: rgba(248,81,73,0.1);
         }
+        .notification-dismiss svg {
+            width: 14px;
+            height: 14px;
+        }
+
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
         }
         .empty-state svg {
-            width: 64px;
-            height: 64px;
-            opacity: 0.15;
-            margin-bottom: 16px;
+            width: 56px;
+            height: 56px;
+            color: var(--border-color);
+            margin-bottom: 12px;
         }
         .empty-state p {
+            font-size: 13px;
             color: var(--text-muted);
-            font-size: 14px;
-        }
-        .header-actions {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-        .btn-ghost {
-            background: transparent;
-            border: 1px solid var(--border-light);
-            color: var(--text-secondary);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        .btn-ghost:hover {
-            background: var(--bg-tertiary);
-            color: #fff;
         }
     </style>
 </head>
 <body>
-
-    <!-- Global Header -->
     <div id="ts-global-header"></div>
-
-    <!-- Toast Container -->
-    <div class="toast-container" id="toast-container"></div>
+    <div id="ts-notification-banner" class="hidden"></div>
 
     <main>
-        <div class="page-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-            <h1>Notifications</h1>
+        <div class="page-header">
+            <div class="page-header-left">
+                <div class="page-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </div>
+                <div>
+                    <h1>Notifications</h1>
+                    <p>Live market alerts & updates</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="refreshNotifications()" title="Refresh">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                </button>
+                <button class="btn-clear" onclick="clearAllNotifications()">Clear All</button>
+            </div>
         </div>
 
-        <div class="header-actions">
-            <span id="notif-count" style="font-size:12px;color:var(--text-muted);">0 notifications</span>
-            <button class="btn-ghost" onclick="clearAllNotifications()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:middle;margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                Clear All
+        <!-- Live Market Banner -->
+        <div class="market-banner" id="market-banner">
+            <button class="banner-close" onclick="dismissMarketBanner()" title="Dismiss">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
+            <div class="market-banner-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                Live Market Overview
+            </div>
+            <div class="market-ticker" id="market-ticker">
+                <div class="ticker-item"><div class="ticker-symbol">Loading...</div></div>
+            </div>
         </div>
 
-        <div id="notifications-list"></div>
-
-        <div id="empty-state" class="empty-state" style="display:none;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
+        <div class="section-title">Recent Alerts</div>
+        <div class="notification-list" id="notification-list"></div>
+        <div class="empty-state" id="empty-state" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             <p>No notifications yet</p>
         </div>
     </main>
 
-    <!-- Global Footer -->
     <div id="ts-global-footer"></div>
 
     <script src="app.js"></script>
     <script>
-        function loadNotifications() {
-            const notifications = TS_Notifications.getAll();
-            const list = document.getElementById('notifications-list');
+        function getNotifications() {
+            return TS_Notifications.getAll().filter(n => !n.dismissed);
+        }
+
+        function renderNotifications() {
+            const notifications = getNotifications();
+            const list = document.getElementById('notification-list');
             const empty = document.getElementById('empty-state');
-            const count = document.getElementById('notif-count');
-
-            const active = notifications.filter(n => !n.dismissed);
-            count.textContent = active.length + ' notifications';
-
-            if (active.length === 0) {
+            
+            if (notifications.length === 0) {
                 list.innerHTML = '';
                 empty.style.display = 'block';
-                return;
+            } else {
+                empty.style.display = 'none';
+                list.innerHTML = notifications.slice(0, 30).map(n => {
+                    const iconClass = n.type || 'info';
+                    const iconSvg = {
+                        success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+                        warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+                        error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+                        info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+                    };
+                    
+                    return `
+                        <div class="notification-item ${n.read ? '' : 'unread'}" onclick="markAsRead('${n.id}')">
+                            <div class="notification-icon ${iconClass}">${iconSvg[iconClass] || iconSvg.info}</div>
+                            <div class="notification-content">
+                                <div class="notification-title">${n.title || 'Notification'}</div>
+                                <div class="notification-message">${n.message || ''}</div>
+                                <div class="notification-time">${formatTime(n.createdAt)}</div>
+                            </div>
+                            <button class="notification-dismiss" onclick="event.stopPropagation(); dismissNotification('${n.id}')" title="Dismiss">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
             }
-
-            empty.style.display = 'none';
-            list.innerHTML = active.map(n => `
-                <div class="notif-card ${n.read ? 'read' : 'unread'}" onclick="markRead('${n.id}')">
-                    <div class="notif-icon ${n.type || 'info'}">
-                        ${getNotifIcon(n.type)}
-                    </div>
-                    <div class="notif-content">
-                        <div class="notif-title">${n.title || 'Notification'}</div>
-                        <div class="notif-message">${n.message || ''}</div>
-                        <div class="notif-time">${new Date(n.createdAt).toLocaleString()}</div>
-                    </div>
-                    <div class="notif-actions">
-                        <button class="notif-btn" onclick="event.stopPropagation(); dismissNotif('${n.id}')" title="Dismiss">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
         }
 
-        function getNotifIcon(type) {
-            const icons = {
-                success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-                warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-                error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
-                info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
-            };
-            return icons[type] || icons.info;
+        function formatTime(ts) {
+            if (!ts) return '';
+            const d = new Date(ts);
+            const now = new Date();
+            const diff = now - d;
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' minutes ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+            return d.toLocaleDateString();
         }
 
-        function markRead(id) {
-            TS_Notifications.markRead(id);
-            loadNotifications();
-        }
-
-        function dismissNotif(id) {
+        function dismissNotification(id) {
             TS_Notifications.dismiss(id);
-            loadNotifications();
+            renderNotifications();
+        }
+
+        function markAsRead(id) {
+            TS_Notifications.markRead(id);
+            renderNotifications();
         }
 
         function clearAllNotifications() {
             TS_Notifications.clearAll();
-            loadNotifications();
+            renderNotifications();
             TS_UI.showToast('All notifications cleared', 'info');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (TS_Auth.requireAuth()) {
-                loadNotifications();
-            }
-        });
-    </script>
+        function refreshNotifications() {
+            renderNotifications();
+            loadMarketData();
+            TS_UI.showToast('Notifications refreshed', 'info');
+        }
 
+        function dismissMarketBanner() {
+            DB.set('market_banner_dismissed', true);
+            document.getElementById('market-banner').style.display = 'none';
+        }
+
+        async function loadMarketData() {
+            try {
+                const coins = await TS_Market.getCoins();
+                const ticker = document.getElementById('market-ticker');
+                if (coins && coins.length > 0) {
+                    ticker.innerHTML = coins.slice(0, 8).map(c => {
+                        const change = c.price_change_percentage_24h || 0;
+                        const isUp = change >= 0;
+                        return `
+                            <div class="ticker-item">
+                                <div class="ticker-symbol">${c.symbol?.toUpperCase()}</div>
+                                <div class="ticker-price">$${(c.current_price || 0).toFixed(c.current_price < 1 ? 4 : 2)}</div>
+                                <div class="ticker-change ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${change.toFixed(2)}%</div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
+                // Add market update notification
+                const news = await TS_Market.getNews();
+                if (news && news.length > 0 && !DB.get('market_news_notified_today', false)) {
+                    const latest = news[0];
+                    TS_Notifications.add({
+                        title: '📰 Market News',
+                        message: latest.headline || latest.title || 'Latest market update available',
+                        type: 'info'
+                    });
+                    DB.set('market_news_notified_today', true);
+                    // Reset daily
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    tomorrow.setHours(0, 0, 0, 0);
+                    setTimeout(() => DB.set('market_news_notified_today', false), tomorrow - new Date());
+                }
+            } catch {}
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderNotifications();
+            loadMarketData();
+        });
+
+        window.dismissNotification = dismissNotification;
+        window.markAsRead = markAsRead;
+        window.clearAllNotifications = clearAllNotifications;
+        window.refreshNotifications = refreshNotifications;
+        window.dismissMarketBanner = dismissMarketBanner;
+    </script>
 </body>
  </html>
