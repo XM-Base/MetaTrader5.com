@@ -4,164 +4,242 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Trade Station</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' rx='10' fill='%230a0a0a'/><path d='M20 6L6 13L20 20L34 13Z' stroke='%2310b981' stroke-width='2' fill='rgba(16,185,129,0.08)'/><circle cx='20' cy='6' r='1.5' fill='%2310b981'/></svg>">
     <style>
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #0f0f0f;
-            --bg-tertiary: #161616;
-            --border-color: #1a1a1a;
-            --border-light: #222;
-            --text-primary: #e5e5e5;
-            --text-secondary: #a1a1a1;
-            --text-muted: #666;
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
             --accent-start: #10b981;
             --accent-end: #06b6d4;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
+            --accent-blue: #58a6ff;
+            --danger: #f85149;
+            --warning: #d29922;
+            --success: #238636;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
         }
+
         main {
-            max-width: 600px;
+            max-width: 560px;
             margin: 0 auto;
-            padding: 8px 16px 100px;
+            padding: 12px 16px 100px;
         }
-        .settings-header {
+
+        .page-header {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 16px;
-            padding-top: 8px;
+            padding-top: 4px;
         }
-        .settings-header svg {
-            width: 24px;
-            height: 24px;
+        .page-header-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.15));
+            border: 1px solid rgba(16,185,129,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .page-header-icon svg {
+            width: 18px;
+            height: 18px;
             color: var(--accent-start);
         }
-        .settings-header h1 {
-            font-size: 18px;
+        .page-header h1 {
+            font-size: 17px;
             font-weight: 700;
         }
-        .settings-header p {
+        .page-header p {
             font-size: 11px;
             color: var(--text-muted);
         }
-        .mt5-scroll-x {
+
+        .tab-nav {
             display: flex;
             gap: 4px;
             overflow-x: auto;
             padding-bottom: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
-        .mt5-scroll-x::-webkit-scrollbar { display: none; }
-        .mt5-nav-tab {
-            padding: 8px 12px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
-            background: transparent;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            white-space: nowrap;
+        .tab-nav::-webkit-scrollbar { display: none; }
+        .tab-btn {
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: all 0.15s;
-            font-family: system-ui, -apple-system, sans-serif;
+            gap: 5px;
+            padding: 7px 12px;
+            border-radius: 7px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+            font-family: inherit;
+            flex-shrink: 0;
         }
-        .mt5-nav-tab:hover { color: var(--text-secondary); background: var(--bg-tertiary); }
-        .mt5-nav-tab.active { color: var(--accent-start); background: rgba(16, 185, 129, 0.1); }
-        .mt5-nav-tab svg { width: 14px; height: 14px; }
-        .page-section { display: none; }
-        .page-section.active { display: block; }
-        .mt5-section-title {
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+        .tab-btn.active {
+            background: rgba(16,185,129,0.1);
+            border-color: rgba(16,185,129,0.3);
+            color: var(--accent-start);
+        }
+        .tab-btn svg {
+            width: 13px;
+            height: 13px;
+        }
+
+        .section-title {
             font-size: 10px;
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 8px 4px 4px;
+            letter-spacing: 0.8px;
+            padding: 8px 0 6px;
         }
-        .mt5-panel {
+
+        .panel {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            overflow: hidden;
             margin-bottom: 12px;
+            overflow: hidden;
         }
-        .mt5-row {
+        .panel-body {
+            padding: 14px 16px;
+        }
+
+        .setting-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 14px;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
+            padding: 8px 0;
+            gap: 12px;
         }
-        .mt5-row:last-child { border-bottom: none; }
-        .mt5-row-label { font-size: 12px; color: var(--text-primary); font-weight: 500; }
-        .mt5-row-desc { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-        .mt5-toggle {
-            width: 44px;
-            height: 24px;
-            border-radius: 12px;
-            background: #222;
-            border: none;
+        .setting-row + .setting-row {
+            border-top: 1px solid var(--border-color);
+        }
+        .setting-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .setting-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .setting-desc {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .toggle {
+            width: 40px;
+            height: 22px;
+            border-radius: 11px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
             cursor: pointer;
             position: relative;
-            transition: background 0.2s;
-            padding: 0;
+            transition: all 0.2s ease;
             flex-shrink: 0;
         }
-        .mt5-toggle.active { background: var(--accent-start); }
-        .mt5-toggle-knob {
+        .toggle.active {
+            background: var(--accent-start);
+            border-color: var(--accent-start);
+        }
+        .toggle-knob {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
             position: absolute;
             top: 2px;
             left: 2px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #fff;
-            transition: left 0.2s;
+            transition: transform 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
-        .mt5-toggle.active .mt5-toggle-knob { left: 22px; }
-        .mt5-select, .mt5-input {
+        .toggle.active .toggle-knob {
+            transform: translateX(18px);
+        }
+
+        .form-input {
             width: 100%;
-            padding: 8px 10px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-light);
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             color: var(--text-primary);
             font-size: 12px;
-            outline: none;
-            font-family: system-ui, -apple-system, sans-serif;
+            transition: all 0.15s ease;
+            font-family: inherit;
         }
-        .mt5-select:focus, .mt5-input:focus {
+        .form-input:focus {
+            outline: none;
             border-color: var(--accent-start);
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.08);
         }
-        .mt5-number-input {
-            width: 70px;
-            padding: 6px 8px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-light);
-            border-radius: 6px;
+        select.form-input {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 32px;
+        }
+        select.form-input option {
+            background: var(--bg-primary);
             color: var(--text-primary);
-            font-size: 12px;
-            text-align: center;
-            outline: none;
-            font-family: system-ui, -apple-system, sans-serif;
         }
-        .mt5-icon-wrap {
-            width: 36px;
-            height: 36px;
+        .number-input {
+            width: 80px;
+            padding: 6px 10px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .form-row {
+            display: flex;
+            gap: 8px;
+        }
+        .form-row > * {
+            flex: 1;
+        }
+
+        .icon-wrap {
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
             background: var(--bg-tertiary);
             display: flex;
@@ -169,39 +247,116 @@
             justify-content: center;
             flex-shrink: 0;
         }
-        .mt5-badge {
-            font-size: 10px;
+        .icon-wrap svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .badge-online {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             padding: 3px 8px;
-            border-radius: 10px;
+            background: rgba(35,134,54,0.15);
+            border: 1px solid rgba(35,134,54,0.3);
+            border-radius: 12px;
+            font-size: 10px;
             font-weight: 600;
+            color: var(--success);
         }
-        .mt5-badge-green { background: rgba(16, 185, 129, 0.15); color: var(--success); }
-        .mt5-btn {
-            padding: 10px 16px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            color: var(--text-secondary);
+        .badge-online::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 16px;
+            border-radius: 7px;
             font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.15s;
-            text-align: center;
-            font-family: system-ui, -apple-system, sans-serif;
+            border: none;
+            font-family: inherit;
+            transition: all 0.15s ease;
             width: 100%;
+            text-decoration: none;
         }
-        .mt5-btn:hover { background: #1f1f1f; color: #fff; }
-        .mt5-btn-primary { background: var(--accent-start); border-color: var(--accent-start); color: #fff; }
-        .mt5-btn-primary:hover { background: #059669; }
+        .btn svg {
+            width: 14px;
+            height: 14px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+            color: #fff;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 4px 14px rgba(16,185,129,0.35);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .btn-outline:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+        .page-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .config-block {
+            display: none;
+            padding-top: 6px;
+        }
+        .config-block.show {
+            display: block;
+        }
+
+        .account-detail-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .account-detail-row:last-child {
+            border-bottom: none;
+        }
+        .account-detail-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .account-detail-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
     </style>
 </head>
 <body>
-
-    <!-- Global Header -->
     <div id="ts-global-header"></div>
+    <div id="ts-notification-banner" class="hidden"></div>
 
     <main>
-        <div class="settings-header">
-            <div class="mt5-icon-wrap">
+        <div class="page-header">
+            <div class="page-header-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                 </svg>
@@ -213,197 +368,489 @@
         </div>
 
         <!-- Tab Navigation -->
-        <div class="mt5-scroll-x">
-            <button onclick="showSettingsPage('server')" id="tab-server" class="mt5-nav-tab active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/></svg>
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="server" onclick="showSettingsTab('server')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                 Server
             </button>
-            <button onclick="showSettingsPage('charts')" id="tab-charts" class="mt5-nav-tab">
+            <button class="tab-btn" data-tab="charts" onclick="showSettingsTab('charts')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 Charts
             </button>
-            <button onclick="showSettingsPage('trade')" id="tab-trade" class="mt5-nav-tab">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <button class="tab-btn" data-tab="trade" onclick="showSettingsTab('trade')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                 Trade
             </button>
-            <button onclick="showSettingsPage('notifications')" id="tab-notifications" class="mt5-nav-tab">
+            <button class="tab-btn" data-tab="notifications" onclick="showSettingsTab('notifications')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                Notifications
+                Alerts
             </button>
-            <button onclick="showSettingsPage('account')" id="tab-account" class="mt5-nav-tab">
+            <button class="tab-btn" data-tab="account" onclick="showSettingsTab('account')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 Account
             </button>
         </div>
 
-        <!-- Server Section -->
-        <div id="page-server" class="page-section active">
-            <div class="mt5-section-title">Connection</div>
-            <div class="mt5-panel">
-                <div class="mt5-row">
-                    <div><div class="mt5-row-label">Trade Server</div><div class="mt5-row-desc">MetaQuotes-Demo</div></div>
-                    <span class="mt5-badge mt5-badge-green">Online</span>
-                </div>
-                <div style="padding:0 14px 14px;">
-                    <label style="font-size:10px;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">Server Address</label>
-                    <input type="text" id="server-address" value="access.metatrader5.com:443" class="mt5-input" onchange="saveSetting('serverAddress', this.value)">
-                </div>
-                <div style="padding:0 14px 14px;display:flex;gap:10px;">
-                    <div style="flex:1;">
-                        <label style="font-size:10px;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">Login</label>
-                        <input type="text" id="server-login" value="" class="mt5-input" readonly>
+        <!-- SERVER TAB -->
+        <div class="page-section active" id="tab-server">
+            <div class="section-title">Connection</div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                        <div class="icon-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 6V4a4 4 0 018 0v2"/><circle cx="12" cy="12" r="2"/></svg>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-size:12px;font-weight:600;">Trade Server</div>
+                            <div style="font-size:10px;color:var(--text-muted);">MetaQuotes-Demo</div>
+                        </div>
+                        <span class="badge-online">Online</span>
                     </div>
-                    <div style="flex:1;">
-                        <label style="font-size:10px;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">Password</label>
-                        <input type="password" id="server-password" value="••••••••" class="mt5-input" readonly>
+                    <div class="form-group">
+                        <label>Server Address</label>
+                        <input type="text" class="form-input" value="access.metatrader5.com:443" onchange="saveSetting('serverAddress', this.value)">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Login</label>
+                            <input type="text" class="form-input" id="server-login-display" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" class="form-input" value="••••••••" readonly>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="TS_UI.showToast('Password change requested','info')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Change Password
+                    </button>
+                </div>
+            </div>
+
+            <div class="section-title">Proxy & Network</div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Enable Proxy Server</div>
+                            <div class="setting-desc">Route connection through proxy</div>
+                        </div>
+                        <div class="toggle" id="toggle-proxy" onclick="toggleSwitch('proxyEnabled', 'toggle-proxy', 'proxy-config')"></div>
+                    </div>
+                    <div class="config-block" id="proxy-config">
+                        <div class="form-group">
+                            <label>Proxy Server</label>
+                            <input type="text" class="form-input" placeholder="192.168.0.1:8080" onchange="saveSetting('proxyServer', this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label>Proxy Type</label>
+                            <select class="form-input" onchange="saveSetting('proxyType', this.value)">
+                                <option value="HTTP">HTTP</option>
+                                <option value="SOCKS5">SOCKS5</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-outline" onclick="TS_UI.showToast('Proxy test initiated','info')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Test Connection
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">Startup</div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Keep Personal Settings</div>
+                            <div class="setting-desc">Save account data at startup</div>
+                        </div>
+                        <div class="toggle active" id="toggle-keepsettings" onclick="toggleSwitch('keepSettings', 'toggle-keepsettings')"></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Enable News Feed</div>
+                            <div class="setting-desc">Receive financial news updates</div>
+                        </div>
+                        <div class="toggle active" id="toggle-news" onclick="toggleSwitch('newsEnabled', 'toggle-news')"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Charts Section -->
-        <div id="page-charts" class="page-section">
-            <div class="mt5-section-title">Chart Display</div>
-            <div class="mt5-panel">
-                <div class="mt5-row">
-                    <div><div class="mt5-row-label">Show Trade History</div><div class="mt5-row-desc">Display entries and exits on chart</div></div>
-                    <button id="showTradeHistory-toggle" onclick="toggleSetting('showTradeHistory')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button>
-                </div>
-                <div class="mt5-row">
-                    <div><div class="mt5-row-label">Show Trade Levels</div><div class="mt5-row-desc">Display SL/TP and open price levels</div></div>
-                    <button id="showTradeLevels-toggle" onclick="toggleSetting('showTradeLevels')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button>
-                </div>
-                <div class="mt5-row">
-                    <div><div class="mt5-row-label">Preload Chart Data</div><div class="mt5-row-desc">Background load for open positions</div></div>
-                    <button id="preloadChartData-toggle" onclick="toggleSetting('preloadChartData')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Trade Section -->
-        <div id="page-trade" class="page-section">
-            <div class="mt5-section-title">Default Trade Parameters</div>
-            <div class="mt5-panel">
-                <div style="padding:14px;">
-                    <label style="font-size:10px;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">Default Symbol</label>
-                    <select id="default-symbol" class="mt5-select" onchange="saveSetting('defaultSymbol', this.value)">
-                        <option value="EURUSD">EURUSD</option>
-                        <option value="GBPUSD">GBPUSD</option>
-                        <option value="USDJPY">USDJPY</option>
-                        <option value="XAUUSD">XAUUSD</option>
-                        <option value="BTCUSD">BTCUSD</option>
-                    </select>
-                </div>
-                <div style="padding:0 14px 14px;display:flex;gap:10px;">
-                    <div style="flex:1;">
-                        <label style="font-size:10px;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">Default Volume</label>
-                        <input type="number" id="default-volume" value="0.10" class="mt5-input" onchange="saveSetting('defaultVolume', parseFloat(this.value)||0.1)">
+        <!-- CHARTS TAB -->
+        <div class="page-section" id="tab-charts">
+            <div class="section-title">Chart Display</div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Show Trade History</div>
+                            <div class="setting-desc">Display entries and exits on chart</div>
+                        </div>
+                        <div class="toggle active" id="toggle-tradehistory" onclick="toggleSwitch('showTradeHistory', 'toggle-tradehistory')"></div>
                     </div>
-                    <div style="flex:1;">
-                        <label style="font-size:10px;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">Deviation (pts)</label>
-                        <input type="number" id="deviation" value="10" class="mt5-input" onchange="saveSetting('deviation', parseInt(this.value)||10)">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Show Trade Levels</div>
+                            <div class="setting-desc">Display SL/TP and open price levels</div>
+                        </div>
+                        <div class="toggle active" id="toggle-tradelevels" onclick="toggleSwitch('showTradeLevels', 'toggle-tradelevels')"></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Preload Chart Data</div>
+                            <div class="setting-desc">Background load for open positions</div>
+                        </div>
+                        <div class="toggle active" id="toggle-preload" onclick="toggleSwitch('preloadChartData', 'toggle-preload')"></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Color Print</div>
+                            <div class="setting-desc">Print charts in color</div>
+                        </div>
+                        <div class="toggle" id="toggle-colorprint" onclick="toggleSwitch('colorPrint', 'toggle-colorprint')"></div>
                     </div>
                 </div>
-                <div class="mt5-row">
-                    <div><div class="mt5-row-label">One-Click Trading</div><div class="mt5-row-desc">Execute orders without confirmation</div></div>
-                    <button id="oneClickTrading-toggle" onclick="toggleSetting('oneClickTrading')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button>
+            </div>
+
+            <div class="section-title">Object Management</div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Show Object Properties</div>
+                            <div class="setting-desc">Auto-open properties after creation</div>
+                        </div>
+                        <div class="toggle" id="toggle-objprops" onclick="toggleSwitch('showObjectProps', 'toggle-objprops')"></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Single Click Selection</div>
+                            <div class="setting-desc">Select objects with one click</div>
+                        </div>
+                        <div class="toggle" id="toggle-singleclick" onclick="toggleSwitch('singleClickSelect', 'toggle-singleclick')"></div>
+                    </div>
+                    <div class="setting-row" style="align-items:flex-start;">
+                        <div class="setting-info">
+                            <div class="setting-label">Max Bars in Chart</div>
+                            <div class="setting-desc">Historical bars to display</div>
+                        </div>
+                        <input type="number" class="form-input number-input" value="100000" onchange="saveSetting('maxBars', this.value)">
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Notifications Section -->
-        <div id="page-notifications" class="page-section">
-            <div class="mt5-section-title">Push Notifications</div>
-            <div class="mt5-panel">
-                <div class="mt5-row">
-                    <div><div class="mt5-row-label">Push Notifications</div><div class="mt5-row-desc">Send alerts to mobile devices</div></div>
-                    <button id="notifications-toggle" onclick="toggleSetting('notifications')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button>
+        <!-- TRADE TAB -->
+        <div class="page-section" id="tab-trade">
+            <div class="section-title">Default Trade Parameters</div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label>Default Symbol</label>
+                        <select class="form-input" onchange="saveSetting('defaultSymbol', this.value)">
+                            <option value="EURUSD">EURUSD</option>
+                            <option value="GBPUSD">GBPUSD</option>
+                            <option value="USDJPY">USDJPY</option>
+                            <option value="XAUUSD">XAUUSD</option>
+                            <option value="BTCUSD">BTCUSD</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Default Volume</label>
+                            <input type="number" class="form-input" value="0.10" step="0.01" onchange="saveSetting('defaultVolume', this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label>Deviation (pts)</label>
+                            <input type="number" class="form-input" value="10" onchange="saveSetting('deviation', this.value)">
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">One-Click Trading</div>
+                            <div class="setting-desc">Execute orders without confirmation</div>
+                        </div>
+                        <div class="toggle" id="toggle-oneclick" onclick="toggleSwitch('oneClickTrading', 'toggle-oneclick')"></div>
+                    </div>
                 </div>
-                <div class="mt5-row">
-                    <div><div class="mt5-row-label">Market Alerts</div><div class="mt5-row-desc">Price and indicator alerts</div></div>
-                    <button id="marketAlerts-toggle" onclick="toggleSetting('marketAlerts')" class="mt5-toggle"><span class="mt5-toggle-knob"></span></button>
-                </div>
-                <div class="mt5-row">
-                    <div><div class="mt5-row-label">Trade Notifications</div><div class="mt5-row-desc">Order execution confirmations</div></div>
-                    <button id="tradeNotifications-toggle" onclick="toggleSetting('tradeNotifications')" class="mt5-toggle active"><span class="mt5-toggle-knob"></span></button>
+            </div>
+
+            <div class="section-title">Stop Levels</div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Default Stop Loss</div></div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <input type="number" class="form-input number-input" value="0" onchange="saveSetting('defaultSL', this.value)">
+                            <span style="font-size:10px;color:var(--text-muted);">pts</span>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Default Take Profit</div></div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <input type="number" class="form-input number-input" value="0" onchange="saveSetting('defaultTP', this.value)">
+                            <span style="font-size:10px;color:var(--text-muted);">pts</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Account Section -->
-        <div id="page-account" class="page-section">
-            <div class="mt5-section-title">Account Information</div>
-            <div class="mt5-panel">
-                <div class="mt5-row">
-                    <div class="mt5-row-label">User ID</div>
-                    <span id="display-user-id" style="font-size:12px;color:var(--text-secondary);">--</span>
-                </div>
-                <div class="mt5-row">
-                    <div class="mt5-row-label">Account Type</div>
-                    <span id="display-account-type" style="font-size:12px;color:var(--text-secondary);">--</span>
-                </div>
-                <div class="mt5-row">
-                    <div class="mt5-row-label">Currency</div>
-                    <span id="display-currency" style="font-size:12px;color:var(--text-secondary);">--</span>
-                </div>
-                <div class="mt5-row">
-                    <div class="mt5-row-label">Leverage</div>
-                    <span id="display-leverage" style="font-size:12px;color:var(--text-secondary);">--</span>
-                </div>
-                <div class="mt5-row">
-                    <div class="mt5-row-label">Location</div>
-                    <span id="detected-country" style="font-size:12px;color:var(--text-secondary);">--</span>
-                </div>
-                <div class="mt5-row">
-                    <div class="mt5-row-label">Language</div>
-                    <span id="detected-language" style="font-size:12px;color:var(--text-secondary);">--</span>
-                </div>
-                <div class="mt5-row">
-                    <div class="mt5-row-label">Timezone</div>
-                    <span id="detected-timezone" style="font-size:12px;color:var(--text-secondary);">--</span>
-                </div>
-                <div class="mt5-row">
-                    <div class="mt5-row-label">Registration Date</div>
-                    <span id="display-regdate" style="font-size:12px;color:var(--text-secondary);">--</span>
-                </div>
-                <div class="mt5-row">
-                    <div class="mt5-row-label">Last Login</div>
-                    <span id="display-lastlogin" style="font-size:12px;color:var(--text-secondary);">--</span>
+        <!-- NOTIFICATIONS TAB -->
+        <div class="page-section" id="tab-notifications">
+            <div class="section-title">Push Notifications</div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Push Notifications</div>
+                            <div class="setting-desc">Send alerts to mobile devices</div>
+                        </div>
+                        <div class="toggle active" id="toggle-push" onclick="toggleSwitch('pushNotifications', 'toggle-push')"></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Market Alerts</div>
+                            <div class="setting-desc">Price and indicator alerts</div>
+                        </div>
+                        <div class="toggle" id="toggle-marketalerts" onclick="toggleSwitch('marketAlerts', 'toggle-marketalerts')"></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Trade Notifications</div>
+                            <div class="setting-desc">Order execution confirmations</div>
+                        </div>
+                        <div class="toggle active" id="toggle-tradenotif" onclick="toggleSwitch('tradeNotifications', 'toggle-tradenotif')"></div>
+                    </div>
                 </div>
             </div>
+
+            <div class="section-title">Email Settings</div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Enable Email</div>
+                            <div class="setting-desc">Send reports via SMTP</div>
+                        </div>
+                        <div class="toggle" id="toggle-email" onclick="toggleSwitch('emailEnabled', 'toggle-email', 'email-config')"></div>
+                    </div>
+                    <div class="config-block" id="email-config">
+                        <div class="form-group">
+                            <label>SMTP Server</label>
+                            <input type="text" class="form-input" placeholder="smtp.gmail.com:465" onchange="saveSetting('smtpServer', this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP Login</label>
+                            <input type="text" class="form-input" placeholder="your@email.com" onchange="saveSetting('smtpLogin', this.value)">
+                        </div>
+                        <button class="btn btn-outline" onclick="TS_UI.showToast('Test email sent','success')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            Test Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCOUNT TAB -->
+        <div class="page-section" id="tab-account">
+            <div class="section-title">Account Information</div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div id="settings-account-details">
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Account ID</span>
+                            <span class="account-detail-value" id="settings-acct-id">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Account Type</span>
+                            <span class="account-detail-value" id="settings-acct-type">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Currency</span>
+                            <span class="account-detail-value" id="settings-acct-currency">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Leverage</span>
+                            <span class="account-detail-value" id="settings-acct-leverage">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Email</span>
+                            <span class="account-detail-value" id="settings-acct-email">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Phone</span>
+                            <span class="account-detail-value" id="settings-acct-phone">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Registered</span>
+                            <span class="account-detail-value" id="settings-acct-regdate">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">Login Session</div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div id="settings-session-details">
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Country</span>
+                            <span class="account-detail-value" id="settings-session-country">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">City / Region</span>
+                            <span class="account-detail-value" id="settings-session-city">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Language</span>
+                            <span class="account-detail-value" id="settings-session-language">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Timezone</span>
+                            <span class="account-detail-value" id="settings-session-timezone">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Platform</span>
+                            <span class="account-detail-value" id="settings-session-platform">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Screen Resolution</span>
+                            <span class="account-detail-value" id="settings-session-resolution">--</span>
+                        </div>
+                        <div class="account-detail-row">
+                            <span class="account-detail-label">Last Login</span>
+                            <span class="account-detail-value" id="settings-session-lastlogin">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" style="margin-top:8px;" onclick="saveAccountData()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                Save Account Data
+            </button>
         </div>
     </main>
 
-    <!-- Global Footer -->
     <div id="ts-global-footer"></div>
 
     <script src="app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (TS_Auth.requireAuth()) {
-                TS_Settings.loadSettings();
-                TS_Settings.loadUserDetails();
-                
-                // Display user info
-                const user = TS_Auth.getUser();
-                if (user) {
-                    document.getElementById('display-user-id').textContent = user.userId || '--';
-                    document.getElementById('display-account-type').textContent = user.accountType || '--';
-                    document.getElementById('display-currency').textContent = user.currency || '--';
-                    document.getElementById('display-leverage').textContent = user.leverage || '--';
-                    document.getElementById('detected-country').textContent = user.location?.country || '--';
-                    document.getElementById('detected-language').textContent = user.location?.languages || user.language || '--';
-                    document.getElementById('detected-timezone').textContent = user.location?.timezone || '--';
-                    document.getElementById('display-regdate').textContent = user.registrationDate ? new Date(user.registrationDate).toLocaleString() : '--';
-                    document.getElementById('display-lastlogin').textContent = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : '--';
-                    document.getElementById('server-login').value = user.userId || '';
-                }
+        function showSettingsTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tabName}"]`)?.classList.add('active');
+            
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            const tabEl = document.getElementById('tab-' + tabName);
+            if (tabEl) tabEl.classList.add('active');
+            
+            if (tabName === 'account') loadSettingsAccountData();
+        }
 
-                const activeTab = TS_DB.get('settings_active_tab', 'server');
-                showSettingsPage(activeTab);
+        function toggleSwitch(settingKey, toggleId, configId) {
+            const current = TS_Settings.get(settingKey, false);
+            TS_Settings.set(settingKey, !current);
+            
+            const toggle = document.getElementById(toggleId);
+            if (toggle) {
+                if (!current) toggle.classList.add('active');
+                else toggle.classList.remove('active');
             }
-        });
-    </script>
+            
+            if (configId) {
+                const config = document.getElementById(configId);
+                if (config) {
+                    if (!current) config.classList.add('show');
+                    else config.classList.remove('show');
+                }
+            }
+        }
 
+        function saveSetting(key, value) {
+            TS_Settings.set(key, value);
+        }
+
+        function loadSettings() {
+            // Initialize toggles
+            const toggles = {
+                'toggle-proxy': 'proxyEnabled',
+                'toggle-keepsettings': 'keepSettings',
+                'toggle-news': 'newsEnabled',
+                'toggle-tradehistory': 'showTradeHistory',
+                'toggle-tradelevels': 'showTradeLevels',
+                'toggle-preload': 'preloadChartData',
+                'toggle-colorprint': 'colorPrint',
+                'toggle-objprops': 'showObjectProps',
+                'toggle-singleclick': 'singleClickSelect',
+                'toggle-oneclick': 'oneClickTrading',
+                'toggle-push': 'pushNotifications',
+                'toggle-marketalerts': 'marketAlerts',
+                'toggle-tradenotif': 'tradeNotifications',
+                'toggle-email': 'emailEnabled'
+            };
+
+            Object.entries(toggles).forEach(([toggleId, settingKey]) => {
+                const toggle = document.getElementById(toggleId);
+                const value = TS_Settings.get(settingKey, 
+                    ['keepSettings','newsEnabled','showTradeHistory','showTradeLevels','preloadChartData','pushNotifications','tradeNotifications'].includes(settingKey)
+                );
+                if (toggle) {
+                    if (value) toggle.classList.add('active');
+                    else toggle.classList.remove('active');
+                }
+            });
+
+            // Show proxy config if enabled
+            if (TS_Settings.get('proxyEnabled', false)) {
+                document.getElementById('proxy-config')?.classList.add('show');
+            }
+            // Show email config if enabled
+            if (TS_Settings.get('emailEnabled', false)) {
+                document.getElementById('email-config')?.classList.add('show');
+            }
+
+            // Set server login display
+            const user = TS_Auth.getUser();
+            if (user) {
+                document.getElementById('server-login-display').value = user.userId || '--';
+            }
+        }
+
+        function loadSettingsAccountData() {
+            const user = TS_Auth.getUser();
+            if (!user) return;
+            
+            document.getElementById('settings-acct-id').textContent = user.userId || '--';
+            document.getElementById('settings-acct-type').textContent = user.accountType || 'Standard';
+            document.getElementById('settings-acct-currency').textContent = user.currency || 'USD';
+            document.getElementById('settings-acct-leverage').textContent = user.leverage || '1:100';
+            document.getElementById('settings-acct-email').textContent = user.email || '--';
+            document.getElementById('settings-acct-phone').textContent = user.phone || '--';
+            document.getElementById('settings-acct-regdate').textContent = user.registrationDate ? new Date(user.registrationDate).toLocaleDateString() : '--';
+            
+            if (user.loginLocation) {
+                document.getElementById('settings-session-country').textContent = user.loginLocation.country || '--';
+                document.getElementById('settings-session-city').textContent = (user.loginLocation.city || '') + ', ' + (user.loginLocation.region || '');
+                document.getElementById('settings-session-language').textContent = user.loginLocation.language || '--';
+                document.getElementById('settings-session-timezone').textContent = user.loginLocation.timezone || '--';
+                document.getElementById('settings-session-platform').textContent = user.loginLocation.platform || '--';
+                document.getElementById('settings-session-resolution').textContent = user.loginLocation.screenResolution || '--';
+            }
+            document.getElementById('settings-session-lastlogin').textContent = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : '--';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            loadSettingsAccountData();
+        });
+
+        window.showSettingsTab = showSettingsTab;
+        window.toggleSwitch = toggleSwitch;
+        window.saveSetting = saveSetting;
+    </script>
 </body>
 </html>
