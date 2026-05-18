@@ -364,7 +364,8 @@
 
   // ======================= GLOBAL HEADER / FOOTER (MT5 Single-Line Roll) =======================
 
-  function injectGlobalUI() {
+                                        
+function injectGlobalUI() {
     const isLogged = Auth.isLoggedIn();
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
@@ -392,6 +393,7 @@
         }
 
         /* ========== GLOBAL HEADER BAR ========== */
+        #ts-global-header .ts-header-bar,
         .ts-header-bar {
           background: #0a0a0a;
           border-bottom: 1px solid #171717;
@@ -399,6 +401,7 @@
           top: 0;
           z-index: 60;
         }
+        #ts-global-header .ts-header-track,
         .ts-header-track {
           display: flex;
           align-items: center;
@@ -408,9 +411,11 @@
           scrollbar-width: none;
           -ms-overflow-style: none;
         }
+        #ts-global-header .ts-header-track::-webkit-scrollbar,
         .ts-header-track::-webkit-scrollbar {
           display: none;
         }
+        #ts-global-header .ts-header-logo,
         .ts-header-logo {
           display: flex;
           align-items: center;
@@ -421,10 +426,12 @@
           margin-right: 4px;
           cursor: pointer;
         }
+        #ts-global-header .ts-header-logo > svg,
         .ts-header-logo > svg {
           width: 26px;
           height: 26px;
         }
+        #ts-global-header .ts-logo-text,
         .ts-logo-text {
           color: #e5e5e5;
           font-size: 12px;
@@ -432,12 +439,15 @@
           letter-spacing: 0.3px;
           white-space: nowrap;
         }
+        #ts-global-header .ts-header-roll,
         .ts-header-roll {
           display: flex;
           align-items: center;
           gap: 1px;
           flex: 1;
         }
+        #ts-global-header .ts-hbtn,
+        #ts-global-header button.ts-hbtn,
         .ts-hbtn {
           display: flex;
           flex-direction: column;
@@ -455,20 +465,26 @@
           min-width: 48px;
           flex-shrink: 0;
           outline: none;
+          font-family: inherit;
+          line-height: normal;
         }
+        #ts-global-header .ts-hbtn:hover,
         .ts-hbtn:hover {
           background: rgba(255, 255, 255, 0.05);
           color: #f0f0f0;
         }
+        #ts-global-header .ts-hbtn-active,
         .ts-hbtn-active {
           background: rgba(16, 185, 129, 0.12) !important;
           color: #10b981 !important;
         }
+        #ts-global-header .ts-hbtn svg,
         .ts-hbtn svg {
           width: 17px;
           height: 17px;
           stroke-width: 2;
         }
+        #ts-global-header .ts-hbtn-label,
         .ts-hbtn-label {
           font-size: 8.5px;
           font-weight: 600;
@@ -476,6 +492,7 @@
           letter-spacing: 0.4px;
           white-space: nowrap;
         }
+        #ts-global-header .ts-hbtn-badge,
         .ts-hbtn-badge {
           position: absolute;
           top: 1px;
@@ -495,6 +512,7 @@
         }
 
         /* ========== GLOBAL FOOTER BAR ========== */
+        #ts-global-footer .ts-footer-bar,
         .ts-footer-bar {
           display: flex;
           align-items: center;
@@ -508,6 +526,8 @@
           right: 0;
           z-index: 60;
         }
+        #ts-global-footer .ts-fbtn,
+        #ts-global-footer a.ts-fbtn,
         .ts-fbtn {
           display: flex;
           flex-direction: column;
@@ -520,14 +540,17 @@
           max-width: 90px;
           transition: color 0.15s;
         }
+        #ts-global-footer .ts-fbtn-active,
         .ts-fbtn-active {
           color: #10b981;
         }
+        #ts-global-footer .ts-fbtn svg,
         .ts-fbtn svg {
           width: 19px;
           height: 19px;
           stroke-width: 2;
         }
+        #ts-global-footer .ts-fbtn-label,
         .ts-fbtn-label {
           font-size: 9px;
           font-weight: 600;
@@ -535,6 +558,7 @@
         }
 
         /* ========== MORE DROPDOWN ========== */
+        #ts-global-header .ts-more-dropdown,
         .ts-more-dropdown {
           position: absolute;
           top: 50px;
@@ -551,11 +575,15 @@
           transition: opacity 0.15s, visibility 0.15s;
           pointer-events: none;
         }
+        #ts-global-header .ts-more-dropdown:not(.ts-hidden),
         .ts-more-dropdown:not(.ts-hidden) {
           opacity: 1;
           visibility: visible;
           pointer-events: auto;
         }
+        #ts-global-header .ts-more-item,
+        #ts-global-header a.ts-more-item,
+        #ts-global-header button.ts-more-item,
         .ts-more-item {
           display: flex;
           align-items: center;
@@ -566,23 +594,37 @@
           text-decoration: none;
           transition: background 0.12s;
           border-bottom: 1px solid #1a1a1a;
+          background: transparent;
+          border-left: none;
+          border-right: none;
+          border-top: none;
+          width: 100%;
+          text-align: left;
+          cursor: pointer;
+          font-family: inherit;
+          line-height: normal;
         }
+        #ts-global-header .ts-more-item:last-child,
         .ts-more-item:last-child {
           border-bottom: none;
         }
+        #ts-global-header .ts-more-item:hover,
         .ts-more-item:hover {
           background: #1a1a1a;
           color: #fff;
         }
+        #ts-global-header .ts-more-item svg,
         .ts-more-item svg {
           width: 16px;
           height: 16px;
           stroke-width: 2;
           flex-shrink: 0;
         }
+        #ts-global-header .ts-more-danger,
         .ts-more-danger {
           color: #ef4444;
         }
+        #ts-global-header .ts-more-danger:hover,
         .ts-more-danger:hover {
           color: #f87171;
         }
@@ -788,7 +830,6 @@
           gap: 6px;
           cursor: pointer;
           min-width: 70px;
-          transition: all 0.2s;
         }
         .ts-step-dot {
           width: 32px;
@@ -892,6 +933,7 @@
           width: 14px;
           height: 14px;
         }
+        input.ts-input,
         .ts-input {
           width: 100%;
           padding: 10px 12px 10px 36px;
@@ -903,6 +945,7 @@
           outline: none;
           transition: border-color 0.2s;
         }
+        input.ts-input:focus,
         .ts-input:focus {
           border-color: #10b981;
           box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
@@ -929,7 +972,9 @@
           gap: 12px;
         }
 
-        /* ========== BUTTONS ========== */
+        /* ========== BUTTONS (Scoped to TS components only) ========== */
+        button.ts-btn,
+        a.ts-btn,
         .ts-btn {
           display: inline-flex;
           align-items: center;
@@ -942,22 +987,35 @@
           transition: background 0.15s;
           border: none;
           text-decoration: none;
+          font-family: inherit;
+          line-height: normal;
+          background-image: none;
         }
+        button.ts-btn-primary,
+        a.ts-btn-primary,
         .ts-btn-primary {
           background: linear-gradient(135deg, #10b981, #059669);
           color: #fff;
         }
+        button.ts-btn-primary:hover,
+        a.ts-btn-primary:hover,
         .ts-btn-primary:hover {
           background: linear-gradient(135deg, #059669, #047857);
         }
+        button.ts-btn-secondary,
+        a.ts-btn-secondary,
         .ts-btn-secondary {
           background: #1a1a1a;
           color: #a1a1a1;
         }
+        button.ts-btn-secondary:hover,
+        a.ts-btn-secondary:hover,
         .ts-btn-secondary:hover {
           background: #252525;
           color: #fff;
         }
+        button.ts-btn svg,
+        a.ts-btn svg,
         .ts-btn svg {
           width: 16px;
           height: 16px;
@@ -1120,6 +1178,7 @@
           color: #666;
           margin-top: 2px;
         }
+        button.mt5-toggle,
         .mt5-toggle {
           width: 44px;
           height: 24px;
@@ -1131,6 +1190,7 @@
           transition: background 0.2s;
           padding: 0;
         }
+        button.mt5-toggle.active,
         .mt5-toggle.active {
           background: #10b981;
         }
@@ -1144,9 +1204,12 @@
           background: #fff;
           transition: left 0.2s;
         }
+        button.mt5-toggle.active .mt5-toggle-knob,
         .mt5-toggle.active .mt5-toggle-knob {
           left: 22px;
         }
+        select.mt5-select,
+        input.mt5-input,
         .mt5-select,
         .mt5-input {
           width: 100%;
@@ -1158,10 +1221,13 @@
           font-size: 12px;
           outline: none;
         }
+        select.mt5-select:focus,
+        input.mt5-input:focus,
         .mt5-select:focus,
         .mt5-input:focus {
           border-color: #10b981;
         }
+        input.mt5-number-input,
         .mt5-number-input {
           width: 70px;
           padding: 6px 8px;
@@ -1193,6 +1259,7 @@
           justify-content: center;
           flex-shrink: 0;
         }
+        button.mt5-nav-tab,
         .mt5-nav-tab {
           padding: 8px 12px;
           font-size: 11px;
@@ -1206,16 +1273,20 @@
           display: flex;
           align-items: center;
           gap: 6px;
-          transition: all 0.15s;
+          font-family: inherit;
+          line-height: normal;
         }
+        button.mt5-nav-tab:hover,
         .mt5-nav-tab:hover {
           color: #a1a1a1;
           background: #161616;
         }
+        button.mt5-nav-tab.active,
         .mt5-nav-tab.active {
           color: #10b981;
           background: rgba(16, 185, 129, 0.1);
         }
+        button.mt5-nav-tab svg,
         .mt5-nav-tab svg {
           width: 14px;
           height: 14px;
@@ -1234,6 +1305,7 @@
         .page-section.active {
           display: block;
         }
+        button.mt5-btn,
         .mt5-btn {
           padding: 8px 16px;
           background: #1a1a1a;
@@ -1244,16 +1316,21 @@
           cursor: pointer;
           transition: all 0.15s;
           text-align: center;
+          font-family: inherit;
+          line-height: normal;
         }
+        button.mt5-btn:hover,
         .mt5-btn:hover {
           background: #252525;
           color: #fff;
         }
+        button.mt5-btn-primary,
         .mt5-btn-primary {
           background: #10b981;
           border-color: #10b981;
           color: #fff;
         }
+        button.mt5-btn-primary:hover,
         .mt5-btn-primary:hover {
           background: #059669;
         }
@@ -1279,6 +1356,7 @@
         }
 
         /* ========== MAILBOX STYLES ========== */
+        button.ts-filter-chip,
         .ts-filter-chip {
           padding: 6px 14px;
           font-size: 11px;
@@ -1289,13 +1367,16 @@
           color: #888;
           cursor: pointer;
           white-space: nowrap;
-          transition: all 0.15s;
+          font-family: inherit;
+          line-height: normal;
         }
+        button.ts-filter-chip.active,
         .ts-filter-chip.active {
           background: rgba(16, 185, 129, 0.15);
           border-color: #10b981;
           color: #10b981;
         }
+        button.ts-filter-chip:hover:not(.active),
         .ts-filter-chip:hover:not(.active) {
           border-color: #333;
           color: #fff;
@@ -1307,13 +1388,19 @@
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
+        input.ts-search-input,
+        textarea.ts-search-input,
         .ts-search-input {
           background: #161616;
           border: 1px solid #222;
           border-radius: 10px;
           outline: none;
-          transition: border-color 0.2s;
+          color: #e5e5e5;
+          font-size: 13px;
+          padding: 10px 12px;
         }
+        input.ts-search-input:focus,
+        textarea.ts-search-input:focus,
         .ts-search-input:focus {
           border-color: #10b981;
         }
@@ -1326,7 +1413,6 @@
           border: 1px solid #1a1a1a;
           border-radius: 10px;
           cursor: pointer;
-          transition: all 0.15s;
           margin-bottom: 4px;
         }
         .ts-message-row:hover {
@@ -1378,14 +1464,17 @@
           background: #10b981;
           flex-shrink: 0;
         }
+        button.ts-compose-btn,
         .ts-compose-btn {
           background: linear-gradient(135deg, #10b981, #059669);
           box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
-          transition: transform 0.2s;
+          border: none;
         }
+        button.ts-compose-btn:hover,
         .ts-compose-btn:hover {
           transform: scale(1.05);
         }
+        button.ts-compose-btn:active,
         .ts-compose-btn:active {
           transform: scale(0.95);
         }
@@ -1430,7 +1519,6 @@
           display: flex;
           align-items: center;
           gap: 8px;
-          transition: all 0.1s;
         }
         .ts-context-menu-item:hover {
           background: #1a1a1a;
@@ -1502,6 +1590,7 @@
           overflow: hidden;
           text-overflow: ellipsis;
         }
+        button.ts-notif-banner-close,
         .ts-notif-banner-close {
           background: transparent;
           border: none;
@@ -1510,10 +1599,12 @@
           padding: 4px;
           border-radius: 4px;
         }
+        button.ts-notif-banner-close:hover,
         .ts-notif-banner-close:hover {
           color: #fff;
           background: #1a1a1a;
         }
+        button.ts-notif-banner-close svg,
         .ts-notif-banner-close svg {
           width: 16px;
           height: 16px;
@@ -1630,9 +1721,9 @@
         </nav>
       `;
     }
-        } 
+        }
 
-
+  
   // ======================= COINGECKO HELPERS =======================
   window.TS_Market = {
     async getCoins() {
