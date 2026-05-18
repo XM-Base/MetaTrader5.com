@@ -1,105 +1,439 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trade Station — Log In</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:#050505;color:#e5e5e5;font-family:system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
-  .login-box{width:100%;max-width:400px;}
-  .login-logo{text-align:center;margin-bottom:28px;}
-  .login-logo svg{margin:0 auto;display:block;}
-  .login-title{text-align:center;margin-bottom:6px;font-size:22px;font-weight:700;}
-  .login-sub{text-align:center;color:#888;font-size:13px;margin-bottom:24px;}
-  .login-form{background:#0f0f0f;border:1px solid #1a1a1a;border-radius:12px;padding:24px;}
-  .form-group{margin-bottom:16px;}
-  .form-label{display:block;font-size:11px;color:#888;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
-  .form-input{width:100%;padding:10px 12px;background:#0a0a0a;border:1px solid #222;border-radius:6px;color:#e5e5e5;font-size:13px;outline:none;}
-  .form-input:focus{border-color:#10b981;}
-  .form-select{width:100%;padding:10px 12px;background:#0a0a0a;border:1px solid #222;border-radius:6px;color:#e5e5e5;font-size:13px;outline:none;}
-  .divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:#555;font-size:11px;}
-  .divider::before,.divider::after{content:'';flex:1;height:1px;background:#222;}
-  .btn-primary{width:100%;padding:12px;background:#10b981;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;}
-  .btn-primary:hover{background:#059669;}
-  .login-footer{text-align:center;margin-top:16px;font-size:12px;color:#888;}
-  .login-footer a{color:#06b6d4;text-decoration:none;font-weight:600;}
-  #loading-overlay.hidden{display:none!important;}
-  #loading-overlay{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,5,5,.95);backdrop-filter:blur(4px);gap:16px;}
-  .login-loader{width:40px;height:40px;border:3px solid #222;border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg);}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Trade Station</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' rx='10' fill='%230a0a0a'/><path d='M20 6L6 13L20 20L34 13Z' stroke='%2310b981' stroke-width='2' fill='rgba(16,185,129,0.08)'/><circle cx='20' cy='6' r='1.5' fill='%2310b981'/></svg>">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #0f0f0f;
+            --bg-tertiary: #161616;
+            --border-color: #1a1a1a;
+            --border-light: #222;
+            --text-primary: #e5e5e5;
+            --text-secondary: #a1a1a1;
+            --text-muted: #666;
+            --accent-start: #10b981;
+            --accent-end: #06b6d4;
+            --accent-blue: #2563eb;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .login-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .login-logo svg {
+            width: 40px;
+            height: 40px;
+        }
+        .login-logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 0.3px;
+        }
+        .login-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .login-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .login-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .form-label svg {
+            width: 14px;
+            height: 14px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .form-input:focus {
+            border-color: var(--accent-start);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        .form-input::placeholder {
+            color: #555;
+        }
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: system-ui, -apple-system, sans-serif;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+        .form-select:focus {
+            border-color: var(--accent-start);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+        .divider-text {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-family: system-ui, -apple-system, sans-serif;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-start), #059669);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+        }
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        .login-footer {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .login-footer a {
+            color: var(--accent-end);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        .toast {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 500;
+            transform: translateX(120%);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s;
+            max-width: 320px;
+        }
+        .toast.toast-visible {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .toast-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        .toast-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(4px);
+        }
+        #loading-overlay.hidden {
+            display: none;
+        }
+        .loader-ring {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border-light);
+            border-top-color: var(--accent-start);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loader-text {
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 16px;
+        }
+        .loader-sub {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 6px;
+        }
+        .progress-track {
+            width: 280px;
+            height: 4px;
+            background: var(--border-light);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+            border-radius: 2px;
+            transition: width 15s linear;
+        }
+        .loader-detail {
+            color: var(--text-muted);
+            font-size: 11px;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
 
-<div class="login-box">
-  <div class="login-logo">
-    <svg viewBox="0 0 40 40" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto;">
-      <defs>
-        <linearGradient id="ts-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stop-color="#10b981" />
-          <stop offset="100%" stop-color="#06b6d4" />
-        </linearGradient>
-        <filter id="ts-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="2" result="blur"/>
-          <feFlood flood-color="#10b981" flood-opacity="0.45"/>
-          <feComposite in2="blur" operator="in"/>
-          <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        <style>
-          .ts-stream { stroke: rgba(16, 185, 129, 0.12); stroke-width: 0.4; stroke-dasharray: 2 6; animation: ts-flow 3s linear infinite; }
-          @keyframes ts-flow { to { stroke-dashoffset: -16; } }
-          .ts-pulse { animation: ts-breathe 2.5s ease-in-out infinite; transform-origin: 20px 6px; }
-          @keyframes ts-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(1.08); } }
-        </style>
-      </defs>
-      <rect x="0" y="0" width="40" height="40" rx="10" fill="#0a0a0a" />
-      <path d="M4 12 L36 12" class="ts-stream" />
-      <path d="M4 20 L36 20" class="ts-stream" />
-      <path d="M4 28 L36 28" class="ts-stream" />
-      <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#ts-grad)" stroke-width="0.5" fill="none" opacity="0.2" />
-      <g filter="url(#ts-glow)">
-        <path d="M20 6 L6 13 L20 20 L34 13 Z" stroke="url(#ts-grad)" stroke-width="2" stroke-linejoin="round" fill="rgba(16,185,129,0.08)" />
-        <path d="M6 20 L20 27 L34 20" stroke="url(#ts-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M6 27 L20 34 L34 27" stroke="url(#ts-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-      </g>
-      <circle cx="20" cy="6" r="1.5" fill="#10b981" class="ts-pulse" />
-      <circle cx="20" cy="20" r="1.2" fill="#06b6d4" />
-      <circle cx="20" cy="34" r="1.5" fill="#10b981" />
-    </svg>
-    <div class="login-title" style="margin-top:10px;">Welcome Back</div>
-    <div class="login-sub">Log in to your trading account</div>
-  </div>
+    <!-- Toast -->
+    <div id="ts-toast" class="toast"></div>
 
-  <form id="login-form" class="login-form" onsubmit="return false;">
-    <div class="form-group">
-      <label class="form-label">Saved Accounts</label>
-      <select id="savedAccounts" class="form-select">
-        <option value="">-- Select or enter manually --</option>
-      </select>
-    </div>
-    <div class="divider">or</div>
-    <div class="form-group">
-      <label class="form-label">Email</label>
-      <input type="email" id="email" required class="form-input" placeholder="john@example.com">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Password</label>
-      <input type="password" id="password" required class="form-input" placeholder="Your password">
-    </div>
-    <button type="submit" class="btn-primary" onclick="handleLogin(event)">Log In</button>
-    <div class="login-footer">
-      Don't have an account? <a href="register.html">Create Account</a>
-    </div>
-  </form>
-</div>
+    <div class="login-container">
+        <!-- Header -->
+        <div class="login-header">
+            <div class="login-logo">
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="ts-grad-login" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#10b981" />
+                            <stop offset="100%" stop-color="#06b6d4" />
+                        </linearGradient>
+                        <filter id="ts-glow-login" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="2" result="blur"/>
+                            <feFlood flood-color="#10b981" flood-opacity="0.45"/>
+                            <feComposite in2="blur" operator="in"/>
+                            <feMerge>
+                                <feMergeNode/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <style>
+                            .ts-stream-login { stroke: rgba(16, 185, 129, 0.12); stroke-width: 0.4; stroke-dasharray: 2 6; animation: ts-flow-login 3s linear infinite; }
+                            .ts-stream-login:nth-child(2) { animation-delay: 1s; }
+                            .ts-stream-login:nth-child(3) { animation-delay: 2s; }
+                            @keyframes ts-flow-login { to { stroke-dashoffset: -16; } }
+                            .ts-pulse-login { animation: ts-breathe-login 2.5s ease-in-out infinite; transform-origin: 20px 6px; }
+                            @keyframes ts-breathe-login { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(1.08); } }
+                        </style>
+                    </defs>
+                    <rect x="0" y="0" width="40" height="40" rx="10" fill="#0a0a0a" />
+                    <path d="M4 12 L36 12" class="ts-stream-login" />
+                    <path d="M4 20 L36 20" class="ts-stream-login" />
+                    <path d="M4 28 L36 28" class="ts-stream-login" />
+                    <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#ts-grad-login)" stroke-width="0.5" fill="none" opacity="0.2" />
+                    <g filter="url(#ts-glow-login)">
+                        <path d="M20 6 L6 13 L20 20 L34 13 Z" stroke="url(#ts-grad-login)" stroke-width="2" stroke-linejoin="round" fill="rgba(16,185,129,0.08)" />
+                        <path d="M6 20 L20 27 L34 20" stroke="url(#ts-grad-login)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M6 27 L20 34 L34 27" stroke="url(#ts-grad-login)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </g>
+                    <circle cx="20" cy="6" r="1.5" fill="#10b981" class="ts-pulse-login" />
+                    <circle cx="20" cy="20" r="1.2" fill="#06b6d4" />
+                    <circle cx="20" cy="34" r="1.5" fill="#10b981" />
+                    <path d="M6 13 L6 27" stroke="url(#ts-grad-login)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+                    <path d="M34 13 L34 27" stroke="url(#ts-grad-login)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+                </svg>
+                <span class="login-logo-text">Trade Station</span>
+            </div>
+            <h1 class="login-title">Welcome Back</h1>
+            <p class="login-subtitle">Log in to your trading account</p>
+        </div>
 
-<div id="loading-overlay" class="hidden">
-  <div class="login-loader"></div>
-  <p style="color:#e5e5e5;font-weight:600;">Authenticating...</p>
-  <p style="color:#666;font-size:12px;">Please wait 15 seconds</p>
-</div>
+        <!-- Login Form -->
+        <form id="login-form" class="login-panel" onsubmit="return false;">
+            <div class="form-group">
+                <label class="form-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Saved Accounts
+                </label>
+                <select id="savedAccounts" class="form-select">
+                    <option value="">-- Select or enter manually --</option>
+                </select>
+            </div>
 
-<script src="app.js"></script>
+            <div class="divider">
+                <div class="divider-line"></div>
+                <span class="divider-text">or</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                    Email
+                </label>
+                <input type="email" id="email" required class="form-input" placeholder="john@example.com" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Password
+                </label>
+                <input type="password" id="password" required class="form-input" placeholder="Your password" autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary" onclick="submitLoginForm()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                Log In
+            </button>
+        </form>
+
+        <p class="login-footer">
+            Don't have an account?
+            <a href="register.html">Create Account</a>
+        </p>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="hidden">
+        <div class="loader-ring"></div>
+        <div class="loader-text">Authenticating...</div>
+        <div class="loader-sub">Verifying credentials and connecting to server</div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="loader-detail" id="loader-detail">Establishing secure connection...</div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Populate saved accounts
+        const users = TS_DB.getGlobal('all_users', []);
+        const select = document.getElementById('savedAccounts');
+        users.forEach((u, i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = `${u.firstName} ${u.lastName} (${u.email})`;
+            select.appendChild(opt);
+        });
+
+        select.addEventListener('change', function() {
+            if (this.value !== '') {
+                const u = users[this.value];
+                document.getElementById('email').value = u.email;
+                document.getElementById('password').focus();
+            }
+        });
+
+        async function submitLoginForm() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                TS_UI.showToast('Please fill in all fields', 'warning');
+                return;
+            }
+
+            await TS_Login.submitLogin(email, password);
+        }
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitLoginForm();
+        });
+    </script>
+
 </body>
-</html>
+ </html>
