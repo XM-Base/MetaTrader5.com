@@ -546,6 +546,15 @@
           border-radius: 10px;
           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
           overflow: hidden;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.15s, visibility 0.15s;
+          pointer-events: none;
+        }
+        .ts-more-dropdown:not(.ts-hidden) {
+          opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
         }
         .ts-more-item {
           display: flex;
@@ -1518,7 +1527,6 @@
       document.head.appendChild(style);
     }
 
-
     // Inject Header
     const header = document.getElementById('ts-global-header');
     if (header && isLogged) {
@@ -1566,7 +1574,7 @@
               </button>
             </div>
           </div>
-          <div id="more-dropdown" class="ts-more-dropdown hidden">
+          <div id="more-dropdown" class="ts-more-dropdown ts-hidden">
             <a href="profile.html" class="ts-more-item">${ICONS.user} Account</a>
             <a href="news.html" class="ts-more-item">${ICONS.newspaper} News</a>
             <a href="mailbox.html" class="ts-more-item">${ICONS.mailbox} Mailbox</a>
@@ -1584,11 +1592,11 @@
       if (btnMore && dropdown) {
         btnMore.addEventListener('click', (e) => {
           e.stopPropagation();
-          dropdown.classList.toggle('hidden');
+          dropdown.classList.toggle('ts-hidden');
         });
         document.addEventListener('click', (e) => {
-          if (!dropdown.classList.contains('hidden') && !e.target.closest('#btn-more') && !e.target.closest('#more-dropdown')) {
-            dropdown.classList.add('hidden');
+          if (!dropdown.classList.contains('ts-hidden') && !e.target.closest('#btn-more') && !e.target.closest('#more-dropdown')) {
+            dropdown.classList.add('ts-hidden');
           }
         });
       }
@@ -1622,7 +1630,8 @@
         </nav>
       `;
     }
-  }
+        } 
+
 
   // ======================= COINGECKO HELPERS =======================
   window.TS_Market = {
