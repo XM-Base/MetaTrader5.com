@@ -1,185 +1,452 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trade Station — Profile</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:#050505;color:#e5e5e5;font-family:system-ui,-apple-system,sans-serif;min-height:100vh;}
-  main{max-width:560px;margin:0 auto;padding:8px 16px 100px;}
-  .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-  .page-header h1{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;}
-  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;}
-  .badge-verified{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
-  .badge-real{background:rgba(6,182,212,.1);color:#06b6d4;border:1px solid rgba(6,182,212,.2);}
-  .card{background:#0f0f0f;border:1px solid #1a1a1a;border-radius:10px;margin-bottom:12px;overflow:hidden;}
-  .card-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #1a1a1a;}
-  .card-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;}
-  .card-body{padding:14px;}
-  .avatar-wrap{width:72px;height:72px;border-radius:50%;background:#1a1a1a;margin:0 auto;position:relative;overflow:hidden;border:2px solid #222;cursor:pointer;}
-  .avatar-wrap img{width:100%;height:100%;object-fit:cover;display:none;}
-  .avatar-initials{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#888;}
-  .avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;}
-  .avatar-wrap:hover .avatar-overlay{display:flex;}
-  .data-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a1a1a;font-size:12px;}
-  .data-row:last-child{border-bottom:none;}
-  .data-label{color:#888;display:flex;align-items:center;gap:6px;}
-  .data-value{color:#e5e5e5;font-weight:500;}
-  .balance-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
-  .balance-card{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:8px;padding:10px;}
-  .balance-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;}
-  .balance-value{font-size:15px;font-weight:700;color:#e5e5e5;margin-top:4px;}
-  .positive{color:#10b981;}
-  .negative{color:#ef4444;}
-  .btn-block{width:100%;padding:10px;border-radius:6px;font-size:13px;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px;}
-  .btn-primary{background:#10b981;color:#fff;}
-  .btn-success{background:#06b6d4;color:#fff;}
-  .btn-secondary{background:#1a1a1a;color:#c1c1c1;border:1px solid #222;}
-  .btn-danger{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2);}
-  .modal-backdrop{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px;}
-  .modal-backdrop.hidden{display:none!important;}
-  .modal-panel{background:#0f0f0f;border:1px solid #1a1a1a;border-radius:12px;width:100%;max-width:420px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;}
-  .modal-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #1a1a1a;}
-  .modal-body{flex:1;overflow-y:auto;padding:14px;}
-  .modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 14px;border-top:1px solid #1a1a1a;}
-  .form-group{margin-bottom:10px;}
-  .form-label{font-size:11px;color:#888;display:block;margin-bottom:4px;}
-  .form-input{width:100%;padding:8px 10px;background:#0a0a0a;border:1px solid #222;border-radius:5px;color:#e5e5e5;outline:none;}
-  .password-wrapper{position:relative;}
-  .password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#555;cursor:pointer;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Trade Station</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' rx='10' fill='%230a0a0a'/><path d='M20 6L6 13L20 20L34 13Z' stroke='%2310b981' stroke-width='2' fill='rgba(16,185,129,0.08)'/><circle cx='20' cy='6' r='1.5' fill='%2310b981'/></svg>">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #0f0f0f;
+            --bg-tertiary: #161616;
+            --border-color: #1a1a1a;
+            --border-light: #222;
+            --text-primary: #e5e5e5;
+            --text-secondary: #a1a1a1;
+            --text-muted: #666;
+            --accent-start: #10b981;
+            --accent-end: #06b6d4;
+            --accent-blue: #2563eb;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 8px 16px 100px;
+        }
+        .page-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-top: 8px;
+        }
+        .page-title h1 {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .page-title h1 svg {
+            width: 28px;
+            height: 28px;
+            color: var(--accent-start);
+        }
+        .badge {
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-verified {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-title svg {
+            width: 16px;
+            height: 16px;
+            color: var(--accent-start);
+        }
+        .avatar-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .avatar-initials {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-start);
+        }
+        .data-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .data-row:last-child { border-bottom: none; }
+        .data-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .data-label svg {
+            width: 14px;
+            height: 14px;
+        }
+        .data-value {
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .balance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 16px;
+        }
+        .balance-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+        }
+        .balance-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .balance-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .balance-value.positive { color: var(--success); }
+        .balance-value.negative { color: var(--danger); }
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .btn-primary { background: var(--accent-start); color: #fff; }
+        .btn-primary:hover { background: #059669; }
+        .btn-secondary { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-light); }
+        .btn-secondary:hover { background: #1f1f1f; color: #fff; }
+        .btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+        .btn-danger:hover { background: rgba(239,68,68,0.1); }
+        .btn-success { background: rgba(16,185,129,0.15); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
+        .btn-success:hover { background: rgba(16,185,129,0.25); }
+        .btn svg { width: 16px; height: 16px; }
+        .btn-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 16px;
+        }
+        .toast-container {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 9998;
+        }
+        .timeline { padding: 0 16px 16px; }
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .timeline-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+        .timeline-content {
+            flex: 1;
+        }
+        .timeline-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .timeline-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .timeline-time {
+            font-size: 10px;
+            color: #555;
+            margin-top: 2px;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
 
-<div id="ts-global-header"></div>
+    <!-- Global Header -->
+    <div id="ts-global-header"></div>
 
-<<main>
-  <div class="page-header">
-    <h1>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      Profile
-    </h1>
-    <span class="badge badge-verified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Active</span>
-  </div>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
 
-  <div class="card" id="profile-header-panel">
-    <div class="card-body" style="text-align:center;">
-      <div class="avatar-wrap" onclick="document.getElementById('avatar-upload').click()">
-        <img id="profile-avatar-img" alt="Profile">
-        <div id="profile-initials" class="avatar-initials">--</div>
-        <div class="avatar-overlay"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-      </div>
-      <input type="file" id="avatar-upload" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
-      <div style="margin-top:10px;">
-        <div style="font-size:15px;font-weight:700;" id="profile-name">--</div>
-        <div style="font-size:12px;color:#888;margin-top:2px;" id="profile-email">--</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;">
-          <span class="badge badge-verified"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>
-          <span class="badge badge-real" id="account-type-badge">Real Account</span>
+    <main>
+        <div class="page-title">
+            <h1>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                Profile
+            </h1>
+            <span class="badge badge-verified">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+                Active
+            </span>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="card" id="account-summary-section">
-    <div class="card-header">
-      <div class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Account Summary</div>
-      <button class="btn-secondary" style="padding:4px 8px;font-size:11px;" onclick="refreshAccountData()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button>
-    </div>
-    <div class="card-body">
-      <div class="data-row"><span class="data-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>User Account ID</span><span class="data-value" id="profile-id" style="font-family:monospace;">--</span></div>
-      <div class="balance-grid" style="margin:10px 0;">
-        <div class="balance-card"><div class="balance-label">Total Balance</div><div class="balance-value" id="total-balance">$0.00</div></div>
-        <div class="balance-card"><div class="balance-label">Total Deposits</div><div class="balance-value positive" id="total-deposits">$0.00</div></div>
-        <div class="balance-card"><div class="balance-label">Total Withdrawals</div><div class="balance-value negative" id="total-withdrawals">$0.00</div></div>
-        <div class="balance-card"><div class="balance-label">Net Profit</div><div class="balance-value" id="net-profit">$0.00</div></div>
-      </div>
-      <div class="data-row"><span class="data-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Account Type</span><span class="badge badge-real" id="account-type-display">Real Account</span></div>
-    </div>
-  </div>
+        <!-- Profile Header -->
+        <section class="section animate-fade-in">
+            <div style="padding:24px;text-align:center;">
+                <div class="avatar-container">
+                    <span class="avatar-initials" id="profile-initials">--</span>
+                </div>
+                <div style="margin-top:12px;">
+                    <div style="font-size:18px;font-weight:700;" id="profile-name">--</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:4px;" id="profile-email">--</div>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;">
+                        <span class="badge badge-verified">Verified</span>
+                        <span class="badge" style="background:rgba(37,99,235,0.15);color:#2563eb;" id="account-type-badge">Real Account</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <div class="card" id="account-details-section">
-    <div class="card-header">
-      <div class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Account Details</div>
-    </div>
-    <div class="card-body">
-      <div class="data-row"><span class="data-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Email</span><span id="profile-email2">--</span></div>
-      <div class="data-row"><span class="data-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Password</span><span style="display:flex;align-items:center;gap:6px;"><span id="password-masked">••••••••</span><button class="password-toggle" onclick="togglePasswordVisibility()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></span></div>
-      <div class="data-row"><span class="data-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Phone</span><span id="profile-phone">--</span></div>
-      <div class="data-row"><span class="data-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Country</span><span id="profile-country">--</span></div>
-      <div class="data-row"><span class="data-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Registration Date</span><span id="profile-regdate">--</span></div>
-      <div class="data-row"><span class="data-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Last Login</span><span id="profile-lastlogin">--</span></div>
-    </div>
-  </div>
+        <!-- Account Summary -->
+        <section class="section animate-fade-in" style="animation-delay:0.1s;">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Account Summary
+                </div>
+                <button class="btn btn-secondary" style="width:auto;padding:6px 12px;font-size:11px;" onclick="refreshAccountData()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="data-row">
+                <span class="data-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    User Account ID
+                </span>
+                <span class="data-value" id="profile-id" style="font-family:monospace;">--</span>
+            </div>
+            <div class="balance-grid">
+                <div class="balance-card">
+                    <div class="balance-label">Total Balance</div>
+                    <div class="balance-value" id="total-balance">$0.00</div>
+                </div>
+                <div class="balance-card">
+                    <div class="balance-label">Total Deposits</div>
+                    <div class="balance-value positive" id="total-deposits">$0.00</div>
+                </div>
+                <div class="balance-card">
+                    <div class="balance-label">Total Withdrawals</div>
+                    <div class="balance-value negative" id="total-withdrawals">$0.00</div>
+                </div>
+                <div class="balance-card">
+                    <div class="balance-label">Net Profit</div>
+                    <div class="balance-value" id="net-profit">$0.00</div>
+                </div>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Account Type</span>
+                <span class="badge badge-verified" id="account-type-display">Real Account</span>
+            </div>
+        </section>
 
-  <div class="card" id="account-management-section">
-    <div class="card-header">
-      <div class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Account Management</div>
-    </div>
-    <div class="card-body">
-      <button onclick="openAddAccountModal()" class="btn-block btn-primary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Account</button>
-      <button onclick="saveAccountData()" class="btn-block btn-success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Save Account Data</button>
-      <button onclick="location.href='settings.html'" class="btn-block btn-secondary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit Profile</button>
-      <button onclick="logoutUser()" class="btn-block btn-danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</button>
-    </div>
-  </div>
+        <!-- Account Details -->
+        <section class="section animate-fade-in" style="animation-delay:0.2s;">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Account Details
+                </div>
+            </div>
+            <div class="data-row">
+                <span class="data-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                    Email Address
+                </span>
+                <span class="data-value" id="profile-email2">--</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    Phone Number
+                </span>
+                <span class="data-value" id="profile-phone">--</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    Country
+                </span>
+                <span class="data-value" id="profile-country">--</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    Registration Date
+                </span>
+                <span class="data-value" id="profile-regdate">--</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Last Login
+                </span>
+                <span class="data-value" id="profile-lastlogin">--</span>
+            </div>
+        </section>
 
-  <div class="card" id="activity-history-section">
-    <div class="card-header">
-      <div class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Activity History</div>
-      <button class="btn-secondary" style="padding:4px 8px;font-size:11px;" onclick="loadActivityHistory()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button>
-    </div>
-    <div class="card-body"><div class="timeline" id="activity-timeline"></div></div>
-  </div>
+        <!-- Trading Statistics -->
+        <section class="section animate-fade-in" style="animation-delay:0.3s;">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                    Trading Statistics
+                </div>
+            </div>
+            <div class="balance-grid">
+                <div class="balance-card">
+                    <div class="balance-label">Total Trades</div>
+                    <div class="balance-value" id="total-trades">0</div>
+                </div>
+                <div class="balance-card">
+                    <div class="balance-label">Win Rate</div>
+                    <div class="balance-value" id="win-rate">0%</div>
+                </div>
+                <div class="balance-card">
+                    <div class="balance-label">Open Positions</div>
+                    <div class="balance-value" id="open-positions">0</div>
+                </div>
+                <div class="balance-card">
+                    <div class="balance-label">Total Volume</div>
+                    <div class="balance-value" id="total-volume">0.00</div>
+                </div>
+            </div>
+        </section>
 
-  <div class="card" id="trading-stats-section">
-    <div class="card-header">
-      <div class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Trading Statistics</div>
-    </div>
-    <div class="card-body">
-      <div class="balance-grid">
-        <div class="balance-card"><div class="balance-label">Total Trades</div><div class="balance-value" id="total-trades">0</div></div>
-        <div class="balance-card"><div class="balance-label">Win Rate</div><div class="balance-value" id="win-rate">0%</div></div>
-        <div class="balance-card"><div class="balance-label">Open Positions</div><div class="balance-value" id="open-positions">0</div></div>
-        <div class="balance-card"><div class="balance-label">Total Volume</div><div class="balance-value" id="total-volume">0.00</div></div>
-      </div>
-    </div>
-  </div>
-</main>
+        <!-- Activity History -->
+        <section class="section animate-fade-in" style="animation-delay:0.4s;">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    Activity History
+                </div>
+                <button class="btn btn-secondary" style="width:auto;padding:6px 12px;font-size:11px;" onclick="loadActivityHistory()">
+                    Refresh
+                </button>
+            </div>
+            <div class="timeline" id="activity-timeline"></div>
+        </section>
 
-<div id="add-account-modal" class="modal-backdrop hidden">
-  <div class="modal-panel">
-    <div class="modal-header">
-      <h3 style="font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add New Account</h3>
-      <button onclick="closeAddAccountModal()" class="btn-secondary" style="padding:4px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group"><label class="form-label">Account Type</label><select class="form-input" id="new-account-type"><option value="real">Real Account</option><option value="demo">Demo Account</option></select></div>
-      <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input" id="new-account-email" placeholder="Enter new email address"></div>
-      <div class="form-group"><label class="form-label">Password</label><div class="password-wrapper"><input type="password" class="form-input" id="new-account-password" placeholder="Create secure password"><button class="password-toggle" onclick="toggleNewPassword()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-      <div class="form-group"><label class="form-label">Initial Balance</label><input type="number" class="form-input" id="new-account-balance" placeholder="0.00" step="0.01"></div>
-      <div class="form-group"><label class="form-label">Currency</label><select class="form-input" id="new-account-currency"><option value="USD">USD - US Dollar</option><option value="EUR">EUR - Euro</option><option value="GBP">GBP - British Pound</option><option value="JPY">JPY - Japanese Yen</option></select></div>
-    </div>
-    <div class="modal-footer">
-      <button onclick="closeAddAccountModal()" class="btn-secondary" style="padding:6px 12px;">Cancel</button>
-      <button onclick="addAnotherAccount()" class="btn-success" style="padding:6px 12px;">Add Another</button>
-      <button onclick="saveNewAccount()" class="btn-primary" style="padding:6px 12px;">Save Account</button>
-    </div>
-  </div>
-</div>
+        <!-- Account Management -->
+        <section class="section animate-fade-in" style="animation-delay:0.5s;">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Account Management
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="saveAccountData()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                    Save Account Data
+                </button>
+                <button class="btn btn-secondary" onclick="location.href='settings.html'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Edit Settings
+                </button>
+                <button class="btn btn-danger" onclick="logoutUser()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Logout
+                </button>
+            </div>
+        </section>
+    </main>
 
-<div id="account-switcher-modal" class="modal-backdrop hidden">
-  <div class="modal-panel">
-    <div class="modal-header">
-      <h3 style="font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Switch Account</h3>
-      <button onclick="closeAccountSwitcher()" class="btn-secondary" style="padding:4px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="modal-body" id="account-list-container"></div>
-  </div>
-</div>
+    <!-- Global Footer -->
+    <div id="ts-global-footer"></div>
 
-<div id="ts-global-footer"></div>
-<script src="app.js"></script>
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (TS_Auth.requireAuth()) {
+                TS_Profile.loadProfile();
+            }
+        });
+
+        function loadActivityHistory() {
+            TS_Profile.loadActivityHistory();
+        }
+    </script>
+
 </body>
 </html>
